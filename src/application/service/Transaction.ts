@@ -16,6 +16,7 @@ import { emailer } from "@infrastructure/mailer/mailer"
 import UserDomainService from "@domain/service/UserDomainService"
 import ShippingAddressDomainService from "@domain/service/ShippingAddressDomainService"
 import { CalculateShippingPrice, CalculateTotalPrice } from "@helpers/utils/transaction/transactionHelper"
+import { ApiError, BadInputError } from "@domain/model/Error/Error"
 
 export default class TransactionAppService {
     static async CreateTransactionService(params: TransactionParamsDto.CreateTransactionParams, logData: LogParamsDto.CreateLogParams) {
@@ -23,13 +24,13 @@ export default class TransactionAppService {
 
         await TransactionSchema.CreateTransaction.validateAsync(params)
         if (product_id.length != qty.length) {
-            throw new Error("Product_id and qty not match")
+            throw new BadInputError("Product_id and qty not match")
         }
 
         //check if there's an unpaid transaction
         const pendingTransaction = await TransactionDomainService.GetPendingTransactionDomain(id)
         if (pendingTransaction.length > 0) {
-            throw new Error("Please pay your current transaction.")
+            throw new ApiError("Please pay your current transaction.")
         }
 
         const products = await ProductDomainService.GetProductsPricesAndStockDomain(product_id)
@@ -41,7 +42,7 @@ export default class TransactionAppService {
             //Additional layer of checking the product stock, if it's 0, user can't buy it & throw error.
             //If the user trying to buy more than the available stock, will throw the same error
             if (product.stock === 0 || product.stock < qty[i]) {
-                throw new Error(`Product ${product.name} is out of stock!`)
+                throw new BadInputError(`Product ${product.name} is out of stock!`)
             }
 
             items_price += parseFloat(product.price.toString()) * qty[i]
@@ -481,11 +482,11 @@ export default class TransactionAppService {
         if (transactionStatus.status !== 1) {
             switch (transactionStatus.status) {
                 case 0:
-                    throw new Error("Please approve the transaction first!")
+                    throw new BadInputError("Please approve the transaction first!")
                 case 2:
-                    throw new Error("This transaction is rejected!")
+                    throw new ApiError("This transaction is rejected!")
                 default:
-                    throw new Error("Invalid transaction status!")
+                    throw new ApiError("Invalid transaction status!")
             }
         }
 

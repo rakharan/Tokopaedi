@@ -134,7 +134,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 .post('/api/v1/auth/login')
                 .set('user-agent', "Test")
                 .send({ email: newUserData.email, password: newUserData.password })
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Please verify your email first!")
         })
@@ -638,7 +638,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 const { body } = await supertest(app.server)
                     .post('/api/v1/auth/register')
                     .send({ ...newUserData, name: "SuperAdmin" })
-                    .expect(500)
+                    .expect(400)
 
                 expect(body.message).toEqual("You can't use this name!")
             })
@@ -647,7 +647,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 const { body } = await supertest(app.server)
                     .post('/api/v1/auth/register')
                     .send({ ...newUserData, name: "anjing" })
-                    .expect(500)
+                    .expect(400)
 
                 expect(body.message).toEqual("You can't use this name!")
             })
@@ -657,9 +657,9 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                     .post('/api/v1/auth/login')
                     .set('user-agent', "Test")
                     .send({ email: updateUserData.email, password: changePasswordRequest.newPassword })
-                    .expect(500)
+                    .expect(404)
 
-                expect(body.message).toEqual("Your account is deleted, please contact an admin")
+                expect(body.message).toEqual("Account not found!")
             })
         })
 
@@ -674,7 +674,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 .set('Authorization', newlyRegisteredUserJWTToken)
                 .set('user-agent', "Test")
                 .send(updateUserData)
-                .expect(500)
+                .expect(400)
 
             expect(typeof body).toEqual('object')
             expect(body.message).toEqual("Banned words name")
@@ -691,7 +691,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 .set('Authorization', newlyRegisteredUserJWTToken)
                 .set('user-agent', "Test")
                 .send(updateUserData)
-                .expect(500)
+                .expect(400)
 
             expect(typeof body).toEqual('object')
             expect(body.message).toEqual("Email is not available")
@@ -708,7 +708,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 .set('Authorization', newlyRegisteredUserJWTToken)
                 .set('user-agent', "Test")
                 .send(changePasswordRequest)
-                .expect(500)
+                .expect(400)
 
             expect(typeof body).toEqual('object')
             expect(body.message).toEqual("Invalid old password")
@@ -717,7 +717,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
         it('Should fail accessing route without login', async () => {
             const { body } = await supertest(app.server)
                 .get('/api/v1/user/profile')
-                .expect(500)
+                .expect(401)
 
             expect(body.message).toEqual("PLEASE_LOGIN_FIRST")
         })

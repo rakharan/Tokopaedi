@@ -143,7 +143,7 @@ describe('Lists of routes accessible to admin', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send(updateProfileRequest)
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Banned words name")
         });

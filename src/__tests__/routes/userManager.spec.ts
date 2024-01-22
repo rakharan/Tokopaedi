@@ -149,7 +149,7 @@ describe('Lists of routes accessible to user manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send({ ...createNewUserData, name: "anjing" })
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("You can't use this name!")
         })
@@ -160,7 +160,7 @@ describe('Lists of routes accessible to user manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send({ ...updateUserDataRequest, name: "anjing", userid: newlyRegisteredUserId })
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Banned words name")
         });
@@ -171,7 +171,7 @@ describe('Lists of routes accessible to user manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send({ ...updateUserDataRequest, email: "user.admin@gmail.com", userid: newlyRegisteredUserId })
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Email is not available")
         })
@@ -188,7 +188,7 @@ describe('Lists of routes accessible to user manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send(changeUserPasswordRequest)
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Invalid Confirm Password")
         });

@@ -2,12 +2,13 @@ import TransactionRepository from "@adapters/outbound/repository/TransactionRepo
 import { QueryRunner } from "typeorm"
 import { TransactionParamsDto } from "@domain/model/params"
 import { RepoPaginationParams } from "key-pagination-sql"
+import { ApiError, BadInputError, ResultNotFoundError } from "@domain/model/Error/Error"
 
 export default class TransactionDomainService {
     static async CreateTransactionIdDomain(params: TransactionParamsDto.CreateTransactionIdParams, query_runner?: QueryRunner) {
         const result = await TransactionRepository.DBCreateTransactionId(params, query_runner)
         if (result.affectedRows < 1) {
-            throw new Error("Failed To Create Transaction")
+            throw new ApiError("Failed To Create Transaction")
         }
         return result
     }
@@ -21,7 +22,7 @@ export default class TransactionDomainService {
         const result = await TransactionRepository.DBInsertOrderItem(valueProduct, query_runner)
 
         if (result.affectedRows < 1) {
-            throw new Error("Failed insert order")
+            throw new ApiError("Failed insert order")
         }
         return result
     }
@@ -34,7 +35,7 @@ export default class TransactionDomainService {
         const result = await TransactionRepository.DBUpdateOrder(params, query_runner)
 
         if (result.affectedRows < 1) {
-            throw Error("Failed to update product qty")
+            throw new ApiError("Failed to update product qty")
         }
 
         return true
@@ -43,14 +44,14 @@ export default class TransactionDomainService {
     static async CreateTransactionStatusDomain(params: { transaction_id: number; update_time: number }, query_runner: QueryRunner) {
         const txStatus = await TransactionRepository.DBCreateTransactionStatus(params, query_runner)
         if (txStatus.affectedRows < 1) {
-            throw new Error("Failed to create transaction status")
+            throw new ApiError("Failed to create transaction status")
         }
     }
 
     static async GetCurrentTransactionDetailDomain(id: number) {
         const transactionDetail = await TransactionRepository.DBGetCurrentTransactionDetail(id)
         if (transactionDetail.length < 1) {
-            throw new Error("Transaction not found!")
+            throw new ResultNotFoundError("Transaction not found!")
         }
         return transactionDetail
     }
@@ -59,7 +60,7 @@ export default class TransactionDomainService {
         const result = await TransactionRepository.DBUpdateTransactionProductQty(params, query_runner)
 
         if (result.affectedRows < 1) {
-            throw Error("Failed to update product qty in transaction")
+            throw new ApiError("Failed to update product qty in transaction")
         }
 
         return true
@@ -68,7 +69,7 @@ export default class TransactionDomainService {
     static async PayTransactionDomain(params: TransactionParamsDto.PayTransactionRepositoryParams, query_runner: QueryRunner) {
         const paymentResult = await TransactionRepository.DBPayTransaction(params, query_runner)
         if (paymentResult.affectedRows < 1) {
-            throw Error("Failed to Pay Transaction")
+            throw new ApiError("Failed to Pay Transaction")
         }
     }
 
@@ -79,14 +80,14 @@ export default class TransactionDomainService {
     static async CreateDeliveryStatusDomain(params: TransactionParamsDto.CreateDeliveryStatusParams, query_runner: QueryRunner) {
         const deliveryStatus = await TransactionRepository.DBCreateDeliveryStatus(params, query_runner)
         if (deliveryStatus.affectedRows < 1) {
-            throw new Error("Failed to create delivery_status")
+            throw new ApiError("Failed to create delivery_status")
         }
     }
 
     static async GetTransactionDetailDomain(id: number) {
         const transactionDetail = await TransactionRepository.DBGetTransactionDetail(id)
         if (transactionDetail.length < 1) {
-            throw new Error("Transaction not found!")
+            throw new ResultNotFoundError("Transaction not found!")
         }
         return transactionDetail[0]
     }
@@ -94,7 +95,7 @@ export default class TransactionDomainService {
     static async GetUserTransactionListByIdDomain(userid: number, paginationParams: RepoPaginationParams) {
         const transactionList = await TransactionRepository.DBGetUserTransactionListById(userid, paginationParams)
         if (transactionList.length < 1) {
-            throw new Error("No Transaction Found")
+            throw new ResultNotFoundError("No Transaction Found")
         }
         return transactionList
     }
@@ -102,21 +103,21 @@ export default class TransactionDomainService {
     static async UpdateDeliveryStatusDomain(params: TransactionParamsDto.UpdateDeliveryStatusParams, query_runner: QueryRunner) {
         const updateDeliveryStatusDomain = await TransactionRepository.DBUpdateDeliveryStatus(params, query_runner)
         if (updateDeliveryStatusDomain.affectedRows < 1) {
-            throw new Error("Failed to update delivery status")
+            throw new ApiError("Failed to update delivery status")
         }
     }
 
     static async UpdateTransactionStatusDomain(params: TransactionParamsDto.UpdateTransactionStatusParams, query_runner: QueryRunner) {
         const updateTransactionStatus = await TransactionRepository.DBUpateTransactionStatus(params, query_runner)
         if (updateTransactionStatus.affectedRows < 1) {
-            throw new Error("Failed to update transaction status")
+            throw new ApiError("Failed to update transaction status")
         }
     }
 
     static async GetTransactionStatusDomain(transaction_id: number) {
         const transactionStatus = await TransactionRepository.DBGetTransactionStatus(transaction_id)
         if (transactionStatus.length < 1) {
-            throw new Error("Transaction not found")
+            throw new ResultNotFoundError("Transaction not found")
         }
         return transactionStatus[0]
     }
@@ -124,7 +125,7 @@ export default class TransactionDomainService {
     static async SoftDeleteTransactionDomain(transaction_id: number, query_runner?: QueryRunner) {
         const deleteTransaction = await TransactionRepository.DBSoftDeleteTransaction(transaction_id, query_runner)
         if (deleteTransaction.affectedRows < 1) {
-            throw new Error("Failed to delete transaction!")
+            throw new ApiError("Failed to delete transaction!")
         }
     }
 
@@ -135,7 +136,7 @@ export default class TransactionDomainService {
     static async CheckIsTransactionAliveDomain(id: number) {
         const isAlive = await TransactionRepository.DBCheckIsTransactionAlive(id)
         if (isAlive.length < 1) {
-            throw new Error("Transaction is deleted")
+            throw new ApiError("Transaction is deleted")
         }
         return true
     }
@@ -143,10 +144,10 @@ export default class TransactionDomainService {
     static async CheckIsTransactionPaidDomain(id: number) {
         const transaction = await TransactionRepository.DBCheckIsTransactionPaid(id)
         if (transaction.length < 1) {
-            throw new Error("Transaction not found")
+            throw new ResultNotFoundError("Transaction not found")
         }
         if (transaction[0].is_paid === 1) {
-            throw new Error("Transaction is already paid")
+            throw new BadInputError("Transaction is already paid")
         }
     }
 

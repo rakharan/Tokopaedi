@@ -4,6 +4,7 @@ import { AdminParamsDto } from "@domain/model/params"
 import { ResultSetHeader } from "mysql2"
 import { QueryRunner } from "typeorm"
 import { RepoPaginationParams } from "key-pagination-sql"
+import { ApiError } from "@domain/model/Error/Error"
 
 const db = AppDataSource
 
@@ -80,7 +81,7 @@ export default class AdminRepository {
 
     static async DBCreateRules(rules: string, query_runner: QueryRunner) {
         if (query_runner && !query_runner.isTransactionActive) {
-            throw new Error("Must in Transaction")
+            throw new ApiError("Must in Transaction")
         }
         return await db.query<ResultSetHeader>(`INSERT INTO user_rules(rules) VALUES(?)`, [rules], query_runner)
     }
@@ -91,28 +92,28 @@ export default class AdminRepository {
 
     static async DBUpdateRule({ rule, rules_id }: AdminParamsDto.UpdateRuleParams, query_runner: QueryRunner) {
         if (query_runner && !query_runner.isTransactionActive) {
-            throw new Error("Must in Transaction")
+            throw new ApiError("Must in Transaction")
         }
         return await db.query<ResultSetHeader>(`UPDATE user_rules SET rules = ? WHERE rules_id = ?`, [rule, rules_id], query_runner)
     }
 
     static async DBSoftDeleteRule(rules_id: number, query_runner: QueryRunner) {
         if (query_runner && !query_runner.isTransactionActive) {
-            throw new Error("Must in Transaction")
+            throw new ApiError("Must in Transaction")
         }
         return await db.query<ResultSetHeader>(`DELETE FROM user_rules WHERE rules_id = ?`, [rules_id], query_runner)
     }
 
     static async DBAssignRule({ group_id, rules_id }: AdminParamsDto.AssignRuleParams, query_runner: QueryRunner) {
         if (query_runner && !query_runner.isTransactionActive) {
-            throw new Error("Must in Transaction")
+            throw new ApiError("Must in Transaction")
         }
         return await db.query<ResultSetHeader>(`INSERT INTO user_group_rules(group_id, rules_id) VALUES(?, ?)`, [group_id, rules_id], query_runner)
     }
 
     static async DBRevokeRule({ group_id, rules_id }: AdminParamsDto.RevokeRuleParams, query_runner: QueryRunner) {
         if (query_runner && !query_runner.isTransactionActive) {
-            throw new Error("Must in Transaction")
+            throw new ApiError("Must in Transaction")
         }
         return await db.query<ResultSetHeader>(`DELETE FROM user_group_rules WHERE group_id = ? AND rules_id = ?`, [group_id, rules_id], query_runner)
     }

@@ -3,6 +3,7 @@ import { UserClaimsResponse } from "@domain/model/response/UserResponse"
 import { FastifyRequest } from "fastify"
 import { verifyJWT } from "@helpers/jwt/jwt"
 import Joi from "joi"
+import { UnauthorizedError } from "@domain/model/Error/Error"
 
 declare module "fastify" {
     interface FastifyRequest {
@@ -43,7 +44,7 @@ const checkClaims = Joi.object({
 }).unknown(true)
 
 export async function AuthValidate(request: FastifyRequest) {
-    if (!request.headers?.authorization) throw new Error("PLEASE_LOGIN_FIRST")
+    if (!request.headers?.authorization) throw new UnauthorizedError("PLEASE_LOGIN_FIRST")
 
     const user_claims = await verifyJWT<UserClaimsResponse>(request.headers.authorization, process.env.JWT_SECRET)
     await checkClaims.validateAsync(user_claims)
@@ -55,7 +56,7 @@ export function CheckAuthAdmin({ rules }: { rules: number }) {
     return async function (request: FastifyRequest) {
         const { user } = request
         if (user.id < 1 || (rules && !authorize({ rules, user_level: user.level, user_authority: user.authority }))) {
-            throw new Error(user.id < 1 ? "PLEASE_LOGIN_FIRST" : "NOT_ENOUGH_RIGHTS")
+            throw new UnauthorizedError(user.id < 1 ? "PLEASE_LOGIN_FIRST" : "NOT_ENOUGH_RIGHTS")
         }
     }
 }

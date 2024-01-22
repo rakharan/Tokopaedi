@@ -5,8 +5,9 @@ import { checkPassword, hashPassword } from "@helpers/Password/Password"
 import LogDomainService from "@domain/service/LogDomainService"
 import { AppDataSource } from "@infrastructure/mysql/connection"
 import { Profanity } from "indonesian-profanity"
+import { BadInputError } from "@domain/model/Error/Error"
 export default class UserAppService {
-    static async GetUserProfileService(id) {
+    static async GetUserProfileService(id: number) {
         await UserSchema.GetUserProfile.validateAsync(id)
 
         const user = await UserDomainService.GetUserDataByIdDomain(id)
@@ -21,7 +22,7 @@ export default class UserAppService {
         const banned = ["SuperAdmin", "Product Management Staff", "User Management Staff", "Shipping and Transaction Management Staff"]
 
         if (banned.includes(params.name) || Profanity.flag(params.name.toLowerCase())) {
-            throw new Error("Banned words name")
+            throw new BadInputError("Banned words name")
         }
 
         const db = AppDataSource
@@ -36,7 +37,7 @@ export default class UserAppService {
             if (user.email != params.email) {
                 const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email, query_runner)
                 if (userEmailExist.length > 0) {
-                    throw new Error("Email is not available")
+                    throw new BadInputError("Email is not available")
                 }
             }
 
@@ -78,7 +79,7 @@ export default class UserAppService {
 
             const sama = await checkPassword(params.oldPassword, getUserById.password)
             if (!sama) {
-                throw new Error("Invalid old password")
+                throw new BadInputError("Invalid old password")
             }
 
             const result = await UserDomainService.UpdatePasswordDomain(passEncrypt, params.id, query_runner)

@@ -65,7 +65,7 @@ describe('List of routes accessible to transaction manager', () => {
             .set('Authorization', superAdminJwt)
             .set('user-agent', "Test")
             .send(newTransactionRequestData)
-            .expect(500)
+            .expect(400)
 
         expect(body.message).toEqual(`Product Huawei P30 is out of stock!`)
     })
@@ -115,7 +115,7 @@ describe('List of routes accessible to transaction manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send(newTransactionRequestData)
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Product_id and qty not match")
         })
@@ -280,7 +280,7 @@ describe('List of routes accessible to transaction manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send(updateDeliveryStatusRequest)
-                .expect(500)
+                .expect(400)
 
             expect(body.message).toEqual("Please approve the transaction first!")
         });

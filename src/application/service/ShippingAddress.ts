@@ -8,6 +8,7 @@ import { CommonRequestDto } from "@domain/model/request"
 import * as CommonSchema from "@helpers/JoiSchema/Common"
 import unicorn from "format-unicorn/safe"
 import { GenerateWhereClause, Paginate } from "key-pagination-sql"
+import { ApiError } from "@domain/model/Error/Error"
 
 export default class ShippingAddressAppService {
     static async CreateShippingAddress(params: ShippingAddressParamsDto.CreateShippingAddressParams, logData: LogParamsDto.CreateLogParams) {
@@ -41,7 +42,7 @@ export default class ShippingAddressAppService {
         const shippingAddressDetail = await ShippingAddressDomainService.GetShippingAddressDetailDomain(id)
 
         if (user_id !== shippingAddressDetail.user_id) {
-            throw new Error("This Shipping Address Doesn't Belong To You!")
+            throw new ApiError("This Shipping Address Doesn't Belong To You!")
         }
         return shippingAddressDetail
     }
@@ -81,7 +82,7 @@ export default class ShippingAddressAppService {
         const shippingAddressDetail = await ShippingAddressDomainService.GetShippingAddressDetailDomain(id)
 
         if (user_id !== shippingAddressDetail.user_id) {
-            throw new Error("This Shipping Address Doesn't Belong To You!")
+            throw new ApiError("This Shipping Address Doesn't Belong To You!")
         }
 
         const db = AppDataSource
@@ -117,7 +118,7 @@ export default class ShippingAddressAppService {
         const existingAddress = await ShippingAddressDomainService.GetShippingAddressDetailDomain(id)
 
         if (user_id !== existingAddress.user_id) {
-            throw new Error("This Shipping Address Doesn't Belong To You!")
+            throw new ApiError("This Shipping Address Doesn't Belong To You!")
         }
 
         const updateAddressData: Partial<ShippingAddress> = existingAddress

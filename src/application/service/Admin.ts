@@ -14,6 +14,7 @@ import unicorn from "format-unicorn/safe"
 import { Profanity } from "indonesian-profanity"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { signJWT } from "@helpers/jwt/jwt"
+import { BadInputError } from "@domain/model/Error/Error"
 export default class AdminAppService {
     static async GetAdminProfileService(id: number) {
         await AdminSchema.GetAdminProfile.validateAsync(id)
@@ -28,7 +29,7 @@ export default class AdminAppService {
 
         //Add name checking, can not use bad words for the product name
         if (Profanity.flag(name.toLowerCase())) {
-            throw new Error("You can't use this name!")
+            throw new BadInputError("You can't use this name!")
         }
 
         await UserDomainService.GetEmailExistDomain(email)
@@ -79,7 +80,7 @@ export default class AdminAppService {
         const banned = ["SuperAdmin", "Product Management Staff", "User Management Staff", "Shipping and Transaction Management Staff"]
 
         if (banned.includes(params.name) || Profanity.flag(params.name.toLowerCase())) {
-            throw new Error("Banned words name")
+            throw new BadInputError("Banned words name")
         }
 
         await AdminDomainService.CheckIsUserAliveDomain(params.id)
@@ -96,7 +97,7 @@ export default class AdminAppService {
             if (user.email != params.email) {
                 const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email, query_runner)
                 if (userEmailExist.length > 0) {
-                    throw new Error("Email is not available")
+                    throw new BadInputError("Email is not available")
                 }
             }
 
@@ -129,12 +130,12 @@ export default class AdminAppService {
         if (user.email != params.email) {
             const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email)
             if (userEmailExist.length > 0) {
-                throw new Error("Email is not available")
+                throw new BadInputError("Email is not available")
             }
         }
 
         if (Profanity.flag(params.name.toLowerCase())) {
-            throw new Error("Banned words name")
+            throw new BadInputError("Banned words name")
         }
 
         const obj: UserParamsDto.UpdateUserEditProfileParams = {
@@ -253,7 +254,7 @@ export default class AdminAppService {
         const existingRules = await AdminDomainService.GetRulesList()
         const duplicate = existingRules.some((existingRule) => existingRule.rules === rule)
         if (duplicate) {
-            throw new Error("Rule Already Exist!")
+            throw new BadInputError("Rule Already Exist!")
         }
 
         const db = AppDataSource
@@ -283,7 +284,7 @@ export default class AdminAppService {
         const existingRules = await AdminDomainService.GetRulesList()
         const duplicate = existingRules.some((existingRule) => existingRule.rules === params.rule)
         if (duplicate) {
-            throw new Error("Rule Already Exist!")
+            throw new BadInputError("Rule Already Exist!")
         }
 
         const db = AppDataSource
@@ -338,7 +339,7 @@ export default class AdminAppService {
         const duplicate = rulesArray.some((rule) => rule === params.rules_id)
 
         if (duplicate) {
-            throw new Error("Can't Reassign Existing Rule!")
+            throw new BadInputError("Can't Reassign Existing Rule!")
         }
 
         const db = AppDataSource
@@ -400,7 +401,7 @@ export default class AdminAppService {
 
             const sama = await checkPassword(params.confirmPassword, encryptPass)
             if (!sama) {
-                throw new Error("Invalid Confirm Password")
+                throw new BadInputError("Invalid Confirm Password")
             }
 
             const result = await AdminDomainService.ChangeUserPassDomain(params.userid, encryptPass, query_runner)
@@ -435,7 +436,7 @@ export default class AdminAppService {
 
             const sama = await checkPassword(params.oldPassword, getUserById.password)
             if (!sama) {
-                throw new Error("Invalid old password")
+                throw new BadInputError("Invalid old password")
             }
             const result = await UserDomainService.UpdatePasswordDomain(passEncrypt, params.id, query_runner)
 

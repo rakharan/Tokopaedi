@@ -255,7 +255,7 @@ describe('List of routes accessible to super admin', () => {
                     .set('Authorization', superAdminJwt)
                     .set('user-agent', "Test")
                     .send({ rule: "UPDATE_USER_LEVEL" })
-                    .expect(500)
+                    .expect(400)
 
                 expect(body.message).toEqual("Rule Already Exist!")
             })
@@ -266,7 +266,7 @@ describe('List of routes accessible to super admin', () => {
                     .set('Authorization', superAdminJwt)
                     .set('user-agent', "Test")
                     .send({ rules_id: 101, rule: "VIEW_USER_PROFILE" })
-                    .expect(500)
+                    .expect(400)
 
                 expect(body.message).toEqual("Rule Already Exist!")
             });
@@ -277,7 +277,7 @@ describe('List of routes accessible to super admin', () => {
                     .set('Authorization', superAdminJwt)
                     .set('user-agent', "Test")
                     .send({ rules_id: 101, group_id: 1 })
-                    .expect(500)
+                    .expect(400)
 
                 expect(body.message).toEqual("Can't Reassign Existing Rule!")
             })

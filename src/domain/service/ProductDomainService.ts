@@ -1,5 +1,6 @@
 import ProductRepository from "@adapters/outbound/repository/ProductRepository"
 import { Product } from "@domain/model/BaseClass/Product"
+import { ApiError, BadInputError, ResultNotFoundError } from "@domain/model/Error/Error"
 import { ProductParamsDto } from "@domain/model/params"
 import { RepoPaginationParams } from "key-pagination-sql"
 import { QueryRunner } from "typeorm"
@@ -8,7 +9,7 @@ export default class ProductDomainService {
     static async GetProductListDomain(params: RepoPaginationParams) {
         const productList = await ProductRepository.DBGetProductList(params)
         if (productList.length < 1) {
-            throw new Error("Product is empty!")
+            throw new ResultNotFoundError("Product is empty!")
         }
         return productList
     }
@@ -16,7 +17,7 @@ export default class ProductDomainService {
     static async GetProductDetailDomain(id: number, query_runner?: QueryRunner) {
         const productDetail = await ProductRepository.DBGetProductDetail(id, query_runner)
         if (productDetail.length < 1) {
-            throw new Error("Product not found!")
+            throw new ResultNotFoundError("Product not found!")
         }
         return productDetail[0]
     }
@@ -24,21 +25,21 @@ export default class ProductDomainService {
     static async SoftDeleteProductDomain(id: number, query_runner?: QueryRunner) {
         const deleteProduct = await ProductRepository.DBSoftDeleteProduct(id, query_runner)
         if (deleteProduct.affectedRows < 1) {
-            throw new Error("Delete Failed")
+            throw new ApiError("Delete Failed")
         }
     }
 
     static async CreateProductDomain(product: ProductParamsDto.CreateProductParams, query_runner?: QueryRunner) {
         const newProduct = await ProductRepository.DBCreateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
-            throw new Error("Create Product Failed!")
+            throw new ApiError("Create Product Failed!")
         }
     }
 
     static async UpdateProductDomain(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {
         const newProduct = await ProductRepository.DBUpdateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
-            throw new Error("Update Product Failed!")
+            throw new ApiError("Update Product Failed!")
         }
         return newProduct
     }
@@ -60,7 +61,7 @@ export default class ProductDomainService {
             }
         }
         if (products.length < 1) {
-            throw new Error(`Product not found`)
+            throw new ResultNotFoundError(`Product not found`)
         }
         return products
     }
@@ -68,7 +69,7 @@ export default class ProductDomainService {
     static async CheckIsProductAliveDomain(id: number) {
         const isAlive = await ProductRepository.DBCheckIsProductAlive(id)
         if (isAlive.length < 1) {
-            throw new Error("Product is deleted")
+            throw new BadInputError("Product is deleted")
         }
         return true
     }

@@ -2,6 +2,7 @@ import path from "path"
 import fs from 'fs';
 import { DeliveryType, ResourceType, ResponseCallback, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { File } from "fastify-multer/lib/interfaces";
+import { BadInputError } from "@domain/model/Error/Error";
 
 // Configure Cloudinary
 cloudinary.config({
@@ -47,6 +48,6 @@ export const fileFilter = (_req, file, cb) => {
     if ((file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') && (ext === '.jpg' || ext === '.png' || ext === '.jpeg')) {
         cb(null, true);
     } else {
-        cb(new Error('Only .jpg and .png format allowed!'), false);
+        cb(new BadInputError('Only .jpg and .png format allowed!'), false);
     }
 }

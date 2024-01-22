@@ -10,6 +10,7 @@ import LogDomainService from "@domain/service/LogDomainService"
 import { Profanity } from "indonesian-profanity"
 import { emailer } from "@infrastructure/mailer/mailer"
 import { UserRequestDto } from "@domain/model/request"
+import { BadInputError } from "@domain/model/Error/Error"
 
 export default class AuthAppService {
     static async Register({ level, name, email, password }: UserRequestDto.RegisterRequest) {
@@ -17,7 +18,7 @@ export default class AuthAppService {
 
         //Add name checking, can not use bad words for the user name
         if (Profanity.flag(name.toLowerCase()) || name.toLowerCase() === "superadmin") {
-            throw new Error("You can't use this name!")
+            throw new BadInputError("You can't use this name!")
         }
 
         const db = AppDataSource
@@ -75,16 +76,16 @@ export default class AuthAppService {
 
             //if user is deleted and they attempt to login, throw an error.
             if (existingUser.is_deleted === 1) {
-                throw new Error("Your account is deleted, please contact an admin")
+                throw new BadInputError("Your account is deleted, please contact an admin")
             }
 
             if (existingUser.is_verified === 0) {
-                throw new Error("Please verify your email first!")
+                throw new BadInputError("Please verify your email first!")
             }
 
             const checkPasswordUser = await checkPassword(params.password, existingUser.password)
             if (!checkPasswordUser) {
-                throw new Error("Wrong Username Or Password")
+                throw new BadInputError("Wrong Username Or Password")
             }
 
             const tmp_userdata = await UserDomainService.GetUserDataByIdDomain(existingUser.id, query_runner)
