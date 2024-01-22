@@ -1,7 +1,6 @@
 import buildServer from "../../index"
 import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
-import AdminDomainService from "../../../src/domain/service/AdminDomainService"
 import AdminAppService from "../../application/service/Admin"
 
 describe('Lists of routes accessible to user manager', () => {
