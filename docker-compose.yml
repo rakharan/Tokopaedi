@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; node build/app.js'
     ports:
       - 8080:8080
     volumes:
