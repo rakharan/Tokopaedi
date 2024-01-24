@@ -16,7 +16,7 @@ export default defineConfig({
         },
         hookTimeout: 20000,
         clearMocks: true,
-        exclude: [...configDefaults.exclude, './src/migration/*.ts', 'build'],
+        exclude: [...configDefaults.exclude, "src/migration/**", "src/domain/model/params/**", "src/domain/model/request/**", "src/domain/model/response/**", "src/cronJobs/**", 'build'],
     },
     plugins: [tsconfigPaths()],
 })
