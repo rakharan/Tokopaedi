@@ -1,14 +1,25 @@
+/* v8 ignore start */
 import { TransactionScheduler } from "@cronJobs/transaction-scheduler/Transaction";
 import buildServer from "./index";
 import { UserScheduler } from "@cronJobs/user-scheduler/User";
 import { ProductScheduler } from "@cronJobs/product-scheduler/Product";
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
+
+dotenvFlow.config({path: path.resolve(__dirname, `../`)});
 
 const server = buildServer();
+const config = {
+  NODE_ENV: process.env.NODE_ENV,
+  HOST: process.env.HTTP_HOST,
+  PORT: process.env.HTTP_PORT
+}
 
+/* istanbul ignore if -- @preserve */
 async function main() {
   try {
-    const port = Number(process.env.HTTP_PORT);
-    server.listen({ port: port, host: '0.0.0.0' }, (err, address) => {
+    const port = Number(config.PORT);
+    server.listen({ port, host: config.HOST }, (err, address) => {
       if (err) {
         console.error(err);
         process.exit(1);
@@ -26,3 +37,4 @@ async function main() {
 }
 
 main();
+/* v8 ignore stop */

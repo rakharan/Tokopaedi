@@ -77,4 +77,11 @@ export default class ProductDomainService {
     static async CheckLowStockProductDomain() {
         return await ProductRepository.DBGetLowStockProduct()
     }
+
+    static async HardDeleteProductDomain(id: number){
+        const deleteProduct = await ProductRepository.DBHardDeleteProduct(id)
+        if(deleteProduct.affectedRows < 1){
+            throw new ApiError("FAILED_DELETE_PRODUCT")
+        }
+    }
 }

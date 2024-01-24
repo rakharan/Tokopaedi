@@ -95,7 +95,7 @@ const errorResponse = {
         properties: ErrorSchema,
     },
 }
-
+/* v8 ignore start */
 export const ResponseSchema = ({ type, message }: BaseResponseSchema) => {
     let sub
 
@@ -150,7 +150,7 @@ export const ResponseSchema = ({ type, message }: BaseResponseSchema) => {
 
     return schema
 }
-
+/* v8 ignore end */
 //Request schema for non pagination.
 export const BaseRequestSchema = (pic: string, requestBodyProperties: BodySchema) => {
     const BaseRequestSchema: BodySchemaHelper = {

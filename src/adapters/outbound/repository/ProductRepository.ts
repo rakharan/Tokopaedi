@@ -47,4 +47,8 @@ export default class ProductRepository {
     static async DBGetLowStockProduct() {
         return await db.query<{ name: string; stock: number }[]>(`SELECT p.name, p.stock FROM product p WHERE p.stock <= 10`)
     }
+
+    static async DBHardDeleteProduct(id: number) {
+        return await db.query(`DELETE FROM product WHERE id = ?`, [id])
+    }
 }

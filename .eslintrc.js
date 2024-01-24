@@ -1,3 +1,4 @@
+/* v8 ignore start */
 module.exports = {
   env: {
     browser: true,
@@ -23,3 +24,4 @@ module.exports = {
   plugins: ["@typescript-eslint"],
   rules: {},
 };
+/* v8 ignore end */

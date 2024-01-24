@@ -1,3 +1,4 @@
+/* v8 ignore start */
 import * as fs from 'fs-extra';
 import * as path from 'path';
 
@@ -17,3 +18,4 @@ function copyTemplates(): void {
 }
 
 copyTemplates()
+/* v8 ignore end */

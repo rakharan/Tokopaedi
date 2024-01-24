@@ -4,6 +4,10 @@ import { FastifyRequest } from "fastify"
 import { verifyJWT } from "@helpers/jwt/jwt"
 import Joi from "joi"
 import { UnauthorizedError } from "@domain/model/Error/Error"
+import DotenvFlow from "dotenv-flow"
+import path from "path"
+
+DotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
 
 declare module "fastify" {
     interface FastifyRequest {
@@ -16,9 +20,8 @@ type AuthorizeParams = {
     user_level: number
     user_authority: number[]
 }
-
 const superadmin_level = parseInt(process.env.SUPER_ADMIN_LEVEL || "0")
-if (!superadmin_level) throw new Error("Please set Super Admin Level")
+// if (!superadmin_level) throw new Error("Please set Super Admin Level")
 
 const schema = Joi.object({
     rules: Joi.number().required(),

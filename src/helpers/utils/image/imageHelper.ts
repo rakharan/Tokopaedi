@@ -3,6 +3,10 @@ import fs from 'fs';
 import { DeliveryType, ResourceType, ResponseCallback, UploadApiResponse, v2 as cloudinary } from 'cloudinary'
 import { File } from "fastify-multer/lib/interfaces";
 import { BadInputError } from "@domain/model/Error/Error";
+import dotenvFlow from 'dotenv-flow';
+
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../../`) });
 
 // Configure Cloudinary
 cloudinary.config({

@@ -11,6 +11,11 @@ import { Profanity } from "indonesian-profanity"
 import { emailer } from "@infrastructure/mailer/mailer"
 import { UserRequestDto } from "@domain/model/request"
 import { BadInputError } from "@domain/model/Error/Error"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
+
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
 
 export default class AuthAppService {
     static async Register({ level, name, email, password }: UserRequestDto.RegisterRequest) {

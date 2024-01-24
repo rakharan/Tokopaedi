@@ -15,6 +15,12 @@ import { Profanity } from "indonesian-profanity"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { signJWT } from "@helpers/jwt/jwt"
 import { BadInputError } from "@domain/model/Error/Error"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
+
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+
 export default class AdminAppService {
     static async GetAdminProfileService(id: number) {
         await AdminSchema.GetAdminProfile.validateAsync(id)

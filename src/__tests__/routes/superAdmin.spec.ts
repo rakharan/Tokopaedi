@@ -1,6 +1,11 @@
 import buildServer from "../../index"
 import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
+
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
 
 describe('List of routes accessible to super admin', () => {
     let app;

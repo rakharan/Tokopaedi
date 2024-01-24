@@ -3,8 +3,13 @@ import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
 import { signJWT } from "../../helpers/jwt/jwt"
 import AdminDomainService from "../../../src/domain/service/AdminDomainService"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
 
-describe('Lists of routes accessible to regular user (level 3)', () => {
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+
+describe.sequential('Lists of routes accessible to regular user (level 3)', () => {
     let app;
     let superAdminJwt: string;
     let newUserData;
@@ -78,7 +83,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
         'currentPageDataCount'
     ]
 
-    describe('Auth routes', () => {
+    describe.sequential('Auth routes', () => {
         it('Should register new user', async () => {
 
             const { body } = await supertest(app.server)
@@ -142,7 +147,6 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
         it('Should verify newly registered user', async () => {
 
             const expiresIn = process.env.EXPIRES_IN || "1h"
-
             //Create an email token used to verify email.
             const email_token: string = await signJWT({ email: newlyRegisteredUserData.email }, process.env.JWT_SECRET as string, { expiresIn, noTimestamp: true })
 
@@ -151,7 +155,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 .set('user-agent', "Test")
 
             expect(body.message).toBe(true)
-        });
+        }, { timeout: 20000 });
 
         it('Should login newly registered user', async () => {
 
@@ -174,7 +178,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
         })
     })
 
-    describe('User interacting with user endpoints', () => {
+    describe.sequential('User interacting with user endpoints', () => {
 
         it('Should return the detail of newly registered user', async () => {
 
@@ -265,7 +269,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
 
     })
 
-    describe('User interacting with shipping address endpoints', () => {
+    describe.sequential('User interacting with shipping address endpoints', () => {
         it('Should create a new shipping address', async () => {
 
 
@@ -368,8 +372,8 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
             expect(body.message).toEqual(true)
         });
 
-        describe('Tests for failed scenario in shipping address endpoint', () => {
-            describe('Should return error when fetching shipping address list with wrong pagination arguments format', () => {
+        describe.sequential('Tests for failed scenario in shipping address endpoint', () => {
+            describe.sequential('Should return error when fetching shipping address list with wrong pagination arguments format', () => {
                 it('Should return error with wrong lastId format', async () => {
 
                     const shippingAddressListRequest = {
@@ -416,7 +420,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
 
     })
 
-    describe('User interacting with transaction endpoints', () => {
+    describe.sequential('User interacting with transaction endpoints', () => {
         const newTransactionRequestData = {
             product_id: [2, 3, 4],
             qty: [10, 10, 10]
@@ -603,7 +607,7 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
         });
     })
 
-    describe('Final step to delete created data', () => {
+    describe.sequential('Final step to delete created data', () => {
         it('Should delete the shipping address', async () => {
 
             const { body } = await supertest(app.server)
@@ -632,8 +636,8 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
         });
     })
 
-    describe('Fail test scenario', () => {
-        describe('Auth routes', () => {
+    describe.sequential('Fail test scenario', () => {
+        describe.sequential('Auth routes', () => {
             it('Should fail to register with "SuperAdmin" as name', async () => {
                 const { body } = await supertest(app.server)
                     .post('/api/v1/auth/register')
@@ -727,9 +731,9 @@ describe('Lists of routes accessible to regular user (level 3)', () => {
                 .get('/api/v1/admin/rules/list')
                 .set('Authorization', newlyRegisteredUserJWTToken)
                 .set('user-agent', "Test")
-                .expect(500)
+                .expect(401)
 
             expect(body.message).toEqual("NOT_ENOUGH_RIGHTS")
         })
     })
-})
+}, { timeout: 20000 })

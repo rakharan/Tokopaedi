@@ -45,10 +45,6 @@ function buildServer() {
     server.register(FastifyBaseAddon)
     server.register(FastifySwaggerAddon)
     server.register(FastifyRouteAddon)
-
-    server.post("/", async () => {
-        return { hello: "world" }
-    })
     
     return server
 }

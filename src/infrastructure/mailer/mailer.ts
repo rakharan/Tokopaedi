@@ -4,7 +4,11 @@ import { MailError } from "@domain/model/Error/Error"
 import { EmailParamsDto } from "@domain/model/params"
 import * as nodemailer from "nodemailer"
 import { MailOptions } from "nodemailer/lib/json-transport"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
 
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
 export class Emailer {
     private readonly transporter: nodemailer.Transporter
 

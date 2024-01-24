@@ -3,6 +3,11 @@ import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
 import TransactionDomainService from "../../domain/service/TransactionDomainService"
 import ShippingAddressDomainService from "../../domain/service/ShippingAddressDomainService"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
+
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
 
 describe('List of routes accessible to transaction manager', () => {
     let app;

@@ -2,8 +2,14 @@ import buildServer from "../../index"
 import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
 import AdminAppService from "../../application/service/Admin"
+import dotenvFlow from 'dotenv-flow';
+import path from "path";
+import AdminDomainService from "../../../src/domain/service/AdminDomainService"
 
-describe('Lists of routes accessible to user manager', () => {
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+
+describe.sequential('Lists of routes accessible to user manager', () => {
     let app;
     let superAdminJwt: string;
     let newlyRegisteredUserId: number;
@@ -65,7 +71,7 @@ describe('Lists of routes accessible to user manager', () => {
         const userListRequest = {
             lastId: 0,
             limit: 1,
-            search: "",
+            search: `({name}="${createNewUserData.name}")`,
             sort: "ASC"
         }
 
@@ -141,7 +147,7 @@ describe('Lists of routes accessible to user manager', () => {
         expect(body.message).toEqual(true)
     });
 
-    describe('Fail test scenario', () => {
+    describe.sequential('Fail test scenario', () => {
         it('Should fail to create user with bad name', async () => {
             const { body } = await supertest(app.server)
                 .post('/api/v1/admin/create-user')
@@ -193,7 +199,7 @@ describe('Lists of routes accessible to user manager', () => {
         });
     })
 
-    describe('Managing deleted user', () => {
+    describe.sequential('Managing deleted user', () => {
 
         it('Should delete newly created user', async () => {
             const { body } = await supertest(app.server)

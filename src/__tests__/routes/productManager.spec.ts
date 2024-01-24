@@ -6,6 +6,11 @@ import path from "path"
 import { DeleteImage } from "../../helpers/utils/image/imageHelper"
 import { Product } from "../../domain/model/BaseClass/Product"
 import ProductAppService from "../../application/service/Product"
+import ProductDomainService from "../../domain/service/ProductDomainService"
+import dotenvFlow from 'dotenv-flow';
+
+//configuration for dotenv
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
 
 describe('Lists of routes accessible to product manager', () => {
     let app;
@@ -35,6 +40,7 @@ describe('Lists of routes accessible to product manager', () => {
 
     afterAll(async () => {
         await app.close()
+        await ProductDomainService.HardDeleteProductDomain(newlyCreatedProductId)
     })
 
     const productColumnName = ['id', 'name', 'description', 'price', 'stock', 'public_id', 'img_src']
@@ -254,7 +260,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('stock', newProductRequestData.stock)
                     .attach('image', newImageFilepath, { contentType: 'text/csv' })
 
-                expect(statusCode).toEqual(500)
+                expect(statusCode).toEqual(400)
                 expect(body.message).toEqual("Only .jpg and .png format allowed!")
             })
 
@@ -311,7 +317,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('stock', updateProductRequest.stock)
                     .attach('image', updateImageFilepath, { contentType: 'text/csv' })
 
-                expect(statusCode).toEqual(500)
+                expect(statusCode).toEqual(400)
                 expect(body.message).toEqual("Only .jpg and .png format allowed!")
             });
 
