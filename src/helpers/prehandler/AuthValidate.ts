@@ -21,7 +21,7 @@ type AuthorizeParams = {
     user_authority: number[]
 }
 const superadmin_level = parseInt(process.env.SUPER_ADMIN_LEVEL || "0")
-// if (!superadmin_level) throw new Error("Please set Super Admin Level")
+if (!superadmin_level) throw new Error("Please set Super Admin Level")
 
 const schema = Joi.object({
     rules: Joi.number().required(),
