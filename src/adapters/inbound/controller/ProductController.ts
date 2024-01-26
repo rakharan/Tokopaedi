@@ -43,7 +43,6 @@ export default class ProductController {
                 time: moment().unix(),
             })
             return { message: createProduct }
-
         } catch (error) {
             // Delete tmp files when error occured
             for (const file in files) {

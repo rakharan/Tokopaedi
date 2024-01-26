@@ -14,6 +14,10 @@ export default class AdminDomainService {
     }
 
     static async SoftDeleteUserDomain(email: string, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await AdminRepository.DBSoftDeleteUser(email, query_runner)
         if (result.affectedRows < 1) {
             throw new ApiError("Failed delete data")
@@ -54,6 +58,10 @@ export default class AdminDomainService {
     }
 
     static async CreateRule(rule: string, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const newRule = await AdminRepository.DBCreateRules(rule, query_runner)
         if (newRule.affectedRows < 1) {
             throw new ApiError("Failed to Create New Rule")
@@ -61,6 +69,10 @@ export default class AdminDomainService {
     }
 
     static async UpdateRule(params: AdminParamsDto.UpdateRuleParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const newRule = await AdminRepository.DBUpdateRule(params, query_runner)
         if (newRule.affectedRows < 1) {
             throw new ApiError("Failed to Create New Rule")
@@ -68,6 +80,10 @@ export default class AdminDomainService {
     }
 
     static async DeleteRule(rules_id: number, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const deleteRule = await AdminRepository.DBSoftDeleteRule(rules_id, query_runner)
         if (deleteRule.affectedRows < 1) {
             throw new ApiError("Failed to Delete Rule")
@@ -75,6 +91,10 @@ export default class AdminDomainService {
     }
 
     static async AssignRule(params: AdminParamsDto.AssignRuleParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const assignRule = await AdminRepository.DBAssignRule(params, query_runner)
         if (assignRule.affectedRows < 1) {
             throw new ApiError("Failed to Assign Rule to Admin")
@@ -82,6 +102,10 @@ export default class AdminDomainService {
     }
 
     static async RevokeRule(params: AdminParamsDto.RevokeRuleParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const revokeRule = await AdminRepository.DBRevokeRule(params, query_runner)
         if (revokeRule.affectedRows < 1) {
             throw new ApiError("Failed to Revoke Rule From Admin")
@@ -97,6 +121,10 @@ export default class AdminDomainService {
     }
 
     static async ChangeUserPassDomain(userid: number, encryptPass: string, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await AdminRepository.DBChangeUserPass(userid, encryptPass, query_runner)
         if (result.affectedRows < 1) {
             throw new ApiError("Failed change user password")
@@ -121,6 +149,10 @@ export default class AdminDomainService {
     }
 
     static async UpdateUserLevelDomain(user_id: number, level: number, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await AdminRepository.DBUpdateUserLevel(user_id, level, query_runner)
         if (result.affectedRows < 1) {
             throw new ApiError("Failed update user level")
@@ -129,6 +161,10 @@ export default class AdminDomainService {
     }
 
     static async RestoreDeletedUserDomain(user_id: number, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const restore = await AdminRepository.DBRestoreDeletedUser(user_id, query_runner)
         if (restore.affectedRows < 1) {
             throw new ApiError("Failed to restore user")
@@ -148,6 +184,10 @@ export default class AdminDomainService {
     }
 
     static async HardDeleteUserDomain(userId: number, query_runner?: QueryRunner) {
+        if (query_runner && !query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const deleteUser = await AdminRepository.DBHardDeleteUser(userId, query_runner)
         if (deleteUser.affectedRows < 1) {
             throw new ApiError("Failed to delete user!")

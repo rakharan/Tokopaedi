@@ -6,7 +6,7 @@ import moment from "moment"
 
 export default class UserController {
     static async GetUserProfile(request: FastifyRequest) {
-        const {id} = request.user
+        const { id } = request.user
         const getUserProfile = await UserAppService.GetUserProfileService(id)
 
         const result = { message: getUserProfile }

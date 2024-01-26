@@ -4,34 +4,21 @@ import { TransactionParamsDto } from "@domain/model/params"
 import { QueryRunner } from "typeorm"
 import { ResultSetHeader } from "mysql2"
 import { RepoPaginationParams } from "key-pagination-sql"
-import { ApiError } from "@domain/model/Error/Error"
 const db = AppDataSource
 
 export default class TransactionRepository {
     static async DBCreateTransactionId(params: TransactionParamsDto.CreateTransactionIdParams, query_runner?: QueryRunner) {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
-
         const result = await db.query<ResultSetHeader>(`INSERT INTO transaction (user_id, items_price, created_at, updated_at, expire_at) VALUES (?,?,?,?,?)`, [params.id, params.items_price, params.created_at, params.updated_at, params.expire_at], query_runner)
         return result
     }
 
     static async DBInsertOrderItem(valueProduct: string, query_runner?: QueryRunner) {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
-
         const result = await db.query<ResultSetHeader>(`INSERT INTO order_item (order_id, product_id, qty) VALUES ${valueProduct}`, [], query_runner)
 
         return result
     }
 
     static async DBGetOrderItemByOrderId(insertId: number, query_runner?: QueryRunner): Promise<TransactionResponseDto.GetOrderItemByOrderIdResponse[]> {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
-
         const result = await db.query<TransactionResponseDto.GetOrderItemByOrderIdResponse[]>(
             `
         SELECT a.order_id, a.product_id, a.qty FROM order_item a WHERE a.order_id = ?`,
@@ -42,11 +29,7 @@ export default class TransactionRepository {
         return result
     }
 
-    static async DBGetCurrentTransactionDetail(id: number, query_runner?: QueryRunner): Promise<TransactionResponseDto.GetTransactionDetailQueryResult[]> {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
-
+    static async DBGetCurrentTransactionDetail(id: number): Promise<TransactionResponseDto.GetTransactionDetailQueryResult[]> {
         return await db.query(
             `
         SELECT 
@@ -71,17 +54,11 @@ export default class TransactionRepository {
     }
 
     static async DBUpdateOrder(params: TransactionParamsDto.UpdateOrderParams, query_runner: QueryRunner) {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
         const result = await db.query<ResultSetHeader>(`UPDATE order_item SET qty = ? WHERE order_id = ? AND product_id = ?`, [params.qty, params.order_id, params.product_id], query_runner)
         return result
     }
 
     static async DBUpdateTransactionProductQty(params: TransactionParamsDto.UpdateTransactionProductQty, query_runner: QueryRunner) {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
         const result = await db.query<ResultSetHeader>(`UPDATE transaction SET items_price = ?, updated_at = ? WHERE id = ?`, [params.items_price, params.updated_at, params.order_id], query_runner)
         return result
     }

@@ -6,6 +6,10 @@ import { QueryRunner } from "typeorm"
 
 export default class UserDomainService {
     static async CreateUserDomain(user: UserParamsDto.RegisterParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const createUser = await UserRepository.DBCreateUser(user, query_runner)
         if (createUser.affectedRows < 1) {
             throw new ApiError("Failed to create user.")
@@ -23,16 +27,16 @@ export default class UserDomainService {
         return result
     }
 
-    static async CheckUserExistsDomain(email: string, query_runner?: QueryRunner) {
-        const user = await UserRepository.DBCheckUserExists(email, query_runner)
+    static async CheckUserExistsDomain(email: string) {
+        const user = await UserRepository.DBCheckUserExists(email)
         if (user.length < 1) {
             throw new ResultNotFoundError("Account not found!")
         }
         return user[0]
     }
 
-    static async GetUserDataByIdDomain(id: number, query_runner?: QueryRunner) {
-        const result = await UserRepository.DBGetUserDataById(id, query_runner)
+    static async GetUserDataByIdDomain(id: number) {
+        const result = await UserRepository.DBGetUserDataById(id)
         if (result.length < 1) {
             throw new ResultNotFoundError("User not found")
         }
@@ -41,6 +45,10 @@ export default class UserDomainService {
     }
 
     static async GetUserByIdDomain(id: number, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await UserRepository.DBGetUserById(id, query_runner)
         if (result.length < 1) {
             throw new ApiError("Cant get user")
@@ -49,11 +57,15 @@ export default class UserDomainService {
         return result[0]
     }
 
-    static async GetUserEmailExistDomainService(email: string, query_runner?: QueryRunner) {
-        return await UserRepository.DBGetUserEmailExist(email, query_runner)
+    static async GetUserEmailExistDomainService(email: string) {
+        return await UserRepository.DBGetUserEmailExist(email)
     }
 
     static async UpdateUserEditProfileDomainService(params: UserParamsDto.UpdateUserEditProfileParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await UserRepository.DBUpdateUserEditProfile(params, query_runner)
         if (result.affectedRows < 1) {
             throw new ApiError("Failed update data")
@@ -61,8 +73,8 @@ export default class UserDomainService {
         return result
     }
 
-    static async GetUserPasswordByIdDomain(id: number, query_runner?: QueryRunner) {
-        const result = await UserRepository.DBGetUserPasswordById(id, query_runner)
+    static async GetUserPasswordByIdDomain(id: number) {
+        const result = await UserRepository.DBGetUserPasswordById(id)
         if (result.length < 1) {
             throw new ResultNotFoundError("User not found")
         }
@@ -71,6 +83,10 @@ export default class UserDomainService {
     }
 
     static async UpdatePasswordDomain(passEncrypt: string, id: number, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await UserRepository.DBUpdatePassword(passEncrypt, id, query_runner)
         if (result.affectedRows < 1) {
             throw new ApiError("Failed change password")
@@ -87,6 +103,10 @@ export default class UserDomainService {
     }
 
     static async VerifyEmailDomain(email: string, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const verify = await UserRepository.DBVerifyEmail(email, query_runner)
         if (verify.affectedRows < 1) {
             throw new ApiError("Failed to verify email")

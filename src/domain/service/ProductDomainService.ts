@@ -14,8 +14,8 @@ export default class ProductDomainService {
         return productList
     }
 
-    static async GetProductDetailDomain(id: number, query_runner?: QueryRunner) {
-        const productDetail = await ProductRepository.DBGetProductDetail(id, query_runner)
+    static async GetProductDetailDomain(id: number) {
+        const productDetail = await ProductRepository.DBGetProductDetail(id)
         if (productDetail.length < 1) {
             throw new ResultNotFoundError("Product not found!")
         }
@@ -23,6 +23,10 @@ export default class ProductDomainService {
     }
 
     static async SoftDeleteProductDomain(id: number, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const deleteProduct = await ProductRepository.DBSoftDeleteProduct(id, query_runner)
         if (deleteProduct.affectedRows < 1) {
             throw new ApiError("Delete Failed")
@@ -30,6 +34,10 @@ export default class ProductDomainService {
     }
 
     static async CreateProductDomain(product: ProductParamsDto.CreateProductParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const newProduct = await ProductRepository.DBCreateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
             throw new ApiError("Create Product Failed!")
@@ -37,6 +45,10 @@ export default class ProductDomainService {
     }
 
     static async UpdateProductDomain(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const newProduct = await ProductRepository.DBUpdateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
             throw new ApiError("Update Product Failed!")
@@ -78,9 +90,9 @@ export default class ProductDomainService {
         return await ProductRepository.DBGetLowStockProduct()
     }
 
-    static async HardDeleteProductDomain(id: number){
+    static async HardDeleteProductDomain(id: number) {
         const deleteProduct = await ProductRepository.DBHardDeleteProduct(id)
-        if(deleteProduct.affectedRows < 1){
+        if (deleteProduct.affectedRows < 1) {
             throw new ApiError("FAILED_DELETE_PRODUCT")
         }
     }

@@ -3,16 +3,11 @@ import { QueryRunner } from "typeorm"
 import { UserResponseDto } from "@domain/model/response"
 import { UserParamsDto } from "@domain/model/params"
 import { ResultSetHeader } from "mysql2"
-import { ApiError } from "@domain/model/Error/Error"
 
 const db = AppDataSource
 
 export default class UserRepository {
     static async DBCreateUser(user: UserParamsDto.RegisterParams, query_runner?: QueryRunner) {
-        if (query_runner && !query_runner.isTransactionActive) {
-            throw new ApiError("Must in Transaction")
-        }
-
         const result = await db.query<ResultSetHeader>(`INSERT INTO user (NAME, email, PASSWORD, LEVEL, created_at, email_token) VALUES (?,?,?,?,?,?)`, [user.name, user.email, user.password, user.level, user.created_at, user.email_token], query_runner)
 
         return result

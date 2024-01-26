@@ -86,13 +86,13 @@ export default class ProductAppService {
         try {
             await query_runner.startTransaction()
 
-            const imageObjects: Partial<File[]> = [];
+            const imageObjects: Partial<File[]> = []
 
             for (const key in files) {
                 if (files && Object.prototype.hasOwnProperty.call(files, key)) {
-                    const fileArray = files[key];
+                    const fileArray = files[key]
                     if (Array.isArray(fileArray) && fileArray.length > 0) {
-                        const imageFile = fileArray[0]; // Assuming each key in files is an array and you want the first file
+                        const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
 
                         imageObjects.push({
                             fieldname: imageFile.fieldname,
@@ -100,7 +100,7 @@ export default class ProductAppService {
                             mimetype: imageFile.mimetype,
                             originalname: imageFile.originalname,
                             filename: imageFile.filename,
-                        });
+                        })
                     }
                 }
             }
@@ -132,58 +132,58 @@ export default class ProductAppService {
         //additional checking to prevent mutate deleted data.
         await ProductDomainService.CheckIsProductAliveDomain(id)
 
+        const existingProduct = await ProductDomainService.GetProductDetailDomain(id)
+
+        //Can update product partially, not all property is required
+        const updateProductData: Partial<Product> = existingProduct
+        if (name || description || price || stock || files) {
+            if (name) {
+                //Add name checking, can not use bad words for the product name
+                if (Profanity.flag(product.name.toLowerCase())) {
+                    throw new Error("You can't use this name!")
+                }
+                updateProductData.name = name
+            }
+            if (description) updateProductData.description = description
+            if (price) updateProductData.price = price
+            if (stock) updateProductData.stock = stock
+            //If user
+            if (files) {
+                for (const key in files) {
+                    if (Object.prototype.hasOwnProperty.call(files, key)) {
+                        const fileArray = files[key]
+                        if (Array.isArray(fileArray) && fileArray.length > 0) {
+                            const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
+
+                            const imageObjects: Partial<File[]> = []
+
+                            imageObjects.push({
+                                fieldname: imageFile.fieldname,
+                                encoding: imageFile.encoding,
+                                mimetype: imageFile.mimetype,
+                                originalname: imageFile.originalname,
+                                filename: imageFile.filename,
+                            })
+
+                            //delete the old image from cloudinary if user passed a new image
+                            await DeleteImage(existingProduct.public_id)
+
+                            //upload new image to cloudinary and extract the url & public_id.
+                            const { secure_url, public_id } = await UploadImage(imageObjects[0])
+
+                            updateProductData.public_id = public_id
+                            updateProductData.img_src = secure_url
+                        }
+                    }
+                }
+            }
+        }
+
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
         try {
             await query_runner.startTransaction()
-
-            const existingProduct = await ProductDomainService.GetProductDetailDomain(id, query_runner)
-
-            const updateProductData: Partial<Product> = existingProduct
-            if (name || description || price || stock || files) {
-                if (name) {
-                    //Add name checking, can not use bad words for the product name
-                    if (Profanity.flag(product.name.toLowerCase())) {
-                        throw new Error("You can't use this name!")
-                    }
-                    updateProductData.name = name
-                }
-                if (description) updateProductData.description = description
-                if (price) updateProductData.price = price
-                if (stock) updateProductData.stock = stock
-                //If user 
-                if (files) {
-                    for (const key in files) {
-                        if (files && Object.prototype.hasOwnProperty.call(files, key)) {
-                            const fileArray = files[key];
-                            if (Array.isArray(fileArray) && fileArray.length > 0) {
-                                const imageFile = fileArray[0]; // Assuming each key in files is an array and you want the first file
-                                
-                                const imageObjects: Partial<File[]> = [];
-
-                                imageObjects.push({
-                                    fieldname: imageFile.fieldname,
-                                    encoding: imageFile.encoding,
-                                    mimetype: imageFile.mimetype,
-                                    originalname: imageFile.originalname,
-                                    filename: imageFile.filename,
-                                });
-
-                                //delete the old image from cloudinary if user passed a new image
-                                await DeleteImage(existingProduct.public_id)
-
-                                //upload new image to cloudinary and extract the url & public_id.
-                                const { secure_url, public_id } = await UploadImage(imageObjects[0])
-
-                                updateProductData.public_id = public_id
-                                updateProductData.img_src = secure_url
-
-                            }
-                        }
-                    }
-                }
-            }
 
             await ProductDomainService.UpdateProductDomain({ ...updateProductData, id }, query_runner)
 

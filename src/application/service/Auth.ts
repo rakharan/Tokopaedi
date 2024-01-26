@@ -11,11 +11,11 @@ import { Profanity } from "indonesian-profanity"
 import { emailer } from "@infrastructure/mailer/mailer"
 import { UserRequestDto } from "@domain/model/request"
 import { BadInputError } from "@domain/model/Error/Error"
-import dotenvFlow from 'dotenv-flow';
-import path from "path";
+import dotenvFlow from "dotenv-flow"
+import path from "path"
 
 //configuration for dotenv
-dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) })
 
 export default class AuthAppService {
     static async Register({ level, name, email, password }: UserRequestDto.RegisterRequest) {
@@ -38,7 +38,7 @@ export default class AuthAppService {
             const expiresIn = process.env.EXPIRES_IN || "1h"
 
             //Create an email token used to verify email.
-            const email_token: string = await signJWT({ email: email }, process.env.JWT_SECRET, { expiresIn, noTimestamp: true })
+            const email_token: string = await signJWT({ email }, process.env.JWT_SECRET, { expiresIn, noTimestamp: true })
             const user = {
                 name,
                 email,
@@ -70,68 +70,52 @@ export default class AuthAppService {
         const { email, password } = params
         await UserSchema.Login.validateAsync({ email, password })
 
-        const db = AppDataSource
-        const query_runner = db.createQueryRunner()
-        await query_runner.connect()
+        const existingUser = await UserDomainService.CheckUserExistsDomain(email)
 
-        try {
-            await query_runner.startTransaction()
-
-            const existingUser = await UserDomainService.CheckUserExistsDomain(email, query_runner)
-
-            //if user is deleted and they attempt to login, throw an error.
-            if (existingUser.is_deleted === 1) {
-                throw new BadInputError("Your account is deleted, please contact an admin")
-            }
-
-            if (existingUser.is_verified === 0) {
-                throw new BadInputError("Please verify your email first!")
-            }
-
-            const checkPasswordUser = await checkPassword(params.password, existingUser.password)
-            if (!checkPasswordUser) {
-                throw new BadInputError("Wrong Username Or Password")
-            }
-
-            const tmp_userdata = await UserDomainService.GetUserDataByIdDomain(existingUser.id, query_runner)
-            const tmp_grouprules = tmp_userdata.group_rules ? tmp_userdata.group_rules.split(",") : []
-
-            const grouprules = tmp_grouprules.map(function (item) {
-                return parseInt(item)
-            })
-
-            const user_data = {
-                ...tmp_userdata,
-                authority: grouprules,
-            }
-
-            delete user_data.group_rules
-
-            const user_claims: UserResponseDto.UserClaimsResponse = {
-                id: user_data.id,
-                level: user_data.level,
-                authority: user_data.authority,
-            }
-            const expiresIn = process.env.EXPIRES_IN || "1h"
-
-            const result = {
-                token: await signJWT(user_claims, process.env.JWT_SECRET || "TOKOPAEDI", { expiresIn }),
-                user: user_data,
-            }
-
-            //Insert into log, to track user action.
-            await LogDomainService.CreateLogDomain({ ...logData, user_id: user_data.id })
-
-            await query_runner.commitTransaction()
-
-            return result
-        } catch (error) {
-            await query_runner.rollbackTransaction()
-            await query_runner.release()
-            throw error
-        } finally {
-            await query_runner.release()
+        //if user is deleted and they attempt to login, throw an error.
+        if (existingUser.is_deleted === 1) {
+            throw new BadInputError("Your account is deleted, please contact an admin")
         }
+
+        if (existingUser.is_verified === 0) {
+            throw new BadInputError("Please verify your email first!")
+        }
+
+        const checkPasswordUser = await checkPassword(params.password, existingUser.password)
+        if (!checkPasswordUser) {
+            throw new BadInputError("Wrong Username Or Password")
+        }
+
+        const tmp_userdata = await UserDomainService.GetUserDataByIdDomain(existingUser.id)
+        const tmp_grouprules = tmp_userdata.group_rules ? tmp_userdata.group_rules.split(",") : []
+
+        const grouprules = tmp_grouprules.map(function (item) {
+            return parseInt(item)
+        })
+
+        const user_data = {
+            ...tmp_userdata,
+            authority: grouprules,
+        }
+
+        delete user_data.group_rules
+
+        const user_claims: UserResponseDto.UserClaimsResponse = {
+            id: user_data.id,
+            level: user_data.level,
+            authority: user_data.authority,
+        }
+        const expiresIn = process.env.EXPIRES_IN || "1h"
+
+        const result = {
+            token: await signJWT(user_claims, process.env.JWT_SECRET || "TOKOPAEDI", { expiresIn }),
+            user: user_data,
+        }
+
+        //Insert into log, to track user action.
+        await LogDomainService.CreateLogDomain({ ...logData, user_id: user_data.id })
+
+        return result
     }
 
     static async VerifyEmail(token: string, logData: LogParamsDto.CreateLogParams) {

@@ -6,6 +6,10 @@ import { ApiError, BadInputError, ResultNotFoundError } from "@domain/model/Erro
 
 export default class TransactionDomainService {
     static async CreateTransactionIdDomain(params: TransactionParamsDto.CreateTransactionIdParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await TransactionRepository.DBCreateTransactionId(params, query_runner)
         if (result.affectedRows < 1) {
             throw new ApiError("Failed To Create Transaction")
@@ -14,6 +18,10 @@ export default class TransactionDomainService {
     }
 
     static async InsertOrderItemDomain(params: TransactionParamsDto.InsertOrderItemParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         //mapping product_id to handle multiple products.
         const products = params.product_id.map((id, index) => {
             return { product_id: id, qty: params.qty[index] }
@@ -28,10 +36,18 @@ export default class TransactionDomainService {
     }
 
     static async GetOrderItemByOrderIdDomain(insertId: number, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         return await TransactionRepository.DBGetOrderItemByOrderId(insertId, query_runner)
     }
 
     static async UpdateOrderDomain(params: TransactionParamsDto.UpdateOrderParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await TransactionRepository.DBUpdateOrder(params, query_runner)
 
         if (result.affectedRows < 1) {
@@ -42,6 +58,10 @@ export default class TransactionDomainService {
     }
 
     static async CreateTransactionStatusDomain(params: { transaction_id: number; update_time: number }, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const txStatus = await TransactionRepository.DBCreateTransactionStatus(params, query_runner)
         if (txStatus.affectedRows < 1) {
             throw new ApiError("Failed to create transaction status")
@@ -57,6 +77,10 @@ export default class TransactionDomainService {
     }
 
     static async UpdateTransactionProductQtyDomain(params: TransactionParamsDto.UpdateTransactionProductQty, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const result = await TransactionRepository.DBUpdateTransactionProductQty(params, query_runner)
 
         if (result.affectedRows < 1) {
@@ -67,6 +91,10 @@ export default class TransactionDomainService {
     }
 
     static async PayTransactionDomain(params: TransactionParamsDto.PayTransactionRepositoryParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const paymentResult = await TransactionRepository.DBPayTransaction(params, query_runner)
         if (paymentResult.affectedRows < 1) {
             throw new ApiError("Failed to Pay Transaction")
@@ -78,6 +106,10 @@ export default class TransactionDomainService {
     }
 
     static async CreateDeliveryStatusDomain(params: TransactionParamsDto.CreateDeliveryStatusParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const deliveryStatus = await TransactionRepository.DBCreateDeliveryStatus(params, query_runner)
         if (deliveryStatus.affectedRows < 1) {
             throw new ApiError("Failed to create delivery_status")
@@ -101,6 +133,10 @@ export default class TransactionDomainService {
     }
 
     static async UpdateDeliveryStatusDomain(params: TransactionParamsDto.UpdateDeliveryStatusParams, query_runner: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const updateDeliveryStatusDomain = await TransactionRepository.DBUpdateDeliveryStatus(params, query_runner)
         if (updateDeliveryStatusDomain.affectedRows < 1) {
             throw new ApiError("Failed to update delivery status")
@@ -123,6 +159,10 @@ export default class TransactionDomainService {
     }
 
     static async SoftDeleteTransactionDomain(transaction_id: number, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const deleteTransaction = await TransactionRepository.DBSoftDeleteTransaction(transaction_id, query_runner)
         if (deleteTransaction.affectedRows < 1) {
             throw new ApiError("Failed to delete transaction!")
@@ -151,9 +191,9 @@ export default class TransactionDomainService {
         }
     }
 
-    static async HardDeleteTransactionDomain(id: number){
+    static async HardDeleteTransactionDomain(id: number) {
         const deleteTx = await TransactionRepository.DBHardDeleteTransaction(id)
-        if(deleteTx.affectedRows < 1){
+        if (deleteTx.affectedRows < 1) {
             throw new Error("Failed to delete transaction")
         }
     }

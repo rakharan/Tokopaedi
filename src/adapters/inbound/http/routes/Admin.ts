@@ -10,17 +10,17 @@ import moment from "moment"
 import path from "path"
 import { fileFilter } from "@helpers/utils/image/imageHelper"
 
-const multer = fastifyMulter;
+const multer = fastifyMulter
 const storage = multer.diskStorage({
     destination: path.resolve(__dirname, "../../../../uploads/"),
     filename: (_req, file, cb) => {
         // Format the current date and time as a string in the desired format
         // For example, 'YYYYMMDDHHmmss' will format the date as '20230415123045' for April 15, 2023, at 12:30:45
-        const dateNow = moment().format('YYYYMMDDHHmmss');
-        const filename = `${dateNow}-${file.originalname.trim()}`;
-        cb(null, filename);
-    }
-});
+        const dateNow = moment().format("YYYYMMDDHHmmss")
+        const filename = `${dateNow}-${file.originalname.trim()}`
+        cb(null, filename)
+    },
+})
 
 //limit file size to 2MB
 const upload = multer({ storage, limits: { fileSize: 2 * 1024 * 1024 }, fileFilter: fileFilter })
@@ -33,7 +33,7 @@ const routes: RouteOptions[] = [
         preValidation: [upload.fields([{ name: "image", maxCount: 1 }])],
         schema: {
             tags: ["Admin"],
-            consumes: ['multipart/form-data'],
+            consumes: ["multipart/form-data"],
             body: Schema.BaseRequestSchema("Rakha", {
                 name: { type: "string" },
                 description: { type: "string" },
@@ -63,7 +63,7 @@ const routes: RouteOptions[] = [
         preValidation: [upload.fields([{ name: "image", maxCount: 1 }])],
         schema: {
             tags: ["Admin"],
-            consumes: ['multipart/form-data'],
+            consumes: ["multipart/form-data"],
             body: Schema.BaseRequestSchema("Rakha", {
                 id: { type: "integer" },
                 name: { type: "string" },

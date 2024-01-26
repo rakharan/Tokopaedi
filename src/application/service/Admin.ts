@@ -15,11 +15,11 @@ import { Profanity } from "indonesian-profanity"
 import jwt, { JwtPayload } from "jsonwebtoken"
 import { signJWT } from "@helpers/jwt/jwt"
 import { BadInputError } from "@domain/model/Error/Error"
-import dotenvFlow from 'dotenv-flow';
-import path from "path";
+import dotenvFlow from "dotenv-flow"
+import path from "path"
 
 //configuration for dotenv
-dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) })
 
 export default class AdminAppService {
     static async GetAdminProfileService(id: number) {
@@ -91,21 +91,21 @@ export default class AdminAppService {
 
         await AdminDomainService.CheckIsUserAliveDomain(params.id)
 
+        const user = await UserDomainService.GetUserDataByIdDomain(params.userid)
+
+        if (user.email != params.email) {
+            const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email)
+            if (userEmailExist.length > 0) {
+                throw new BadInputError("Email is not available")
+            }
+        }
+
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
 
         try {
             await query_runner.startTransaction()
-
-            const user = await UserDomainService.GetUserDataByIdDomain(params.userid, query_runner)
-
-            if (user.email != params.email) {
-                const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email, query_runner)
-                if (userEmailExist.length > 0) {
-                    throw new BadInputError("Email is not available")
-                }
-            }
 
             const obj: UserParamsDto.UpdateUserEditProfileParams = {
                 id: user.id,
@@ -574,10 +574,26 @@ export default class AdminAppService {
 
         //if there is an expired account or more, delete it permanently (hard delete).
         if (expiredAccounts.length !== 0) {
-            const logData: LogParamsDto.CreateLogParams = { user_id: 1, action: `Delete Expired Account #`, browser: `CRON JOB`, ip: "127.0.0.1", time: moment().unix() }
 
-            await Promise.all(expiredAccounts.map((acc) => Promise.all([AdminDomainService.HardDeleteUserDomain(acc.id), LogDomainService.CreateLogDomain({ ...logData, action: `Delete Expired Account #${acc.id}` })])))
-            return true
+            const db = AppDataSource
+            const query_runner = db.createQueryRunner()
+            await query_runner.connect()
+
+            try {
+                await query_runner.startTransaction()
+
+                const logData: LogParamsDto.CreateLogParams = { user_id: 1, action: `Delete Expired Account #`, browser: `CRON JOB`, ip: "127.0.0.1", time: moment().unix() }
+
+                await Promise.all(expiredAccounts.map((acc) => Promise.all([AdminDomainService.HardDeleteUserDomain(acc.id, query_runner), LogDomainService.CreateLogDomain({ ...logData, action: `Delete Expired Account #${acc.id}` }, query_runner)])))
+                await query_runner.commitTransaction()
+                await query_runner.release()
+
+                return true
+            } catch (error) {
+                await query_runner.rollbackTransaction()
+                await query_runner.release()
+                throw error
+            }
         }
     }
 }

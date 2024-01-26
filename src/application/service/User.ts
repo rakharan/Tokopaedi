@@ -25,6 +25,21 @@ export default class UserAppService {
             throw new BadInputError("Banned words name")
         }
 
+        const user = await UserDomainService.GetUserDataByIdDomain(params.id)
+
+        if (user.email != params.email) {
+            const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email)
+            if (userEmailExist.length > 0) {
+                throw new BadInputError("Email is not available")
+            }
+        }
+
+        const updateProfileObject: UserParamsDto.UpdateUserEditProfileParams = {
+            id: user.id,
+            email: params.email,
+            name: params.name,
+        }
+
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
@@ -32,22 +47,8 @@ export default class UserAppService {
         try {
             await query_runner.startTransaction()
 
-            const user = await UserDomainService.GetUserDataByIdDomain(params.id, query_runner)
 
-            if (user.email != params.email) {
-                const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email, query_runner)
-                if (userEmailExist.length > 0) {
-                    throw new BadInputError("Email is not available")
-                }
-            }
-
-            const obj: UserParamsDto.UpdateUserEditProfileParams = {
-                id: user.id,
-                email: params.email,
-                name: params.name,
-            }
-
-            await UserDomainService.UpdateUserEditProfileDomainService(obj, query_runner)
+            await UserDomainService.UpdateUserEditProfileDomainService(updateProfileObject, query_runner)
 
             //Insert into log, to track user action.
             await LogDomainService.CreateLogDomain(logData, query_runner)
@@ -55,7 +56,7 @@ export default class UserAppService {
             await query_runner.commitTransaction()
             await query_runner.release()
 
-            return obj
+            return updateProfileObject
         } catch (error) {
             await query_runner.rollbackTransaction()
             await query_runner.release()
@@ -66,21 +67,21 @@ export default class UserAppService {
     static async ChangePasswordService(params: UserParamsDto.ChangePasswordParams, logData: LogParamsDto.CreateLogParams) {
         await UserSchema.ChangePassword.validateAsync(params)
 
+        const passEncrypt = await hashPassword(params.newPassword)
+
+        const getUserById = await UserDomainService.GetUserPasswordByIdDomain(params.id)
+
+        const sama = await checkPassword(params.oldPassword, getUserById.password)
+        if (!sama) {
+            throw new BadInputError("Invalid old password")
+        }
+
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
 
         try {
             await query_runner.startTransaction()
-
-            const passEncrypt = await hashPassword(params.newPassword)
-
-            const getUserById = await UserDomainService.GetUserPasswordByIdDomain(params.id, query_runner)
-
-            const sama = await checkPassword(params.oldPassword, getUserById.password)
-            if (!sama) {
-                throw new BadInputError("Invalid old password")
-            }
 
             const result = await UserDomainService.UpdatePasswordDomain(passEncrypt, params.id, query_runner)
 

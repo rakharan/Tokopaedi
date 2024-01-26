@@ -6,6 +6,10 @@ import { QueryRunner } from "typeorm"
 
 export default class ShippingAddressDomainService {
     static async CreateShippingAddressDomain(params: ShippingAddressParamsDto.CreateShippingAddressParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const shippingAddress = await ShippingAddressRepository.DBCreateShippingAddress(params, query_runner)
         if (shippingAddress.affectedRows < 1) {
             throw new ApiError("Create Shipping Address Failed!")
@@ -36,6 +40,10 @@ export default class ShippingAddressDomainService {
     }
 
     static async UpdateShippingAddressDomain(params: ShippingAddressParamsDto.UpdateShippingAddressParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+
         const shippingAddress = await ShippingAddressRepository.DBUpdateShippingAddress(params, query_runner)
         if (shippingAddress.affectedRows < 1) {
             throw new ApiError("Failed to Update Shipping Address")
@@ -58,9 +66,9 @@ export default class ShippingAddressDomainService {
         return true
     }
 
-    static async HardDeleteShippingAddressDomain(id: number){
+    static async HardDeleteShippingAddressDomain(id: number) {
         const deleteAddress = await ShippingAddressRepository.DBHardDeleteShippingAddress(id)
-        if(deleteAddress.affectedRows < 1){
+        if (deleteAddress.affectedRows < 1) {
             throw new ApiError("Failed to delete shipping address")
         }
     }
