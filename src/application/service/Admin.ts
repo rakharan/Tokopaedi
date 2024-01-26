@@ -574,7 +574,6 @@ export default class AdminAppService {
 
         //if there is an expired account or more, delete it permanently (hard delete).
         if (expiredAccounts.length !== 0) {
-
             const db = AppDataSource
             const query_runner = db.createQueryRunner()
             await query_runner.connect()

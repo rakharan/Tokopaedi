@@ -28,7 +28,7 @@ export const Email = Joi.string()
     .messages({
         "any.required": "Email is required",
         "string.pattern.base": "Email must be a valid email",
-    });
+    })
 
 export const Register = Joi.object({
     name: Name,

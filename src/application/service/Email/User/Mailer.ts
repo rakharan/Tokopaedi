@@ -3,13 +3,13 @@ import path from "path"
 import * as Handlebars from "handlebars"
 import { MailOptions } from "nodemailer/lib/json-transport"
 import { EmailParamsDto } from "@domain/model/params"
-import dotenvFlow from 'dotenv-flow';
+import dotenvFlow from "dotenv-flow"
 
 const templatePath = path.resolve(__dirname, "../../../../helpers/Email/template/")
 const partialsDir = path.resolve(__dirname, "../../../../helpers/Email/template/partials/")
 
 //configuration for dotenv
-dotenvFlow.config({ path: path.resolve(__dirname, `../../../../../`) });
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../../../`) })
 
 // Register partials
 fs.readdirSync(partialsDir).forEach((file) => {

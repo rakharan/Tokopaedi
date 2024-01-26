@@ -47,7 +47,6 @@ export default class UserAppService {
         try {
             await query_runner.startTransaction()
 
-
             await UserDomainService.UpdateUserEditProfileDomainService(updateProfileObject, query_runner)
 
             //Insert into log, to track user action.

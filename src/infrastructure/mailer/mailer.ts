@@ -4,11 +4,11 @@ import { MailError } from "@domain/model/Error/Error"
 import { EmailParamsDto } from "@domain/model/params"
 import * as nodemailer from "nodemailer"
 import { MailOptions } from "nodemailer/lib/json-transport"
-import dotenvFlow from 'dotenv-flow';
-import path from "path";
+import dotenvFlow from "dotenv-flow"
+import path from "path"
 
 //configuration for dotenv
-dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) })
 export class Emailer {
     private readonly transporter: nodemailer.Transporter
 
@@ -39,46 +39,46 @@ export class Emailer {
 
     public async notifyAdminForNewUser(email: string, username: string) {
         try {
-            await this.sendEmail(notifyAdminNewUserEmailTemplate(email, username));
+            await this.sendEmail(notifyAdminNewUserEmailTemplate(email, username))
         } catch (error) {
-            console.error(`Failed to send email: ${error}`);
+            console.error(`Failed to send email: ${error}`)
             throw new MailError(error)
         }
     }
 
     public async notifyUserForSignup(email: string, username: string, token: string) {
         try {
-            await this.sendEmail(await newUserEmailTemplate(email, username, token));
+            await this.sendEmail(await newUserEmailTemplate(email, username, token))
         } catch (error) {
-            console.error(`Failed to send email: ${error}`);
+            console.error(`Failed to send email: ${error}`)
             throw new MailError(error)
         }
     }
 
     public async notifyAdminForLowStockProduct(product: { name: string; stock: number }[]) {
         try {
-            await this.sendEmail(notifyAdminLowStockProductEmailTemplate(product));
+            await this.sendEmail(notifyAdminLowStockProductEmailTemplate(product))
         } catch (error) {
-            console.error(`Failed to send email: ${error}`);
+            console.error(`Failed to send email: ${error}`)
             throw new MailError(error)
         }
     }
 
     public async notifyUserToPayTransaction(params: EmailParamsDto.PayTransactionEmailParams) {
         try {
-            const { email, products, total, username } = params;
-            await this.sendEmail(await payTransactionEmailTemplate({ email, username, products, total }));
+            const { email, products, total, username } = params
+            await this.sendEmail(await payTransactionEmailTemplate({ email, username, products, total }))
         } catch (error) {
-            console.error(`Failed to send email: ${error}`);
+            console.error(`Failed to send email: ${error}`)
             throw new MailError(error)
         }
     }
 
     public async notifyUserForSuccessfulTransaciton(params: EmailParamsDto.successfulTransactionEmailParams) {
         try {
-            await this.sendEmail(successfulTransactionEmailTemplate(params));
+            await this.sendEmail(successfulTransactionEmailTemplate(params))
         } catch (error) {
-            console.error(`Failed to send email: ${error}`);
+            console.error(`Failed to send email: ${error}`)
             throw new MailError(error)
         }
     }

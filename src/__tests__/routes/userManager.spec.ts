@@ -4,7 +4,6 @@ import supertest from "supertest"
 import AdminAppService from "../../application/service/Admin"
 import dotenvFlow from 'dotenv-flow';
 import path from "path";
-import AdminDomainService from "../../../src/domain/service/AdminDomainService"
 
 //configuration for dotenv
 dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });

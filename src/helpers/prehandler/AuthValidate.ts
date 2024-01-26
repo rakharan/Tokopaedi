@@ -7,7 +7,7 @@ import { UnauthorizedError } from "@domain/model/Error/Error"
 import DotenvFlow from "dotenv-flow"
 import path from "path"
 
-DotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
+DotenvFlow.config({ path: path.resolve(__dirname, `../../../`) })
 
 declare module "fastify" {
     interface FastifyRequest {

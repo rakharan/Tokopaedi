@@ -1,0 +1,13 @@
+**/*.spec.ts
+**/__tests__/**
+**/migration/**
+**/Email/template/**
+.eslintrc.js
+copy-templates.ts
+docker-compose.yml
+Dockerfile
+*.md
+.prettierrc
+*.json
+vite.config.ts
+**/cronJobs/**

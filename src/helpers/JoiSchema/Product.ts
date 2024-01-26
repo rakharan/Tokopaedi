@@ -41,7 +41,9 @@ export const CreateProduct = Joi.object({
     stock: Stock.required().messages({
         "any.required": "Stock is required",
     }),
-}).options({ abortEarly: false }).unknown(true)
+})
+    .options({ abortEarly: false })
+    .unknown(true)
 
 export const UpdateProduct = Joi.object({
     id: ProductId,

@@ -2,10 +2,10 @@ import * as fs from "fs"
 import path from "path"
 import * as Handlebars from "handlebars"
 import { MailOptions } from "nodemailer/lib/json-transport"
-import dotenvFlow from 'dotenv-flow';
+import dotenvFlow from "dotenv-flow"
 
 //configuration for dotenv
-dotenvFlow.config({ path: path.resolve(__dirname, `../../../../../`) });
+dotenvFlow.config({ path: path.resolve(__dirname, `../../../../../`) })
 const templatePath = path.resolve(__dirname, "../../../../helpers/Email/template/")
 
 export const notifyAdminNewUserEmailTemplate = (email: string, username: string) => {

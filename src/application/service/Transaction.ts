@@ -54,7 +54,7 @@ export default class TransactionAppService {
          */
 
         /**
-         * If TESTING is set to true, make the transaction expires in 1 second instead 
+         * If TESTING is set to true, make the transaction expires in 1 second instead
          */
         const testingExpireTime = moment.unix(params.created_at).add(1, "seconds").unix()
         const defaultExpireTime = moment.unix(params.created_at).add(30, "minutes").unix()
@@ -234,7 +234,7 @@ export default class TransactionAppService {
             update payment method: Cash | Credit Card | Debit Catd
             update paid_at & updated_at
             **/
-           const shipping_price = CalculateShippingPrice({expedition_name, shipping_address_id})
+            const shipping_price = CalculateShippingPrice({ expedition_name, shipping_address_id })
             const payTransactionObject: TransactionParamsDto.PayTransactionRepositoryParams = {
                 is_paid: 1,
                 paid_at: now,
@@ -285,7 +285,7 @@ export default class TransactionAppService {
             const { address, city, country, id, postal_code, province } = await ShippingAddressDomainService.GetShippingAddressDetailDomain(shipping_address_id)
 
             //calculate total amount/price
-            const totalAmount = CalculateTotalPrice({items_price: transactionDetail.items_price, shipping_price})
+            const totalAmount = CalculateTotalPrice({ items_price: transactionDetail.items_price, shipping_price })
 
             //const initialize data to send using email.
             const dataToEmail = {
