@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  app:
+    command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; npm run dev:docker'
+    volumes:
+      - .:/app:ro
+      - "/app/node_modules"
+    env_file:
+      - ./.env.dockerdev
+
+  mysql_server:
+    env_file:
+      - ./.env.dockerdev

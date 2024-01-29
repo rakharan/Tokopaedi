@@ -2,21 +2,16 @@ version: "3.8"
 
 services:
   app:
+    container_name: tokopaedi-app
     build:
       context: .
       dockerfile: Dockerfile
     command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; node build/app.js'
     ports:
       - 8080:8080
-    volumes:
-      - .:/app
-      - "/app/node_modules"
     depends_on:
       - mysql_server
-    env_file:
-      - ./.env.production
 
   mysql_server:
-    image: mysql:latest
-    env_file:
-      - ./.env.production
+    container_name: tokopaedi-mysql
+    image: mysql:latest 

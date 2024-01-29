@@ -11,3 +11,4 @@ src\uploads\**\*
 fly.toml
 
 .env.*
+docker-compose*
