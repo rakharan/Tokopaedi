@@ -1,6 +1,8 @@
+
 # Tokopaedi
 
 Tokopaedi is a robust backend project designed with a focus on efficiency and scalability. It leverages several powerful technologies including Fastify, TypeScript, and TypeORM to ensure a high-performance, reliable, and maintainable system.
+
 
 ## Run Locally
 
@@ -19,7 +21,7 @@ Go to the project directory
 Install dependencies
 
 ```bash
-  npm install
+  npm ci
 ```
 
 Start the server
@@ -28,17 +30,51 @@ Start the server
   npm run dev
 ```
 
-## ERD
-
-![tokopaedi](https://github.com/RakhaTF/Tokopaedi/assets/77679643/b1dd9d8b-df79-459d-bfaa-f26f53322895)
 
 ## API Reference
 
-For list of api, go to:
+#### Healthcheck API
+```
+localhost:8080/health
 
+{
+    "statusCode": 200,
+    "status": "ok",
+    "uptime": 137.317913
+}
+```
+
+For list of api, go to:
 ```
 localhost:8080/documentation/
 ```
-
 Or, if you prefer postman, go to:
+```
 https://documenter.getpostman.com/view/28871141/2s9YkrazBH
+```
+
+
+## Running Tests
+
+To run tests, run the following command
+
+### Run with coverage
+```bash
+  npm run test:coverage
+```
+
+### Run with ui (coverage included)
+```bash
+  npm run test:ui
+```
+
+
+## Running in docker
+
+See `docker-command.md` for ways to get started.
+
+
+## Authors
+
+- [@rakhatf](https://www.github.com/rakhatf)
+
