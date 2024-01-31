@@ -72,9 +72,3 @@ To run tests, run the following command
 ## Running in docker
 
 See `docker-command.md` for ways to get started.
-
-
-## Authors
-
-- [@rakhatf](https://www.github.com/rakhatf)
-
