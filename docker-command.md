@@ -10,5 +10,10 @@
 
  # stop container
  ```
+   docker-compose down
+ ```
+
+ # stop container and remove volumes (data)
+ ```
    docker-compose down -v
  ```
