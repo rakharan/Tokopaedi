@@ -38,7 +38,7 @@ export default class AuthAppService {
             const expiresIn = process.env.EXPIRES_IN || "1h"
 
             //Create an email token used to verify email.
-            const email_token: string = await signJWT({ email }, process.env.JWT_SECRET, { expiresIn, noTimestamp: true })
+            const email_token: string = await signJWT({ email }, process.env.JWT_SECRET, { expiresIn })
             const user = {
                 name,
                 email,

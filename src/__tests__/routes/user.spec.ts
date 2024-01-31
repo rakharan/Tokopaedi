@@ -1,10 +1,10 @@
 import buildServer from "../../index"
 import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
-import { signJWT } from "../../helpers/jwt/jwt"
 import AdminDomainService from "../../../src/domain/service/AdminDomainService"
 import dotenvFlow from 'dotenv-flow';
 import path from "path";
+import { AppDataSource } from "../../infrastructure/mysql/connection"
 
 //configuration for dotenv
 dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
@@ -146,9 +146,9 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
 
         it('Should verify newly registered user', async () => {
 
-            const expiresIn = process.env.EXPIRES_IN || "1h"
-            //Create an email token used to verify email.
-            const email_token: string = await signJWT({ email: newlyRegisteredUserData.email }, process.env.JWT_SECRET as string, { expiresIn, noTimestamp: true })
+            //fetch token from newlyRegistered user from database.
+            const token = await AppDataSource.query(`SELECT email_token from user WHERE email = ? ORDER BY created_at DESC LIMIT 1 `, [newlyRegisteredUserData.email])
+            const email_token = token[0].email_token
 
             const { body } = await supertest(app.server)
                 .get(`/api/v1/auth/verify-email/?token=${email_token}`)
