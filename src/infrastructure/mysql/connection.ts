@@ -7,7 +7,7 @@ DotenvFlow.config({ path: path.resolve(__dirname, `../../../`) })
 export const AppDataSource = new DataSource({
     type: (process.env.DB_IDENTIFIER as "mysql") || "mysql",
     host: process.env.DB_HOST,
-    port: Number(process.env.DB_MYSQL_PORT),
+    port: Number(process.env.DB_PORT),
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
@@ -15,7 +15,7 @@ export const AppDataSource = new DataSource({
     migrationsTableName: "custom_migration_table",
     migrationsRun: true,
     timezone: "+07:00",
-    logging: true,
+    logging: process.env.NODE_ENV === "development",
     logger: "file",
 })
 

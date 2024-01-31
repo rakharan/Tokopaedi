@@ -6,7 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; node build/app.js'
     ports:
       - 8080:8080
     depends_on:
@@ -15,6 +14,4 @@ services:
   mysql_server:
     container_name: tokopaedi-mysql
     command: --default-authentication-plugin=mysql_native_password
-    image: mysql:latest 
-    ports:
-      - 3306:3306
+    image: mysql:latest
