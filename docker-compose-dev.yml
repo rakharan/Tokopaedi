@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   app:
-    command: bash -c 'while !</dev/tcp/mysql_server/3307; do sleep 1; done; npm run dev:docker'
+    command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; npm run dev:docker'
     volumes:
       - .:/app:ro
       - "/app/node_modules"
@@ -11,6 +11,6 @@ services:
 
   mysql_server:
     ports:
-      - 3307:3307
+      - 3307:3306
     env_file:
       - ./.env.dockerdev

@@ -3,11 +3,11 @@ version: "3.8"
 services:
   app:
     command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; node build/app.js'
-  env_file:
-    - ./.env.production
+    env_file:
+      - ./.env.production
 
   mysql_server:
     ports:
-      - 3306:3306
+      - 3307:3306
     env_file:
       - ./.env.production

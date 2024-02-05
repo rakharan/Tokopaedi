@@ -6,7 +6,7 @@ COPY . .
 RUN npm run build
 
 FROM node:20-alpine
-RUN apk update && apk add bash
+RUN apk update --no-cache && apk add --no-cache bash
 WORKDIR /usr/src/app
 COPY package*.json ./
 COPY --from=build-image /usr/src/app/build ./build
