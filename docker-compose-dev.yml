@@ -1,11 +1,13 @@
 version: "3.8"
 
 services:
-  app:
+  backend_app:
     command: bash -c 'while !</dev/tcp/mysql_server/3306; do sleep 1; done; npm run dev:docker'
+    deploy: 
+      replicas: 3
     volumes:
-      - .:/app:ro
-      - "/app/node_modules"
+      - .:/backend_app:ro
+      - "/backend_app/node_modules"
     env_file:
       - ./.env.dockerdev
 

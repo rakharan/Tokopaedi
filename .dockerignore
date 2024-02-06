@@ -1,10 +1,8 @@
 **\node_modules
 **\.env
 **\ormlogs.log
-**\package-lock.json
 **\build
 **\coverage
-**\dist
 
 src\uploads\**\*
 !src\uploads\**\.gitignore
