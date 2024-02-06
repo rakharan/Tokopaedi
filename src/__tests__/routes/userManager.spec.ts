@@ -1,9 +1,9 @@
 import buildServer from "../../index"
 import { expect, beforeAll, afterAll, describe, it, } from 'vitest'
 import supertest from "supertest"
-import AdminAppService from "../../application/service/Admin"
 import dotenvFlow from 'dotenv-flow';
 import path from "path";
+import AdminDomainService from "../../domain/service/AdminDomainService";
 
 //configuration for dotenv
 dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) });
@@ -248,11 +248,10 @@ describe.sequential('Lists of routes accessible to user manager', () => {
             expect(body.message).toEqual(true)
         });
 
-        it('Should check expired account (unverified)', async () => {
+        it('Should hard delete testing account', async () => {
             //final step
             //hard delete, delete the account from database entirely, including data in the other table that has relation to the account (transaction, shipping address, etc.)
-            const response = await AdminAppService.CheckExpiredAccount()
-            expect(response).toEqual(true)
+            await AdminDomainService.HardDeleteUserDomain(newlyRegisteredUserId)
         })
     })
 })
