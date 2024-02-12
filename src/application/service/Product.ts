@@ -136,44 +136,44 @@ export default class ProductAppService {
 
         //Can update product partially, not all property is required
         const updateProductData: Partial<Product> = existingProduct
-        if (name || description || price || stock || files) {
-            if (name) {
-                //Add name checking, can not use bad words for the product name
-                if (Profanity.flag(product.name.toLowerCase())) {
-                    throw new Error("You can't use this name!")
-                }
-                updateProductData.name = name
+
+        if (name) {
+            //Add name checking, can not use bad words for the product name
+            if (Profanity.flag(product.name.toLowerCase())) {
+                throw new Error("You can't use this name!")
             }
-            if (description) updateProductData.description = description
-            if (price) updateProductData.price = price
-            if (stock) updateProductData.stock = stock
-            //If user
-            if (files) {
-                for (const key in files) {
-                    if (Object.prototype.hasOwnProperty.call(files, key)) {
-                        const fileArray = files[key]
-                        if (Array.isArray(fileArray) && fileArray.length > 0) {
-                            const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
+            updateProductData.name = name
+        }
 
-                            const imageObjects: Partial<File[]> = []
+        if (description) updateProductData.description = description
+        if (price) updateProductData.price = price
+        if (stock) updateProductData.stock = stock
 
-                            imageObjects.push({
-                                fieldname: imageFile.fieldname,
-                                encoding: imageFile.encoding,
-                                mimetype: imageFile.mimetype,
-                                originalname: imageFile.originalname,
-                                filename: imageFile.filename,
-                            })
+        if (files) {
+            for (const key in files) {
+                if (Object.prototype.hasOwnProperty.call(files, key)) {
+                    const fileArray = files[key]
+                    if (Array.isArray(fileArray) && fileArray.length > 0) {
+                        const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
 
-                            //delete the old image from cloudinary if user passed a new image
-                            await DeleteImage(existingProduct.public_id)
+                        const imageObjects: Partial<File[]> = []
 
-                            //upload new image to cloudinary and extract the url & public_id.
-                            const { secure_url, public_id } = await UploadImage(imageObjects[0])
+                        imageObjects.push({
+                            fieldname: imageFile.fieldname,
+                            encoding: imageFile.encoding,
+                            mimetype: imageFile.mimetype,
+                            originalname: imageFile.originalname,
+                            filename: imageFile.filename,
+                        })
 
-                            updateProductData.public_id = public_id
-                            updateProductData.img_src = secure_url
-                        }
+                        //delete the old image from cloudinary if user passed a new image
+                        await DeleteImage(existingProduct.public_id)
+
+                        //upload new image to cloudinary and extract the url & public_id.
+                        const { secure_url, public_id } = await UploadImage(imageObjects[0])
+
+                        updateProductData.public_id = public_id
+                        updateProductData.img_src = secure_url
                     }
                 }
             }
