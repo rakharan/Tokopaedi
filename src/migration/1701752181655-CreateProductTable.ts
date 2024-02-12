@@ -9,6 +9,7 @@ export class CreateProductTable1701752181655 implements MigrationInterface {
                 description TEXT,
                 price DECIMAL(10,2) UNSIGNED NOT NULL,
                 stock INT UNSIGNED NOT NULL,
+                category INT REFERENCES product_category(id) ON DELETE SET NULL,
                 is_deleted TINYINT(1) DEFAULT '0' COMMENT '0 = false, 1 = true'
             )
         `)
