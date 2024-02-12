@@ -123,13 +123,12 @@ export default class ShippingAddressAppService {
 
         const updateAddressData: Partial<ShippingAddress> = existingAddress
 
-        if (address || postal_code || city || country || province) {
-            if (address) updateAddressData.address = address
-            if (postal_code) updateAddressData.postal_code = postal_code
-            if (city) updateAddressData.city = city
-            if (country) updateAddressData.country = country
-            if (province) updateAddressData.province = province
-        }
+        // enable to update shipping address partially.
+        if (address) updateAddressData.address = address
+        if (postal_code) updateAddressData.postal_code = postal_code
+        if (city) updateAddressData.city = city
+        if (country) updateAddressData.country = country
+        if (province) updateAddressData.province = province
 
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
