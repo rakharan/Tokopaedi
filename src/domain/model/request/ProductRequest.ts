@@ -18,3 +18,15 @@ export type CreateProductReviewRequest = {
     rating: number
     comment: string
 }
+
+export type CreateProductCategoryRequest = {
+    name: string
+    parent_id?: number
+}
+
+export type UpdateProductCategoryRequest = {
+    id: number
+    name?: string
+    parent_id?: number
+    cat_path?: string
+}

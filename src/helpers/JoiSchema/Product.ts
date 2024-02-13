@@ -13,6 +13,12 @@ export const ReviewId = Joi.number().min(1).required().messages({
     "any.required": "id is a required field",
 })
 
+export const CategoryId = Joi.number().min(0).messages({
+    "number.base": "id must be a number",
+    "number.min": "id must be greater than or equal to 0",
+    "any.required": "id is a required field",
+})
+
 const Price = Joi.number().min(1).messages({
     "number.base": "Price must be a number",
     "number.min": "Price must be greater than or equal to 1",
@@ -72,3 +78,15 @@ export const CreateReview = Joi.object({
         "string.base": "Comment must be a string",
     }),
 }).options({ abortEarly: false }).unknown(true)
+
+export const CreateCategory = Joi.object({
+    name: Name,
+    parent_id: CategoryId.required(),
+}).options({ abortEarly: false })
+
+export const UpdateCategory = Joi.object({
+    id: CategoryId,
+    name: Name,
+    parent_id: CategoryId,
+    cat_path: Joi.string()
+}).options({ abortEarly: false })

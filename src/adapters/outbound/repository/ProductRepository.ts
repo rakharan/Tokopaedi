@@ -104,4 +104,52 @@ export default class ProductRepository {
     static async CheckReviewOwnership(review_id: number) {
         return await db.query<{ id: number, user_id: number }[]>(`SELECT id, user_id FROM product_review WHERE id = ?`, [review_id])
     }
+
+    static async GetCategoryList(params: RepoPaginationParams): Promise<ProductResponseDto.ProductCategoryListResponse> {
+        const { limit, sort, whereClause } = params
+
+        return await db.query(`
+        SELECT pc.id, pc.name, pc.parent_id, pc.cat_path
+        FROM product_category pc 
+        ${whereClause}
+        ORDER BY pc.id ${sort}
+        LIMIT ?
+        `, [limit + 1])
+    }
+
+    static async GetCategoryDetail(id: number): Promise<ProductResponseDto.ProductCategoryDetailResponse[]> {
+        return await db.query(`
+        SELECT pc.id, pc.name, pc.parent_id, pc.cat_path
+            FROM product_category pc
+        WHERE pc.id = ?
+        `, [id])
+    }
+
+    static async CreateNewCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
+        const { cat_path, name, parent_id } = params
+        return await db.query<ResultSetHeader>(`
+        INSERT INTO product_category(name, parent_id, cat_path)
+        VALUES(?, ?, ?)
+        `, [name, parent_id, cat_path], query_runner)
+    }
+
+    static async UpdateCategory(params: ProductParamsDto.UpdateProductCategoryParams, query_runner: QueryRunner) {
+        const { id, cat_path, name, parent_id } = params
+
+        return await db.query<ResultSetHeader>(`
+        UPDATE product_category SET name = ?, parent_id = ?, cat_path = ?
+        WHERE id = ?
+        `, [name, parent_id, cat_path, id], query_runner)
+    }
+
+    static async DeleteCategory(id: number, query_runner: QueryRunner) {
+        return await db.query<ResultSetHeader>(`DELETE FROM product_category where id = ?`, [id], query_runner)
+    }
+
+    static async CheckExistingCategory(name: string) {
+        return await db.query<{ id: number, name: string }[]>(`
+        SELECT pc.id, pc.name
+        FROM product_category pc
+        WHERE pc.name = ?`, [name])
+    }
 }

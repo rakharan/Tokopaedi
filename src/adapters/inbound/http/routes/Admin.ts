@@ -576,6 +576,22 @@ const routes: RouteOptions[] = [
             }),
         },
     },
+    {
+        method: ["POST"],
+        url: "category/create",
+        preHandler: CheckAuthAdmin({ rules: Rules.CREATE_PRODUCT_CATEGORY }),
+        handler: ProductController.CreateCategory,
+        schema: {
+            tags: ["Admin"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                name: { type: "string" },
+                parent_id: { type: "number" },
+            }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
 ]
 
 export default async function AdminRoute(fastify: FastifyInstance, options: FastifyPluginOptions) {

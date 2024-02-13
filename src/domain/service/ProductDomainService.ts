@@ -140,4 +140,48 @@ export default class ProductDomainService {
             throw new BadInputError("THIS_REVIEW_DOES_NOT_BELONG_TO_YOU")
         }
     }
+
+    static async CreateProductCategoryDomain(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
+        const category = await ProductRepository.CreateNewCategory(params, query_runner)
+        if (category.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_CREATE_CATEGORY")
+        }
+    }
+
+    static async GetProductCategoryListDomain(params: RepoPaginationParams) {
+        const categoryList = await ProductRepository.GetCategoryList(params)
+        if (categoryList.length < 1) {
+            throw new BadInputError("CATEGORY_LIST_IS_EMPTY")
+        }
+        return categoryList
+    }
+
+    static async GetProductCategoryDetailDomain(id: number) {
+        const categoryDetail = await ProductRepository.GetCategoryDetail(id)
+        if (categoryDetail.length < 1) {
+            throw new BadInputError("CATEGORY_DETAIL_NOT_FOUND")
+        }
+        return categoryDetail[0]
+    }
+
+    static async UpdateProductCategoryDomain(params: ProductParamsDto.UpdateProductCategoryParams, query_runner: QueryRunner) {
+        const updateCategory = await ProductRepository.UpdateCategory(params, query_runner)
+        if (updateCategory.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_UPDATE_CATEGORY")
+        }
+    }
+
+    static async DeleteProductCategoryDomain(id: number, query_runner: QueryRunner) {
+        const deleteCategory = await ProductRepository.DeleteCategory(id, query_runner)
+        if (deleteCategory.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_DELETE_CATEGORY")
+        }
+    }
+
+    static async CheckExistingCategoryDomain(name: string) {
+        const existingCategory = await ProductRepository.CheckExistingCategory(name)
+        if (existingCategory.length > 0 && existingCategory[0].name.toLowerCase() === name.toLowerCase()) {
+            throw new BadInputError("SAME_CATEGORY_ALREADY_EXISTS")
+        }
+    }
 }

@@ -126,4 +126,18 @@ export default class ProductController {
 
         return { message: deleteReview }
     }
+
+    static async CreateCategory(request: FastifyRequest) {
+        const user = request.user
+        const params = request.body as ProductRequestDto.CreateProductCategoryRequest
+        const createCategory = await ProductAppService.CreateProductCategory(params, {
+            user_id: user.id,
+            action: `Create Category #${params.name}`,
+            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+            browser: request.headers["user-agent"],
+            time: moment().unix(),
+        })
+
+        return { message: createCategory }
+    }
 }

@@ -307,4 +307,118 @@ export default class ProductAppService {
             throw error
         }
     }
+
+    static async CreateProductCategory(params: ProductRequestDto.CreateProductCategoryRequest, logData: LogParamsDto.CreateLogParams) {
+        await ProductSchema.CreateCategory.validateAsync(params)
+
+        const { name, parent_id } = params
+
+        // checking if name is containing bad word
+        if (Profanity.flag(name.toLowerCase())) {
+            throw new BadInputError("YOUR_CATEGORY_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_CATEGORY_NAME")
+        }
+
+        // checking if there's already a category with the same name, if it's true, throw an error.
+        await ProductDomainService.CheckExistingCategoryDomain(name)
+
+        let cat_path: string;
+
+        // if parent_id = 0, the cat_path is /0/NEW.id/.
+        //  when parent_id = 0, the category is the head category / doesn't have parent category.
+        // if parent_id > 0, category is a sub-category.
+        if (parent_id === 0) {
+            cat_path = "/0/"
+        } else {
+            // Getting parent cat_path if parent_id > 0
+            const parent = await ProductDomainService.GetProductCategoryDetailDomain(parent_id)
+            cat_path = parent.cat_path
+        }
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+
+        try {
+            await query_runner.startTransaction()
+
+            await ProductDomainService.CreateProductCategoryDomain({ ...params, cat_path }, query_runner)
+
+            await LogDomainService.CreateLogDomain(logData, query_runner)
+
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
+        }
+    }
+
+    static async ProductCategoryList(params: CommonRequestDto.PaginationRequest){
+        await CommonSchema.Pagination.validateAsync(params)
+
+        const { lastId = 0, limit = 100, search = "", sort = "ASC" } = params
+
+        let searchFilter = search || ""
+        searchFilter = unicorn(searchFilter, {
+            name: "p.name",
+            price: "p.price",
+        })
+
+        //Generate whereClause
+        const whereClause = GenerateWhereClause({ lastId, searchFilter, sort, tableAlias: "pc", tablePK: "id" })
+
+        const product = await ProductDomainService.GetProductCategoryListDomain({ limit: Number(limit), whereClause, sort })
+
+        //Generate pagination
+        const result = Paginate({ data: product, limit })
+
+        return result
+    }
+
+    static async UpdateProductCategory(params: ProductParamsDto.UpdateProductCategoryParams, logData: LogParamsDto.CreateLogParams) {
+        await ProductSchema.CreateCategory.validateAsync(params)
+
+        const { id, cat_path, name, parent_id } = params
+
+        // checking if name is containing bad word
+        if (name && Profanity.flag(name.toLowerCase())) {
+            throw new BadInputError("YOUR_CATEGORY_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_CATEGORY_NAME")
+        }
+
+        // fetching existing category
+        const existingCategory = await ProductDomainService.GetProductCategoryDetailDomain(id)
+
+        const updateCategory = existingCategory
+
+        if (name) updateCategory.name = name
+        if (cat_path) updateCategory.cat_path = cat_path
+        if (parent_id) updateCategory.parent_id = parent_id
+
+        // checking if there's already a category with the same name, if it's true, throw an error.
+        await ProductDomainService.CheckExistingCategoryDomain(name)
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+
+        try {
+            await query_runner.startTransaction()
+
+            await ProductDomainService.UpdateProductCategoryDomain(params, query_runner)
+
+            await LogDomainService.CreateLogDomain(logData, query_runner)
+
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
+        }
+    }
 }
