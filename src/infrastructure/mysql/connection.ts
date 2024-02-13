@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     migrations: process.env.TESTING === "true" ? undefined : [migrationDir()],
-    migrationsTableName: "custom_migration_table",
+    migrationsTableName: "tokopaedi_migration",
     migrationsRun: true,
     timezone: "+07:00",
     logging: process.env.NODE_ENV === "development" || process.env.NODE_ENV === "testing",

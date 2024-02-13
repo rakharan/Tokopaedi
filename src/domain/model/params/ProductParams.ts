@@ -1,3 +1,5 @@
+import { CreateProductReviewRequest } from "../request/ProductRequest"
+
 export type CreateProductParams = {
     name?: string
     description?: string
@@ -15,4 +17,9 @@ export type UpdateProductParams = {
     stock?: number
     img_src?: string
     public_id?: string
+}
+
+export type CreateProductReviewParams = CreateProductReviewRequest & {
+    user_id: number
+    created_at: number
 }

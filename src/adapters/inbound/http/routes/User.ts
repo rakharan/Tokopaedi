@@ -4,6 +4,7 @@ import UserController from "@adapters/inbound/controller/UserController"
 import * as Schema from "@helpers/ApiSchema/ApiSchema"
 import ShippingAddressController from "@adapters/inbound/controller/ShippingAddressController"
 import TransactionController from "@adapters/inbound/controller/TransactionController"
+import ProductController from "@adapters/inbound/controller/ProductController"
 
 const routes: RouteOptions[] = [
     {
@@ -255,6 +256,30 @@ const routes: RouteOptions[] = [
             response: Schema.BaseResponse({
                 type: "Boolean",
             }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "review/create",
+        handler: ProductController.CreateReview,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                product_id: { type: "integer" },
+                rating: { type: "number" },
+                comment: { type: "string" },
+            }),
+            response: Schema.BaseResponse({ type: "Boolean" }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "review/delete",
+        handler: ProductController.DeleteReview,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", { id: { type: "integer" } }),
+            response: Schema.BaseResponse({ type: "Boolean" }),
         },
     },
 ]

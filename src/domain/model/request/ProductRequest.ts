@@ -12,3 +12,9 @@ export type UpdateProductRequest = {
     price?: number
     stock?: number
 }
+
+export type CreateProductReviewRequest = {
+    product_id: number
+    rating: number
+    comment: string
+}

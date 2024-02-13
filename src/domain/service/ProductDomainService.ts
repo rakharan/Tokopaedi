@@ -96,4 +96,48 @@ export default class ProductDomainService {
             throw new ApiError("FAILED_DELETE_PRODUCT")
         }
     }
+
+    static async GetProductReviewListDomain(id: number, params: RepoPaginationParams) {
+        const reviewList = await ProductRepository.GetReviewList(id, params)
+        if (reviewList.length < 1) {
+            throw new ResultNotFoundError("NO_REVIEW_FOUND")
+        }
+        return reviewList
+    }
+
+    static async CreateProductReviewDomain(params: ProductParamsDto.CreateProductReviewParams, query_runner: QueryRunner) {
+        const createReview = await ProductRepository.CreateProductReview(params, query_runner)
+        if (createReview.affectedRows < 1) {
+            throw new BadInputError("FAILED_TO_CREATE_A_REVIEW")
+        }
+    }
+
+    static async GetProductReviewDetailDomain(id: number) {
+        const reviewDetail = await ProductRepository.GetProductReviewDetail(id)
+        if (reviewDetail.length < 1) {
+            throw new BadInputError("PRODUCT_REVIEW_NOT_FOUND")
+        }
+        return reviewDetail[0]
+    }
+
+    static async DeleteProductReviewDomain(id: number, query_runner: QueryRunner) {
+        const deleteReview = await ProductRepository.DeleteProductReview(id, query_runner)
+        if (deleteReview.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_DELETE_REVIEW")
+        }
+    }
+
+    static async CheckExistingReviewDomain(product_id: number, user_id: number) {
+        const existingReview = await ProductRepository.CheckExistingReview(user_id, product_id)
+        if (existingReview.length > 0) {
+            throw new BadInputError("YOU_ALREADY_REVIEWED_THIS_PRODUCT")
+        }
+    }
+
+    static async CheckReviewOwnershipDomain(review_id: number, user_id: number) {
+        const review = await ProductRepository.CheckReviewOwnership(review_id)
+        if (review[0].user_id !== user_id) {
+            throw new BadInputError("THIS_REVIEW_DOES_NOT_BELONG_TO_YOU")
+        }
+    }
 }

@@ -1,6 +1,13 @@
 import Joi from "joi"
+import { UserId } from "./User"
 
 export const ProductId = Joi.number().min(1).required().messages({
+    "number.base": "id must be a number",
+    "number.min": "id must be greater than or equal to 1",
+    "any.required": "id is a required field",
+})
+
+export const ReviewId = Joi.number().min(1).required().messages({
     "number.base": "id must be a number",
     "number.min": "id must be greater than or equal to 1",
     "any.required": "id is a required field",
@@ -52,3 +59,16 @@ export const UpdateProduct = Joi.object({
     price: Price,
     stock: Stock,
 }).options({ abortEarly: false })
+
+export const CreateReview = Joi.object({
+    product_id: ProductId,
+    user_id: UserId,
+    rating: Joi.number().min(1).max(5).required().messages({
+        "number.base": "Rating must be a number",
+        "number.min": "Rating must be greater than or equal to 1",
+        "number.max": "Rating must be lower than or equal to 5",
+    }),
+    comment: Joi.string().optional().messages({
+        "string.base": "Comment must be a string",
+    }),
+}).options({ abortEarly: false }).unknown(true)

@@ -5,15 +5,16 @@ import * as ProductSchema from "@helpers/JoiSchema/Product"
 import * as CommonSchema from "@helpers/JoiSchema/Common"
 import unicorn from "format-unicorn/safe"
 import { GenerateWhereClause, Paginate } from "key-pagination-sql"
-import { LogParamsDto } from "@domain/model/params"
+import { LogParamsDto, ProductParamsDto } from "@domain/model/params"
 import { AppDataSource } from "@infrastructure/mysql/connection"
 import LogDomainService from "@domain/service/LogDomainService"
 import { Profanity } from "indonesian-profanity"
 import { emailer } from "@infrastructure/mailer/mailer"
 import { DeleteImage, UploadImage } from "@helpers/utils/image/imageHelper"
 import { File, FilesObject } from "fastify-multer/lib/interfaces"
+import { BadInputError } from "@domain/model/Error/Error"
 export default class ProductAppService {
-    static async GetProductList(params: CommonRequestDto.PaginationRequest) {
+    static async GetProductList(params: CommonRequestDto.PaginationRequest, ratingSort: string = "") {
         await CommonSchema.Pagination.validateAsync(params)
         const { lastId = 0, limit = 100, search, sort = "ASC" } = params
 
@@ -31,7 +32,16 @@ export default class ProductAppService {
         //Generate whereClause
         const whereClause = GenerateWhereClause({ lastId, searchFilter, sort, tableAlias: "p", tablePK: "id" })
 
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort })
+        let baseSort = `ORDER BY p.id ${sort}`
+
+        // Add ratingSort if user want to sort by lowest/highest rating.
+        if (ratingSort === "highest") {
+            baseSort = `ORDER BY rating DESC`
+        } else if (ratingSort === "lowest") {
+            baseSort = `ORDER BY rating ASC`
+        }
+
+        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
 
         //Generate pagination
         const result = Paginate({ data: product, limit })
@@ -210,6 +220,91 @@ export default class ProductAppService {
             //send email to admin to notify.
             emailer.notifyAdminForLowStockProduct(lowStockProduct)
             return true
+        }
+    }
+
+    static async GetReviewList(id: number, params: CommonRequestDto.PaginationRequest) {
+        await CommonSchema.Pagination.validateAsync(params)
+        await ProductSchema.ProductId.validateAsync(id)
+        const { lastId = 0, limit = 100, search = "", sort = "ASC" } = params
+
+        //Generate whereClause
+        const whereClause = GenerateWhereClause({ lastId, searchFilter: search, sort, tableAlias: "pr", tablePK: "id" })
+
+        const product = await ProductDomainService.GetProductReviewListDomain(id, { limit: Number(limit), whereClause, sort })
+
+        //Generate pagination
+        const result = Paginate({ data: product, limit })
+
+        return result
+    }
+
+    static async CreateReview(params: ProductParamsDto.CreateProductReviewParams, logData: LogParamsDto.CreateLogParams) {
+        await ProductSchema.CreateReview.validateAsync(params)
+
+        const { comment, user_id, product_id } = params
+
+        // Check if the comment contains bad words.
+        if (comment && Profanity.flag(comment)) {
+            throw new BadInputError("YOUR_REVIEW_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_COMMENT");
+        }
+
+        // Check if user already reviewed the product, will return error if true.
+        await ProductDomainService.CheckExistingReviewDomain(product_id, user_id)
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+
+        try {
+            await query_runner.startTransaction()
+
+            await ProductDomainService.CreateProductReviewDomain(params, query_runner)
+
+            await LogDomainService.CreateLogDomain(logData, query_runner)
+
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
+        }
+    }
+
+    static async ReviewDetail(id: number) {
+        await ProductSchema.ReviewId.validateAsync(id)
+        return await ProductDomainService.GetProductReviewDetailDomain(id)
+    }
+
+    static async DeleteReview(id: number, user_id: number, logData: LogParamsDto.CreateLogParams) {
+        await ProductSchema.ReviewId.validateAsync(id)
+
+        // Check if the review ownership, does it belong to the user trying to delete it.
+        // will throw an error if the review belongs to someone else.
+        await ProductDomainService.CheckReviewOwnershipDomain(id, user_id)
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+
+        try {
+            await query_runner.startTransaction()
+
+            await ProductDomainService.DeleteProductReviewDomain(id, query_runner)
+
+            await LogDomainService.CreateLogDomain(logData, query_runner)
+
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
         }
     }
 }

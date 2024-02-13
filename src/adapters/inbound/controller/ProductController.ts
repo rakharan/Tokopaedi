@@ -6,8 +6,9 @@ import moment from "moment"
 
 export default class ProductController {
     static async GetProductList(request: FastifyRequest) {
+        const { ratingSort } = request.body as { ratingSort: string }
         const paginationRequest = request.body as CommonRequestDto.PaginationRequest
-        const product = await ProductAppService.GetProductList(paginationRequest)
+        const product = await ProductAppService.GetProductList(paginationRequest, ratingSort)
         return { message: product }
     }
 
@@ -78,5 +79,51 @@ export default class ProductController {
             }
             throw error
         }
+    }
+
+    static async ReviewList(request: FastifyRequest) {
+        const { id } = request.body as { id: number }
+        const paginationRequest = request.body as CommonRequestDto.PaginationRequest
+        const reviewList = await ProductAppService.GetReviewList(id, paginationRequest)
+
+        return { message: reviewList }
+    }
+
+    static async CreateReview(request: FastifyRequest) {
+        const { id } = request.user
+        const params = request.body as ProductRequestDto.CreateProductReviewRequest
+
+        const now = moment().unix()
+        const createReview = await ProductAppService.CreateReview({ ...params, user_id: id, created_at: now }, {
+            user_id: id,
+            action: `Create Review #${params.product_id}`,
+            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+            browser: request.headers["user-agent"],
+            time: now,
+        })
+
+        return { message: createReview }
+    }
+
+    static async ReviewDetail(request: FastifyRequest) {
+        const { id } = request.body as { id: number }
+
+        const reviewDetail = await ProductAppService.ReviewDetail(id)
+
+        return { message: reviewDetail }
+    }
+
+    static async DeleteReview(request: FastifyRequest) {
+        const user = request.user
+        const { id } = request.body as { id: number }
+        const deleteReview = await ProductAppService.DeleteReview(id, user.id, {
+            user_id: user.id,
+            action: `Delete Review #${id}`,
+            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+            browser: request.headers["user-agent"],
+            time: moment().unix(),
+        })
+
+        return { message: deleteReview }
     }
 }
