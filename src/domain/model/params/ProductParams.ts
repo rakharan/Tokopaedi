@@ -1,4 +1,4 @@
-import { CreateProductCategoryRequest, CreateProductReviewRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
+import { CreateProductCategoryRequest, CreateProductReviewRequest, GetProductListRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
 
 export type CreateProductParams = {
     name: string
@@ -28,6 +28,9 @@ export type CreateProductReviewParams = CreateProductReviewRequest & {
 export type CreateProductCategoryParams = CreateProductCategoryRequest & {
     cat_path: string
 }
+
 export type UpdateProductCategoryParams = UpdateProductCategoryRequest & {
     cat_path: string
 }
+
+export type GetProductListParams = GetProductListRequest

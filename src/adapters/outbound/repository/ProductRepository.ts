@@ -12,7 +12,7 @@ export default class ProductRepository {
         const { limit, sort, whereClause } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
-        SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock, AVG(pr.rating) as rating, p.public_id, p.img_src
+        SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock, AVG(pr.rating) as rating, COUNT(pr.id) as rev_count, p.public_id, p.img_src
         FROM product p
         JOIN product_category pc
             ON p.category = pc.id

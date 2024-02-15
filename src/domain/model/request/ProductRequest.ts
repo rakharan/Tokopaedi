@@ -31,3 +31,11 @@ export type UpdateProductCategoryRequest = {
     name?: string
     parent_id?: number
 }
+
+export type GetProductListRequest = {
+    sortFilter: string
+    categoriesFilter: string
+    ratingSort: string
+    priceMin: number
+    priceMax: number
+}

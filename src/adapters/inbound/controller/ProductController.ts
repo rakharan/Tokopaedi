@@ -6,9 +6,9 @@ import moment from "moment"
 
 export default class ProductController {
     static async GetProductList(request: FastifyRequest) {
-        const { ratingSort, categories } = request.body as { ratingSort: string, categories: string }
+        const searchFilter = request.body as ProductRequestDto.GetProductListRequest
         const paginationRequest = request.body as CommonRequestDto.PaginationRequest
-        const product = await ProductAppService.GetProductList(paginationRequest, ratingSort, categories)
+        const product = await ProductAppService.GetProductList(paginationRequest, searchFilter)
         return { message: product }
     }
 

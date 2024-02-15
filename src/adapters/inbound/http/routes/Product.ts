@@ -15,7 +15,13 @@ const routes: RouteOptions[] = [
                     name: "string",
                     price: "string",
                 },
-                additional_body: { ratingSort: { type: "string" }, categories: { type: "string" } }
+                additional_body: {
+                    sortFilter: { type: "string" },
+                    categoriesFilter: { type: "string" },
+                    ratingSort: { type: "string" },
+                    priceMin: { type: "number" },
+                    priceMax: { type: "number" },
+                }
             }),
             response: Schema.BasePaginationResultSchema,
         },
@@ -84,7 +90,7 @@ const routes: RouteOptions[] = [
         schema: {
             tags: ["Product"],
             body: Schema.BasePaginationRequestSchema({
-                pic: "Rakha", 
+                pic: "Rakha",
                 search: {
                     name: "string",
                     parent_id: "string",
