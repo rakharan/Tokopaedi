@@ -6,9 +6,9 @@ import moment from "moment"
 
 export default class ProductController {
     static async GetProductList(request: FastifyRequest) {
-        const { ratingSort } = request.body as { ratingSort: string }
+        const { ratingSort, categories } = request.body as { ratingSort: string, categories: string }
         const paginationRequest = request.body as CommonRequestDto.PaginationRequest
-        const product = await ProductAppService.GetProductList(paginationRequest, ratingSort)
+        const product = await ProductAppService.GetProductList(paginationRequest, ratingSort, categories)
         return { message: product }
     }
 
@@ -139,5 +139,40 @@ export default class ProductController {
         })
 
         return { message: createCategory }
+    }
+
+    static async CategoryList(request: FastifyRequest) {
+        const paginationRequest = request.body as CommonRequestDto.PaginationRequest
+        const categoryList = await ProductAppService.CategoryList(paginationRequest)
+
+        return { message: categoryList }
+    }
+
+    static async UpdateCategory(request: FastifyRequest) {
+        const user = request.user
+        const params = request.body as ProductRequestDto.UpdateProductCategoryRequest
+        const updateCategory = await ProductAppService.UpdateProductCategory(params, {
+            user_id: user.id,
+            action: `Update Category #${params.id}`,
+            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+            browser: request.headers["user-agent"],
+            time: moment().unix(),
+        })
+
+        return { message: updateCategory }
+    }
+
+    static async DeleteCategory(request: FastifyRequest) {
+        const user = request.user
+        const { id } = request.body as { id: number }
+        const deleteCategory = await ProductAppService.DeleteProductCategory(id, {
+            user_id: user.id,
+            action: `Delete Category #${id}`,
+            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+            browser: request.headers["user-agent"],
+            time: moment().unix(),
+        })
+
+        return { message: deleteCategory }
     }
 }

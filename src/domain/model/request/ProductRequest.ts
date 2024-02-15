@@ -1,6 +1,7 @@
 export type CreateProductRequest = {
     name: string
     description: string
+    category: number
     price: number
     stock: number
 }
@@ -9,6 +10,7 @@ export type UpdateProductRequest = {
     id: number
     name?: string
     description?: string
+    category?: number
     price?: number
     stock?: number
 }
@@ -28,5 +30,4 @@ export type UpdateProductCategoryRequest = {
     id: number
     name?: string
     parent_id?: number
-    cat_path?: string
 }

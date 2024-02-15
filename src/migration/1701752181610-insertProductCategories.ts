@@ -9,51 +9,105 @@ const category = [
     },
     {
         id: 2,
-        name: "Laptop",
+        name: "Phones & Accessories",
         parent_id: 1,
         cat_path: "/0/1/2/"
     },
     {
         id: 3,
-        name: "Computer",
-        parent_id: 1,
-        cat_path: "/0/1/3/"
+        name: "Smartphones",
+        parent_id: 2,
+        cat_path: "/0/1/2/3/"
     },
     {
         id: 4,
-        name: "Mobile Phone",
-        parent_id: 1,
-        cat_path: "/0/1/4/"
+        name: "Phone Cases",
+        parent_id: 2,
+        cat_path: "/0/1/2/4/"
     },
     {
         id: 5,
-        name: "Console",
-        parent_id: 1,
-        cat_path: "/0/1/5/"
+        name: "Chargers & Cables",
+        parent_id: 2,
+        cat_path: "/0/1/2/5/"
     },
     {
         id: 6,
-        name: "Fashion",
-        parent_id: 0,
-        cat_path: "/0/6/"
+        name: "Computers & Accessories",
+        parent_id: 1,
+        cat_path: "/0/1/6/"
     },
     {
         id: 7,
-        name: "T-Shirt",
+        name: "Laptops",
         parent_id: 6,
-        cat_path: "/0/6/7/"
+        cat_path: "/0/1/6/7/"
     },
     {
         id: 8,
-        name: "Trousers",
+        name: "Desktops",
         parent_id: 6,
-        cat_path: "/0/6/8/"
+        cat_path: "/0/1/6/8/"
     },
     {
         id: 9,
-        name: "Shoes",
+        name: "Computer Components",
         parent_id: 6,
-        cat_path: "/0/6/9/"
+        cat_path: "/0/1/6/9/"
+    },
+    {
+        id: 10,
+        name: "Fashion",
+        parent_id: 0,
+        cat_path: "/0/10/"
+    },
+    {
+        id: 11,
+        name: "Clothing",
+        parent_id: 10,
+        cat_path: "/0/10/11/"
+    },
+    {
+        id: 12,
+        name: "Men's Clothing",
+        parent_id: 11,
+        cat_path: "/0/10/11/12/"
+    },
+    {
+        id: 13,
+        name: "Women's Clothing",
+        parent_id: 11,
+        cat_path: "/0/10/11/13/"
+    },
+    {
+        id: 14,
+        name: "Kids' Clothing",
+        parent_id: 11,
+        cat_path: "/0/10/11/14/"
+    },
+    {
+        id: 15,
+        name: "Shoes",
+        parent_id: 10,
+        cat_path: "/0/10/15/"
+    },
+    {
+        id: 16,
+        name: "Men's Shoes",
+        parent_id: 15,
+        cat_path: "/0/10/15/16/"
+    },
+    {
+        id: 17,
+        name: "Women's Shoes",
+        parent_id: 15,
+        cat_path: "/0/10/15/17/"
+    },
+    {
+        id: 18,
+        name: "Kids' Shoes",
+        parent_id: 15,
+        cat_path: "/0/10/15/18/"
     }
 ]
 

@@ -37,6 +37,7 @@ const routes: RouteOptions[] = [
             body: Schema.BaseRequestSchema("Rakha", {
                 name: { type: "string" },
                 description: { type: "string" },
+                category: { type: "integer" },
                 price: { type: "integer" },
                 stock: { type: "integer" },
                 image: { type: "file" },
@@ -68,6 +69,7 @@ const routes: RouteOptions[] = [
                 id: { type: "integer" },
                 name: { type: "string" },
                 description: { type: "string" },
+                category: { type: "integer" },
                 price: { type: "integer" },
                 stock: { type: "integer" },
                 image: { type: "file" },
@@ -587,6 +589,36 @@ const routes: RouteOptions[] = [
                 name: { type: "string" },
                 parent_id: { type: "number" },
             }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "category/update",
+        preHandler: CheckAuthAdmin({ rules: Rules.UPDATE_PRODUCT_CATEGORY }),
+        handler: ProductController.UpdateCategory,
+        schema: {
+            tags: ["Admin"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                id: { type: "number" },
+                name: { type: "string" },
+                parent_id: { type: "number" },
+            }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "category/delete",
+        preHandler: CheckAuthAdmin({ rules: Rules.DELETE_PRODUCT_CATEGORY }),
+        handler: ProductController.DeleteCategory,
+        schema: {
+            tags: ["Admin"],
+            body: Schema.BaseRequestSchema("Rakha", { id: { type: "number" } }),
             response: Schema.BaseResponse({
                 type: "Boolean",
             }),

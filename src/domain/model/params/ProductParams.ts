@@ -1,10 +1,11 @@
 import { CreateProductCategoryRequest, CreateProductReviewRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
 
 export type CreateProductParams = {
-    name?: string
-    description?: string
-    price?: number
-    stock?: number
+    name: string
+    description: string
+    price: number
+    stock: number
+    category: number
     img_src: string
     public_id: string
 }
@@ -27,4 +28,6 @@ export type CreateProductReviewParams = CreateProductReviewRequest & {
 export type CreateProductCategoryParams = CreateProductCategoryRequest & {
     cat_path: string
 }
-export type UpdateProductCategoryParams = UpdateProductCategoryRequest
+export type UpdateProductCategoryParams = UpdateProductCategoryRequest & {
+    cat_path: string
+}

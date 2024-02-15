@@ -2,9 +2,12 @@ type Product = {
     id: number
     name: string
     description: string
+    category_name: string
+    category_id: number
     price: number
     stock: number
     rating: number
+    review_count: number
     public_id: string
     img_src: string
 }

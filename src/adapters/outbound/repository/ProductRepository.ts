@@ -12,8 +12,10 @@ export default class ProductRepository {
         const { limit, sort, whereClause } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
-        SELECT p.id, p.name, p.description, p.price, p.stock, AVG(pr.rating) as rating, p.public_id, p.img_src
+        SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock, AVG(pr.rating) as rating, p.public_id, p.img_src
         FROM product p
+        JOIN product_category pc
+            ON p.category = pc.id
         JOIN product_review pr
             ON p.id = pr.product_id 
         ${whereClause}
@@ -27,10 +29,12 @@ export default class ProductRepository {
 
     static async DBGetProductDetail(id: number, query_runner?: QueryRunner) {
         return await db.query<ProductResponseDto.ProductDetailResponse[]>(`
-        SELECT p.id, p.name, p.description, p.price, p.stock, AVG(pr.rating) as rating, p.public_id, p.img_src 
+        SELECT p.id, p.name, p.description, pc.name as category_name, p.price, p.stock, AVG(pr.rating) as rating, COUNT(pr.id) as review_count, p.public_id, p.img_src 
         FROM product p
             JOIN product_review pr
-            ON p.id = pr.product_id 
+                ON p.id = pr.product_id 
+            JOIN product_category pc
+                ON p.category = pc.id
         WHERE p.id = ?`, [id], query_runner)
     }
 
@@ -39,8 +43,8 @@ export default class ProductRepository {
     }
 
     static async DBCreateProduct(product: ProductParamsDto.CreateProductParams, query_runner?: QueryRunner) {
-        const { name, description, price, stock, img_src, public_id } = product
-        return await db.query<ResultSetHeader>(`INSERT INTO product(name, description, price, stock, img_src, public_id) VALUES(?, ?, ?, ?, ?, ?)`, [name, description, price, stock, img_src, public_id], query_runner)
+        const { name, description, price, stock, img_src, public_id, category } = product
+        return await db.query<ResultSetHeader>(`INSERT INTO product(name, description, price, category, stock, img_src, public_id) VALUES(?, ?, ?, ?, ?, ?, ?)`, [name, description, price, category, stock, img_src, public_id], query_runner)
     }
 
     static async DBUpdateProduct(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {

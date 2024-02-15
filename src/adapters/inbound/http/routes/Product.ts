@@ -15,7 +15,7 @@ const routes: RouteOptions[] = [
                     name: "string",
                     price: "string",
                 },
-                additional_body: { ratingSort: { type: "string" } }
+                additional_body: { ratingSort: { type: "string" }, categories: { type: "string" } }
             }),
             response: Schema.BasePaginationResultSchema,
         },
@@ -33,9 +33,11 @@ const routes: RouteOptions[] = [
                     id: { type: "integer" },
                     name: { type: "string" },
                     description: { type: "string" },
+                    category_name: { type: "string" },
                     price: { type: "integer" },
                     stock: { type: "integer" },
                     rating: { type: "number" },
+                    review_count: { type: "number" },
                     public_id: { type: "string" },
                     img_src: { type: "string" },
                 },
@@ -73,6 +75,22 @@ const routes: RouteOptions[] = [
                     created_at: { type: "integer" },
                 }
             }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "category/list",
+        handler: ProductController.CategoryList,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BasePaginationRequestSchema({
+                pic: "Rakha", 
+                search: {
+                    name: "string",
+                    parent_id: "string",
+                }
+            }),
+            response: Schema.BasePaginationResultSchema,
         },
     },
 ]

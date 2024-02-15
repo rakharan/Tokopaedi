@@ -37,6 +37,11 @@ const Stock = Joi.number().min(1).messages({
     "number.min": "Stock must be greater than or equal to 1",
 })
 
+const Category = Joi.number().min(0).messages({
+    "number.base": "Category must be a number",
+    "number.min": "Category must be greater than or equal to 0",
+})
+
 const Name = Joi.string().messages({
     "string.base": "Name must be a string",
 })
@@ -51,18 +56,20 @@ export const CreateProduct = Joi.object({
     price: Price.required().messages({
         "any.required": "Price is required",
     }),
+    category: Category.required().messages({
+        "any.required": "Category is required",
+    }),
     stock: Stock.required().messages({
         "any.required": "Stock is required",
     }),
-})
-    .options({ abortEarly: false })
-    .unknown(true)
+}).options({ abortEarly: false }).unknown(true)
 
 export const UpdateProduct = Joi.object({
     id: ProductId,
     name: Name,
     description: Description,
     price: Price,
+    category: Category,
     stock: Stock,
 }).options({ abortEarly: false })
 

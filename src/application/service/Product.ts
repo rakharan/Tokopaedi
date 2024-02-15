@@ -13,8 +13,9 @@ import { emailer } from "@infrastructure/mailer/mailer"
 import { DeleteImage, UploadImage } from "@helpers/utils/image/imageHelper"
 import { File, FilesObject } from "fastify-multer/lib/interfaces"
 import { BadInputError } from "@domain/model/Error/Error"
+
 export default class ProductAppService {
-    static async GetProductList(params: CommonRequestDto.PaginationRequest, ratingSort: string = "") {
+    static async GetProductList(params: CommonRequestDto.PaginationRequest, ratingSort: string = "", categories: string = "") {
         await CommonSchema.Pagination.validateAsync(params)
         const { lastId = 0, limit = 100, search, sort = "ASC" } = params
 
@@ -27,10 +28,11 @@ export default class ProductAppService {
         searchFilter = unicorn(searchFilter, {
             name: "p.name",
             price: "p.price",
+            single_category: "pc.name"
         })
 
         //Generate whereClause
-        const whereClause = GenerateWhereClause({ lastId, searchFilter, sort, tableAlias: "p", tablePK: "id" })
+        let whereClause = GenerateWhereClause({ lastId, searchFilter, sort, tableAlias: "p", tablePK: "id" })
 
         let baseSort = `ORDER BY p.id ${sort}`
 
@@ -39,6 +41,13 @@ export default class ProductAppService {
             baseSort = `ORDER BY rating DESC`
         } else if (ratingSort === "lowest") {
             baseSort = `ORDER BY rating ASC`
+        }
+
+        //  Add categories filter, to fetch the categories and it's sub-categories.
+        //  for example, if user passes "Electronics", will fetch every product that is under that category.
+        // for instance, Smartphones, Laptop, Computers, etc.
+        if (categories) {
+            whereClause += ` AND pc.cat_path LIKE CONCAT((SELECT cat_path FROM product_category WHERE name = '${categories}'), "%")`
         }
 
         const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
@@ -137,7 +146,7 @@ export default class ProductAppService {
 
     static async UpdateProduct(product: ProductRequestDto.UpdateProductRequest, files: FilesObject, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.UpdateProduct.validateAsync(product)
-        const { id, description, name, price, stock } = product
+        const { id, description, name, price, stock, category } = product
 
         //additional checking to prevent mutate deleted data.
         await ProductDomainService.CheckIsProductAliveDomain(id)
@@ -147,13 +156,13 @@ export default class ProductAppService {
         //Can update product partially, not all property is required
         const updateProductData: Partial<Product> = existingProduct
 
-        if (name) {
-            //Add name checking, can not use bad words for the product name
-            if (Profanity.flag(product.name.toLowerCase())) {
-                throw new Error("You can't use this name!")
-            }
-            updateProductData.name = name
+        //Add name checking, can not use bad words for the product name
+        if (name && Profanity.flag(product.name.toLowerCase())) {
+            throw new Error("You can't use this name!")
         }
+        updateProductData.name = name
+
+        if (category) updateProductData.category_id = category
 
         if (description) updateProductData.description = description
         if (price) updateProductData.price = price
@@ -231,10 +240,10 @@ export default class ProductAppService {
         //Generate whereClause
         const whereClause = GenerateWhereClause({ lastId, searchFilter: search, sort, tableAlias: "pr", tablePK: "id" })
 
-        const product = await ProductDomainService.GetProductReviewListDomain(id, { limit: Number(limit), whereClause, sort })
+        const review = await ProductDomainService.GetProductReviewListDomain(id, { limit: Number(limit), whereClause, sort })
 
         //Generate pagination
-        const result = Paginate({ data: product, limit })
+        const result = Paginate({ data: review, limit })
 
         return result
     }
@@ -356,32 +365,33 @@ export default class ProductAppService {
         }
     }
 
-    static async ProductCategoryList(params: CommonRequestDto.PaginationRequest){
+    static async CategoryList(params: CommonRequestDto.PaginationRequest) {
         await CommonSchema.Pagination.validateAsync(params)
 
         const { lastId = 0, limit = 100, search = "", sort = "ASC" } = params
 
         let searchFilter = search || ""
         searchFilter = unicorn(searchFilter, {
-            name: "p.name",
-            price: "p.price",
+            name: "pc.name",
+            parent_id: "pc.parent_id",
+            sub_category: "pc.cat_path"
         })
 
         //Generate whereClause
         const whereClause = GenerateWhereClause({ lastId, searchFilter, sort, tableAlias: "pc", tablePK: "id" })
 
-        const product = await ProductDomainService.GetProductCategoryListDomain({ limit: Number(limit), whereClause, sort })
+        const category = await ProductDomainService.GetProductCategoryListDomain({ limit: Number(limit), whereClause, sort })
 
         //Generate pagination
-        const result = Paginate({ data: product, limit })
+        const result = Paginate({ data: category, limit })
 
         return result
     }
 
-    static async UpdateProductCategory(params: ProductParamsDto.UpdateProductCategoryParams, logData: LogParamsDto.CreateLogParams) {
-        await ProductSchema.CreateCategory.validateAsync(params)
+    static async UpdateProductCategory(params: ProductRequestDto.UpdateProductCategoryRequest, logData: LogParamsDto.CreateLogParams) {
+        await ProductSchema.UpdateCategory.validateAsync(params)
 
-        const { id, cat_path, name, parent_id } = params
+        const { id, name, parent_id } = params
 
         // checking if name is containing bad word
         if (name && Profanity.flag(name.toLowerCase())) {
@@ -393,12 +403,51 @@ export default class ProductAppService {
 
         const updateCategory = existingCategory
 
+        let cat_path = existingCategory.cat_path;
+        console.log({ existingCategory, parent_id })
         if (name) updateCategory.name = name
-        if (cat_path) updateCategory.cat_path = cat_path
-        if (parent_id) updateCategory.parent_id = parent_id
+
+        if (parent_id || parent_id != existingCategory.parent_id) {
+            updateCategory.parent_id = parent_id
+            
+            // if parent_id = 0, the cat_path is /0/NEW.id/.
+            //  when parent_id = 0, the category is the head category / doesn't have parent category.
+            // if parent_id > 0, category is a sub-category.
+            if (parent_id === 0) {
+                cat_path = "/0/"
+            } else {
+                // Getting parent cat_path if parent_id > 0
+                const parent = await ProductDomainService.GetProductCategoryDetailDomain(parent_id)
+                cat_path = parent.cat_path
+            }
+        }
 
         // checking if there's already a category with the same name, if it's true, throw an error.
         await ProductDomainService.CheckExistingCategoryDomain(name)
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+        try {
+            await query_runner.startTransaction()
+
+            await ProductDomainService.UpdateProductCategoryDomain({ ...updateCategory, cat_path }, query_runner)
+
+            await LogDomainService.CreateLogDomain(logData, query_runner)
+
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
+        }
+    }
+
+    static async DeleteProductCategory(id: number, logData: LogParamsDto.CreateLogParams) {
+        await ProductSchema.CategoryId.validateAsync(id)
 
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
@@ -407,7 +456,7 @@ export default class ProductAppService {
         try {
             await query_runner.startTransaction()
 
-            await ProductDomainService.UpdateProductCategoryDomain(params, query_runner)
+            await ProductDomainService.DeleteProductCategoryDomain(id, query_runner)
 
             await LogDomainService.CreateLogDomain(logData, query_runner)
 
