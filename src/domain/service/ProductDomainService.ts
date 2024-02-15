@@ -186,4 +186,12 @@ export default class ProductDomainService {
             throw new BadInputError("SAME_CATEGORY_ALREADY_EXISTS")
         }
     }
+
+    static async GetWishlistedProductListDomain(params: RepoPaginationParams) {
+        const productList = await ProductRepository.GetWishlistedProductList(params)
+        if (productList.length < 1) {
+            throw new ResultNotFoundError("Product is empty!")
+        }
+        return productList
+    }
 }

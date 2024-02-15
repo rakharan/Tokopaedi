@@ -520,4 +520,98 @@ export default class ProductAppService {
             throw error
         }
     }
+
+    static async GetWishlistedProductList(params: CommonRequestDto.PaginationRequest, productListParams: ProductParamsDto.GetProductListParams) {
+        await CommonSchema.Pagination.validateAsync(params)
+
+        // validating productListParams filter
+        await ProductSchema.ProductList.validateAsync(productListParams)
+
+        const { lastId = 0, limit = 100, search, sort = "ASC" } = params
+
+        const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin } = productListParams
+
+        // additional validation for price filter.
+        // price max can not be lower than price min
+        if (priceMax < priceMin) {
+            throw new BadInputError("MAX_PRICE_SHOULD_BE_GREATER_THAN_MIN_PRICE")
+        }
+
+        /*
+        search filter, to convert filter field into sql string
+        e.g: ({name} = "iPhone" AND {price} > 1000) will turn into ((p.name = "iPhone" AND p.price > 1000))
+        every field name need to be inside {}
+        */
+        let searchFilter = search || ""
+        searchFilter = unicorn(searchFilter, {
+            name: "p.name",
+            price: "p.price",
+            single_category: "pc.name"
+        })
+
+        //Generate whereClause
+        let whereClause = GenerateWhereClause({ lastId, searchFilter, sort, tableAlias: "p", tablePK: "id" })
+
+        let baseSort: string
+
+        // sort filter based on user input.
+        switch (sortFilter) {
+            // Add mostReviewed product if user want to sort by review count.
+            case "mostReviewed":
+                baseSort = `ORDER BY rev_count DESC`;
+                break;
+            // Add ratingSort if user want to sort by lowest/highest rating.
+            case "highestRating":
+                baseSort = `ORDER BY rating DESC`;
+                break;
+            case "lowestRating":
+                baseSort = `ORDER BY rating ASC`;
+                break;
+            default:
+                baseSort = `ORDER BY p.id ${sort}`;
+                break;
+        }
+
+        // rating filter, for example: > 4 star review.
+        switch (ratingSort) {
+            case "greaterThanOrEqualFour":
+                whereClause += ` AND rating >= 4`;
+                break;
+            case "greaterThanOrEqualThree":
+                whereClause += ` AND rating >= 3`;
+                break;
+            case "greaterThanOrEqualTwo":
+                whereClause += ` AND rating >= 2`;
+                break;
+        }
+
+        // single price filter
+        if (priceMin) {
+            whereClause += ` AND p.price >= ${priceMin}`
+        }
+
+        // single price filter
+        if (priceMax) {
+            whereClause += ` AND p.price <= ${priceMax}`
+        }
+
+        // price filter, between min and max
+        if (priceMin && priceMax) {
+            whereClause += ` AND p.price BETWEEN ${priceMin} AND ${priceMax}`
+        }
+
+        //  Add category filter, to fetch the categories and it's sub-categories.
+        //  for example, if user passes "Electronics", will fetch every product that is under that category.
+        // for instance, Smartphones, Laptop, Computers, etc.
+        if (categoriesFilter) {
+            whereClause += ` AND pc.cat_path LIKE CONCAT((SELECT cat_path FROM product_category WHERE name = '${categoriesFilter}'), "%")`
+        }
+
+        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
+
+        //Generate pagination
+        const result = Paginate({ data: product, limit })
+
+        return result
+    }
 }

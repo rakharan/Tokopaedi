@@ -156,4 +156,29 @@ export default class ProductRepository {
         FROM product_category pc
         WHERE pc.name = ?`, [name])
     }
+
+    static async GetWishlistedProductList(params: RepoPaginationParams) {
+        const { limit, sort, whereClause } = params
+
+        return await db.query(`
+        SELECT p.id,
+            p.name,
+            p.description,
+            p.price,
+            p.img_src,
+            p.public_id,
+            AVG(pr.rating) AS rating,
+            COUNT(pr.id) AS rev_count
+        FROM wishlist_collections wc
+        JOIN wishlist w ON w.collection_id = wc.id
+        JOIN user u ON wc.user_id = u.id
+        JOIN product p ON p.id = w.product_id
+        JOIN product_review pr ON p.id = pr.product_id
+        JOIN product_category pc ON p.category = pc.id
+        ${whereClause}
+        GROUP BY p.name
+        ${sort}
+        LIMIT ?
+        `, [limit + 1])
+    }
 }
