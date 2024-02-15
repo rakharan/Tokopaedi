@@ -282,6 +282,26 @@ const routes: RouteOptions[] = [
             response: Schema.BaseResponse({ type: "Boolean" }),
         },
     },
+    {
+        method: ["POST"],
+        url: "wishlist/product/list",
+        handler: ProductController.GetWishlistProductList,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BasePaginationRequestSchema({
+                pic: "Rakha",
+                search: {
+                    name: "string",
+                },
+                additional_body: {
+                    sortFilter: { type: "string" },
+                    categoriesFilter: { type: "string" },
+                    ratingSort: { type: "string" },
+                }
+            }),
+            response: Schema.BasePaginationResultSchema,
+        },
+    },
 ]
 
 export default async function UserRoute(fastify: FastifyInstance, options: FastifyPluginOptions) {

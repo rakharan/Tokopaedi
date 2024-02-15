@@ -13,7 +13,6 @@ const routes: RouteOptions[] = [
                 pic: "Rakha",
                 search: {
                     name: "string",
-                    price: "string",
                 },
                 additional_body: {
                     sortFilter: { type: "string" },

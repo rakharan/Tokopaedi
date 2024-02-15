@@ -175,4 +175,15 @@ export default class ProductController {
 
         return { message: deleteCategory }
     }
+
+    static async GetWishlistProductList(request: FastifyRequest) {
+        const searchFilter = request.body as ProductRequestDto.GetProductListRequest
+        const paginationRequest = request.body as CommonRequestDto.PaginationRequest
+
+        const { collection_id } = request.body as { collection_id: number }
+
+        const user = request.user
+        const product = await ProductAppService.GetWishlistedProductList(paginationRequest, searchFilter, user.id, collection_id)
+        return { message: product }
+    }
 }

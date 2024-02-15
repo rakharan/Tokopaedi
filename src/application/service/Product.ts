@@ -2,6 +2,7 @@ import { Product } from "@domain/model/BaseClass/Product"
 import { CommonRequestDto, ProductRequestDto } from "@domain/model/request"
 import ProductDomainService from "@domain/service/ProductDomainService"
 import * as ProductSchema from "@helpers/JoiSchema/Product"
+import { UserId } from "@helpers/JoiSchema/User"
 import * as CommonSchema from "@helpers/JoiSchema/Common"
 import unicorn from "format-unicorn/safe"
 import { GenerateWhereClause, Paginate } from "key-pagination-sql"
@@ -39,7 +40,6 @@ export default class ProductAppService {
         let searchFilter = search || ""
         searchFilter = unicorn(searchFilter, {
             name: "p.name",
-            price: "p.price",
             single_category: "pc.name"
         })
 
@@ -521,21 +521,17 @@ export default class ProductAppService {
         }
     }
 
-    static async GetWishlistedProductList(params: CommonRequestDto.PaginationRequest, productListParams: ProductParamsDto.GetProductListParams) {
+    static async GetWishlistedProductList(params: CommonRequestDto.PaginationRequest, productListParams: ProductParamsDto.GetProductListParams, user_id: number, collection_id: number) {
         await CommonSchema.Pagination.validateAsync(params)
+
+        await UserId.validateAsync(user_id)
 
         // validating productListParams filter
         await ProductSchema.ProductList.validateAsync(productListParams)
 
         const { lastId = 0, limit = 100, search, sort = "ASC" } = params
 
-        const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin } = productListParams
-
-        // additional validation for price filter.
-        // price max can not be lower than price min
-        if (priceMax < priceMin) {
-            throw new BadInputError("MAX_PRICE_SHOULD_BE_GREATER_THAN_MIN_PRICE")
-        }
+        const { categoriesFilter, ratingSort, sortFilter } = productListParams
 
         /*
         search filter, to convert filter field into sql string
@@ -585,21 +581,6 @@ export default class ProductAppService {
                 break;
         }
 
-        // single price filter
-        if (priceMin) {
-            whereClause += ` AND p.price >= ${priceMin}`
-        }
-
-        // single price filter
-        if (priceMax) {
-            whereClause += ` AND p.price <= ${priceMax}`
-        }
-
-        // price filter, between min and max
-        if (priceMin && priceMax) {
-            whereClause += ` AND p.price BETWEEN ${priceMin} AND ${priceMax}`
-        }
-
         //  Add category filter, to fetch the categories and it's sub-categories.
         //  for example, if user passes "Electronics", will fetch every product that is under that category.
         // for instance, Smartphones, Laptop, Computers, etc.
@@ -607,7 +588,10 @@ export default class ProductAppService {
             whereClause += ` AND pc.cat_path LIKE CONCAT((SELECT cat_path FROM product_category WHERE name = '${categoriesFilter}'), "%")`
         }
 
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
+        // Append the user id to the whereclause because we want to fetch a user wishlist.
+        whereClause += ` AND wc.id = ${collection_id} AND u.id = ${user_id}`
+
+        const product = await ProductDomainService.GetWishlistedProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
 
         //Generate pagination
         const result = Paginate({ data: product, limit })
