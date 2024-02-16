@@ -186,4 +186,40 @@ export default class ProductController {
         const product = await ProductAppService.GetWishlistedProductList(paginationRequest, searchFilter, user.id, collection_id)
         return { message: product }
     }
+
+    static async CreateWishlistCollection(request: FastifyRequest) {
+        const { name } = request.body as { name: string }
+        const { id: user_id } = request.user
+
+        const createCollection = await ProductAppService.CreateWishlistCollection(name, user_id)
+        return { message: createCollection }
+    }
+
+    static async UpdateWishlistCollectionName(request: FastifyRequest) {
+        const { name, collection_id } = request.body as { name: string, collection_id: number }
+
+        const updateCollection = await ProductAppService.UpdateWishlistCollection(name, collection_id)
+        return { message: updateCollection }
+    }
+
+    static async DeleteWishlistCollection(request: FastifyRequest) {
+        const { collection_id } = request.body as { collection_id: number }
+
+        const deleteCollection = await ProductAppService.DeleteWishlistCollection(collection_id)
+        return { message: deleteCollection }
+    }
+
+    static async AddProductToWishlist(request: FastifyRequest) {
+        const { collection_id, product_id } = request.body as { collection_id: number, product_id: number }
+
+        const wishlistAProduct = await ProductAppService.AddProductToWishlist(collection_id, product_id)
+        return { message: wishlistAProduct }
+    }
+
+    static async RemoveProductFromWishlist(request: FastifyRequest) {
+        const { collection_id, product_id } = request.body as { collection_id: number, product_id: number }
+
+        const removeProduct = await ProductAppService.RemoveProductFromWishlist(collection_id, product_id)
+        return { message: removeProduct }
+    }
 }

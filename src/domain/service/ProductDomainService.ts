@@ -14,8 +14,8 @@ export default class ProductDomainService {
         return productList
     }
 
-    static async GetProductDetailDomain(id: number) {
-        const productDetail = await ProductRepository.DBGetProductDetail(id)
+    static async GetProductDetailDomain(id: number, user_id?: number) {
+        const productDetail = await ProductRepository.DBGetProductDetail(id, user_id)
         if (productDetail.length < 1) {
             throw new ResultNotFoundError("Product not found!")
         }
@@ -190,8 +190,51 @@ export default class ProductDomainService {
     static async GetWishlistedProductListDomain(params: RepoPaginationParams) {
         const productList = await ProductRepository.GetWishlistedProductList(params)
         if (productList.length < 1) {
-            throw new ResultNotFoundError("Product is empty!")
+            throw new ResultNotFoundError("WISHLIST_IS_EMPTY")
         }
         return productList
+    }
+
+    static async GetWishlistCollectionDomain(user_id: number) {
+        const collections = await ProductRepository.GetUserWishlistCollection(user_id)
+        if (collections.length < 1) {
+            throw new ResultNotFoundError("YOU_HAVE_NO_COLLECTION")
+        }
+        return collections
+    }
+
+    static async CreateWishlistCollectionDomain(name: string, user_id: number) {
+        const newCollection = await ProductRepository.CreateWishlistCollection(name, user_id)
+        if (newCollection.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_CREATE_NEW_COLLECTION")
+        }
+    }
+
+    static async UpdateWishlistCollectionNameDomain(name: string, collection_id: number) {
+        const updateCollection = await ProductRepository.UpdateWishlistCollectionName(collection_id, name)
+        if (updateCollection.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_UPDATE_COLLECTION_NAME")
+        }
+    }
+
+    static async DeleteWishlistCollectionDomain(collection_id: number) {
+        const deleteCollection = await ProductRepository.DeleteWishlistCollection(collection_id)
+        if (deleteCollection.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_DELETE_COLLECTION")
+        }
+    }
+
+    static async AddProductToWishlistDomain(collection_id: number, product_id: number) {
+        const addToWishlist = await ProductRepository.AddProductToWishlist(collection_id, product_id)
+        if (addToWishlist.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_ADD_PRODUCT_TO_WISHLIST")
+        }
+    }
+
+    static async RemoveProductFromWishlistDomain(collection_id: number, product_id: number) {
+        const removeFromWishlist = await ProductRepository.RemoveProductFromWishlist(collection_id, product_id)
+        if (removeFromWishlist.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_REMOVE_PRODUCT_FROM_WISHLIST")
+        }
     }
 }

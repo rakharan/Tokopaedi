@@ -27,15 +27,39 @@ export default class ProductRepository {
         )
     }
 
-    static async DBGetProductDetail(id: number, query_runner?: QueryRunner) {
+    static async DBGetProductDetail(id: number, user_id?: number, query_runner?: QueryRunner) {
         return await db.query<ProductResponseDto.ProductDetailResponse[]>(`
-        SELECT p.id, p.name, p.description, pc.name as category_name, p.price, p.stock, AVG(pr.rating) as rating, COUNT(pr.id) as review_count, p.public_id, p.img_src 
+        SELECT p.id,
+            p.name,
+            p.description,
+            pc.name AS category_name,
+            p.price,
+            p.stock,
+            p.img_src,
+            p.public_id,
+            (
+                SELECT AVG(rating)
+                FROM product_review
+                WHERE product_id = p.id
+            ) AS rating,
+            (
+                SELECT COUNT(*)
+                FROM product_review
+                WHERE product_id = p.id
+            ) AS review_count,
+            CASE 
+                WHEN EXISTS (
+                        SELECT 1
+                        FROM wishlist w
+                        JOIN wishlist_collections wc ON w.collection_id = wc.id
+                        WHERE w.product_id = p.id AND wc.user_id = ?
+                        )
+                    THEN True
+                ELSE False
+                END AS is_wishlisted
         FROM product p
-            JOIN product_review pr
-                ON p.id = pr.product_id 
-            JOIN product_category pc
-                ON p.category = pc.id
-        WHERE p.id = ?`, [id], query_runner)
+        JOIN product_category pc ON p.category = pc.id
+        WHERE p.id = ?`, [user_id, id], query_runner)
     }
 
     static async DBSoftDeleteProduct(id: number, query_runner?: QueryRunner) {
@@ -167,18 +191,59 @@ export default class ProductRepository {
             p.price,
             p.img_src,
             p.public_id,
-            AVG(pr.rating) AS rating,
-            COUNT(pr.id) AS rev_count
+            (
+                SELECT AVG(rating)
+                FROM product_review
+                WHERE product_id = p.id
+            ) AS rating,
+            (
+                SELECT COUNT(*)
+                FROM product_review
+                WHERE product_id = p.id
+            ) AS review_count
         FROM wishlist_collections wc
-        JOIN wishlist w ON w.collection_id = wc.id
-        JOIN user u ON wc.user_id = u.id
-        JOIN product p ON p.id = w.product_id
-        JOIN product_review pr ON p.id = pr.product_id
-        JOIN product_category pc ON p.category = pc.id
+        JOIN wishlist w 
+            ON w.collection_id = wc.id
+        JOIN user u 
+            ON wc.user_id = u.id
+        JOIN product p 
+            ON p.id = w.product_id
+        JOIN product_category pc 
+            ON p.category = pc.id
         ${whereClause}
         GROUP BY p.name
         ${sort}
         LIMIT ?
         `, [limit + 1])
+    }
+
+    static async GetUserWishlistCollection(user_id: number) {
+        return await db.query<{ id: number, name: string }[]>(`
+        SELECT wc.id, wc.name 
+        FROM wishlist_collections wc
+            JOIN user u
+                ON u.id = wc.user_id
+        WHERE u.id = ?
+        `, [user_id])
+    }
+
+    static async CreateWishlistCollection(name: string, user_id: number) {
+        return await db.query<ResultSetHeader>(`INSERT INTO wishlist_collections(name, user_id) VALUES(?, ?)`, [name, user_id])
+    }
+
+    static async UpdateWishlistCollectionName(collection_id: number, name: string) {
+        return await db.query<ResultSetHeader>(`UPDATE wishlist_collections SET name = ? WHERE id = ?`, [name, collection_id])
+    }
+
+    static async DeleteWishlistCollection(collection_id: number) {
+        return await db.query<ResultSetHeader>(`DELETE FROM wishlist_collections WHERE id = ?`, [collection_id])
+    }
+
+    static async AddProductToWishlist(collection_id: number, product_id: number) {
+        return await db.query<ResultSetHeader>(`INSERT INTO wishlist(product_id, collection_id) VALUES(?, ?)`, [product_id, collection_id])
+    }
+
+    static async RemoveProductFromWishlist(collection_id: number, product_id: number) {
+        return await db.query<ResultSetHeader>(`DELETE FROM wishlist WHERE collection_id = ? AND product_id = ?`, [collection_id, product_id])
     }
 }

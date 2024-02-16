@@ -3,6 +3,7 @@ import UserAppService from "@application/service/User"
 import { CommonRequestDto, UserRequestDto } from "@domain/model/request"
 import TransactionAppService from "@application/service/Transaction"
 import moment from "moment"
+import ProductAppService from "@application/service/Product"
 
 export default class UserController {
     static async GetUserProfile(request: FastifyRequest) {
@@ -76,5 +77,20 @@ export default class UserController {
             time: moment().unix(),
         })
         return { message: deleteTransaction }
+    }
+
+    static async GetProductDetail(request: FastifyRequest) {
+        const { id } = request.body as { id: number }
+        const { id: user_id } = request.user
+
+        const productDetail = await ProductAppService.GetProductDetail(id, user_id)
+        return { message: productDetail }
+    }
+
+    static async GetWishlistCollection(request: FastifyRequest) {
+        const { id: user_id } = request.user
+
+        const wishlistCollection = await ProductAppService.GetWishlistCollection(user_id)
+        return { message: wishlistCollection }
     }
 }

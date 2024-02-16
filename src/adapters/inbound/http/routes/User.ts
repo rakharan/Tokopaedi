@@ -284,7 +284,7 @@ const routes: RouteOptions[] = [
     },
     {
         method: ["POST"],
-        url: "wishlist/product/list",
+        url: "wishlist/collection/product/list",
         handler: ProductController.GetWishlistProductList,
         schema: {
             tags: ["Product"],
@@ -297,9 +297,121 @@ const routes: RouteOptions[] = [
                     sortFilter: { type: "string" },
                     categoriesFilter: { type: "string" },
                     ratingSort: { type: "string" },
+                    collection_id: { type: "integer" },
                 }
             }),
             response: Schema.BasePaginationResultSchema,
+        },
+    },
+    {
+        method: ["POST"],
+        url: "product/detail",
+        handler: UserController.GetProductDetail,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", { id: { type: "integer" } }),
+            response: Schema.BaseResponse({
+                type: "Object",
+                message: {
+                    id: { type: "integer" },
+                    name: { type: "string" },
+                    description: { type: "string" },
+                    category_name: { type: "string" },
+                    is_wishlisted: { type: "boolean" },
+                    price: { type: "integer" },
+                    stock: { type: "integer" },
+                    rating: { type: "number" },
+                    review_count: { type: "number" },
+                    public_id: { type: "string" },
+                    img_src: { type: "string" },
+                },
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "wishlist/collection/create",
+        handler: ProductController.CreateWishlistCollection,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", { name: { type: "string" } }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
+    {
+        method: ["GET"],
+        url: "wishlist/collection/list",
+        handler: UserController.GetWishlistCollection,
+        schema: {
+            tags: ["Product"],
+            response: Schema.BaseResponse({
+                type: "Array of Object",
+                message: {
+                    id: { type: "integer" },
+                    name: { type: "string" },
+                }
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "wishlist/collection/update",
+        handler: ProductController.UpdateWishlistCollectionName,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                collection_id: { type: "integer" },
+                name: { type: "string" }
+            }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "wishlist/collection/delete",
+        handler: ProductController.DeleteWishlistCollection,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                collection_id: { type: "integer" },
+            }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "wishlist/collection/product/add",
+        handler: ProductController.AddProductToWishlist,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                collection_id: { type: "integer" },
+                product_id: { type: "integer" },
+            }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "wishlist/collection/product/delete",
+        handler: ProductController.RemoveProductFromWishlist,
+        schema: {
+            tags: ["Product"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                collection_id: { type: "integer" },
+                product_id: { type: "integer" },
+            }),
+            response: Schema.BaseResponse({
+                type: "Boolean",
+            }),
         },
     },
 ]

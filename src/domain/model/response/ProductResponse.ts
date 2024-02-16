@@ -10,6 +10,7 @@ type Product = {
     review_count: number
     public_id: string
     img_src: string
+    is_wishlisted: boolean
 }
 
 type ProductReview = {

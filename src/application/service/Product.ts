@@ -109,9 +109,9 @@ export default class ProductAppService {
         return result
     }
 
-    static async GetProductDetail(id: number) {
+    static async GetProductDetail(id: number, user_id?: number) {
         await ProductSchema.ProductId.validateAsync(id)
-        return await ProductDomainService.GetProductDetailDomain(id)
+        return await ProductDomainService.GetProductDetailDomain(id, user_id)
     }
 
     static async SoftDeleteProduct(id: number, logData: LogParamsDto.CreateLogParams) {
@@ -589,7 +589,12 @@ export default class ProductAppService {
         }
 
         // Append the user id to the whereclause because we want to fetch a user wishlist.
-        whereClause += ` AND wc.id = ${collection_id} AND u.id = ${user_id}`
+        // append the collection id if user want to fetch a specific collection wishlist.
+        if (collection_id) {
+            whereClause += ` AND wc.id = ${collection_id} AND u.id = ${user_id}`
+        } else {
+            whereClause += ` AND u.id = ${user_id}`
+        }
 
         const product = await ProductDomainService.GetWishlistedProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
 
@@ -597,5 +602,40 @@ export default class ProductAppService {
         const result = Paginate({ data: product, limit })
 
         return result
+    }
+
+    static async GetWishlistCollection(user_id: number) {
+        await ProductSchema.WishlistCollection.validateAsync(user_id)
+        return await ProductDomainService.GetWishlistCollectionDomain(user_id)
+    }
+
+    static async CreateWishlistCollection(name: string, user_id: number) {
+        await ProductSchema.CreateCollection.validateAsync({ name, user_id })
+        await ProductDomainService.CreateWishlistCollectionDomain(name, user_id)
+        return true
+    }
+
+    static async UpdateWishlistCollection(name: string, collection_id: number) {
+        await ProductSchema.UpdateCollection.validateAsync({ name, collection_id })
+        await ProductDomainService.UpdateWishlistCollectionNameDomain(name, collection_id)
+        return true
+    }
+
+    static async DeleteWishlistCollection(collection_id: number) {
+        await ProductSchema.CollectionId.validateAsync(collection_id)
+        await ProductDomainService.DeleteWishlistCollectionDomain(collection_id)
+        return true
+    }
+
+    static async AddProductToWishlist(collection_id: number, product_id: number) {
+        await ProductSchema.AddProductToWishlist.validateAsync({ collection_id, product_id })
+        await ProductDomainService.AddProductToWishlistDomain(collection_id, product_id)
+        return true
+    }
+
+    static async RemoveProductFromWishlist(collection_id: number, product_id: number) {
+        await ProductSchema.RemoveProductFromWishlist.validateAsync({ collection_id, product_id })
+        await ProductDomainService.RemoveProductFromWishlistDomain(collection_id, product_id)
+        return true
     }
 }

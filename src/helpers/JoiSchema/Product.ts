@@ -13,6 +13,12 @@ export const ReviewId = Joi.number().min(1).required().messages({
     "any.required": "id is a required field",
 })
 
+export const CollectionId = Joi.number().min(1).required().messages({
+    "number.base": "id must be a number",
+    "number.min": "id must be greater than or equal to 1",
+    "any.required": "id is a required field",
+})
+
 export const CategoryId = Joi.number().min(0).messages({
     "number.base": "id must be a number",
     "number.min": "id must be greater than or equal to 0",
@@ -105,3 +111,25 @@ export const ProductList = Joi.object({
     priceMin: Price,
     priceMax: Price,
 }).options({ abortEarly: false }).unknown(true);
+
+export const CreateCollection = Joi.object({
+    name: Name.required(),
+    user_id: UserId
+})
+
+export const UpdateCollection = Joi.object({
+    name: Name.required(),
+    collection_id: CollectionId
+})
+
+export const WishlistCollection = UserId
+
+export const AddProductToWishlist = Joi.object({
+    collection_id: CollectionId,
+    product_id: ProductId
+})
+
+export const RemoveProductFromWishlist = Joi.object({
+    collection_id: CollectionId,
+    product_id: ProductId
+})

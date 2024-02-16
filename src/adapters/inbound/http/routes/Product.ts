@@ -42,6 +42,7 @@ const routes: RouteOptions[] = [
                     price: { type: "integer" },
                     stock: { type: "integer" },
                     rating: { type: "number" },
+                    is_wishlisted: { type: "boolean" },
                     review_count: { type: "number" },
                     public_id: { type: "string" },
                     img_src: { type: "string" },
