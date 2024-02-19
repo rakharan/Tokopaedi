@@ -12,12 +12,23 @@ export default class ProductRepository {
         const { limit, sort, whereClause } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
-        SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock, AVG(pr.rating) as rating, COUNT(pr.id) as rev_count, p.public_id, p.img_src
+        SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock,
+        IFNULL(
+            (
+                SELECT AVG(rating)
+                FROM product_review
+                WHERE product_id = p.id
+            ),  0
+        ) AS rating,
+        (
+            SELECT COUNT(*)
+            FROM product_review
+            WHERE product_id = p.id
+        ) AS review_count, 
+        p.public_id, p.img_src
         FROM product p
         JOIN product_category pc
             ON p.category = pc.id
-        JOIN product_review pr
-            ON p.id = pr.product_id 
         ${whereClause}
         AND p.is_deleted <> 1
         GROUP BY p.id
@@ -37,10 +48,12 @@ export default class ProductRepository {
             p.stock,
             p.img_src,
             p.public_id,
-            (
-                SELECT AVG(rating)
-                FROM product_review
-                WHERE product_id = p.id
+            IFNULL(
+                (
+                    SELECT AVG(rating)
+                    FROM product_review
+                    WHERE product_id = p.id
+                ),  0
             ) AS rating,
             (
                 SELECT COUNT(*)

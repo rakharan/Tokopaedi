@@ -48,7 +48,10 @@ describe('List of routes accessible to super admin', () => {
                         "VIEW_USER_TRANSACTION_LIST",
                         "VIEW_USER_DELETED_TRANSACTION_LIST",
                         "VIEW_DELETED_TRANSACTION_LIST",
-                        "VIEW_USER_SHIPPING_ADDRESS"
+                        "VIEW_USER_SHIPPING_ADDRESS",
+                        "VIEW_USER_SHIPPING_ADDRESS_LIST",
+                        "VIEW_USER_TRANSACTION_DETAIL",
+                        "CREATE_PRODUCT_CATEGORY",
                     ],
                     "rules_id": [
                         106,
@@ -72,7 +75,10 @@ describe('List of routes accessible to super admin', () => {
                         124,
                         125,
                         126,
-                        127
+                        127,
+                        128,
+                        129,
+                        130
                     ]
                 },
                 {
@@ -80,12 +86,18 @@ describe('List of routes accessible to super admin', () => {
                     "rights": [
                         "CHANGE_USER_PASSWORD",
                         "CREATE_PRODUCT",
-                        "UPDATE_PRODUCT"
+                        "UPDATE_PRODUCT",
+                        "VIEW_USER_SHIPPING_ADDRESS_LIST",
+                        "VIEW_USER_TRANSACTION_DETAIL",
+                        "CREATE_PRODUCT_CATEGORY",
                     ],
                     "rules_id": [
                         115,
                         116,
-                        117
+                        117,
+                        128,
+                        129,
+                        130,
                     ]
                 },
                 {

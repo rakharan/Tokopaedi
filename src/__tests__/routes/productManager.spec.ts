@@ -35,6 +35,7 @@ describe('Lists of routes accessible to product manager', () => {
             description: "A plain black t-shirt",
             price: 1000,
             stock: 100,
+            category: 12, // Men's Clothing category
         };
     })
 
@@ -43,7 +44,10 @@ describe('Lists of routes accessible to product manager', () => {
         await ProductDomainService.HardDeleteProductDomain(newlyCreatedProductId)
     })
 
-    const productColumnName = ['id', 'name', 'description', 'price', 'stock', 'public_id', 'img_src']
+    const productColumnName = ['id', 'name', 'description', 'category', 'price', 'stock', 'rating', 'review_count', 'public_id', 'img_src']
+
+    const productDetailColumnName = ['id', 'name', 'description', 'category_name', 'price', 'stock', 'rating', 'review_count', 'public_id', 'img_src']
+    
     const paginationResponseBodyProperty = ['data', 'column', 'lastId', 'hasNext', 'currentPageDataCount']
 
     it('Should create a product', async function () {
@@ -61,6 +65,7 @@ describe('Lists of routes accessible to product manager', () => {
             .field('description', newProductRequestData.description)
             .field('price', newProductRequestData.price)
             .field('stock', newProductRequestData.stock)
+            .field('category', newProductRequestData.category)
             .attach('image', newImageFilepath, { contentType: 'image/jpeg' })
 
         expect(body.message).toEqual(true)
@@ -91,7 +96,7 @@ describe('Lists of routes accessible to product manager', () => {
         const firstElement = data[0]
 
         expect(data).toHaveLength(5)
-        expect(body.message.column).toHaveLength(7)
+        expect(body.message.column).toHaveLength(10)
         productColumnName.forEach(element => expect(body.message.column).toContain(element))
         paginationResponseBodyProperty.forEach(element => expect(body.message).toHaveProperty(element))
         expect(body.message).toHaveProperty("hasNext", true)
@@ -126,7 +131,7 @@ describe('Lists of routes accessible to product manager', () => {
         const firstElement = data[0]
 
         expect(data).toHaveLength(5)
-        expect(body.message.column).toHaveLength(7)
+        expect(body.message.column).toHaveLength(10)
         productColumnName.forEach(element => expect(body.message.column).toContain(element))
         paginationResponseBodyProperty.forEach(element => expect(body.message).toHaveProperty(element))
         expect(body.message).toHaveProperty("hasNext", true)
@@ -158,8 +163,8 @@ describe('Lists of routes accessible to product manager', () => {
         //extract the data
         const productName = body.message.data[0][1]
         const productDescrtiption = body.message.data[0][2]
-        const productPrice = body.message.data[0][3]
-        const productStock = body.message.data[0][4]
+        const productPrice = body.message.data[0][4]
+        const productStock = body.message.data[0][5]
 
         expect(productName).toEqual(newProductRequestData.name)
         expect(productDescrtiption).toEqual(newProductRequestData.description)
@@ -173,10 +178,14 @@ describe('Lists of routes accessible to product manager', () => {
             id: 1,
             name: "iPhone 9",
             description: "An apple mobile which is nothing like apple",
+            category_name: "Smartphones",
             price: 549,
             stock: 100,
-            img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712309/tokopaedi/products/iphone-9.jpg",
-            public_id: "tokopaedi/products/iphone-9.jpg"
+            rating: 4,
+            is_wishlisted: false,
+            review_count: 1,
+            public_id: "tokopaedi/products/iphone-9.jpg",
+            img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712309/tokopaedi/products/iphone-9.jpg"
         }
 
         const { body } = await supertest(app.server)
@@ -186,7 +195,7 @@ describe('Lists of routes accessible to product manager', () => {
 
         expect(body.message).toEqual(productData)
         expect(body.message.id).toEqual(1)
-        productColumnName.forEach(element => expect(body.message).toHaveProperty(element))
+        productDetailColumnName.forEach(element => expect(body.message).toHaveProperty(element))
     })
 
     it('Should update a single product', async () => {
@@ -237,6 +246,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('description', newProductRequestData.description)
                     .field('price', newProductRequestData.price)
                     .field('stock', newProductRequestData.stock)
+                    .field('category', newProductRequestData.category)
                     .attach('image', newImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
@@ -258,6 +268,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('description', newProductRequestData.description)
                     .field('price', newProductRequestData.price)
                     .field('stock', newProductRequestData.stock)
+                    .field('category', newProductRequestData.category)
                     .attach('image', newImageFilepath, { contentType: 'text/csv' })
 
                 expect(statusCode).toEqual(400)
@@ -279,6 +290,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('description', newProductRequestData.description)
                     .field('price', newProductRequestData.price)
                     .field('stock', newProductRequestData.stock)
+                    .field('category', newProductRequestData.category)
                     .attach('image', bigImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
@@ -298,6 +310,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('description', updateProductRequest.description)
                     .field('price', updateProductRequest.price)
                     .field('stock', updateProductRequest.stock)
+                    .field('category', newProductRequestData.category)
                     .attach('image', updateImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toBe(500)
@@ -315,6 +328,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('description', updateProductRequest.description)
                     .field('price', updateProductRequest.price)
                     .field('stock', updateProductRequest.stock)
+                    .field('category', newProductRequestData.category)
                     .attach('image', updateImageFilepath, { contentType: 'text/csv' })
 
                 expect(statusCode).toEqual(400)
@@ -332,6 +346,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('description', updateProductRequest.description)
                     .field('price', updateProductRequest.price)
                     .field('stock', updateProductRequest.stock)
+                    .field('category', newProductRequestData.category)
                     .attach('image', bigImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
@@ -351,7 +366,7 @@ describe('Lists of routes accessible to product manager', () => {
 
             public_id = body.message.public_id
 
-            productColumnName.forEach(element => expect(body.message).toHaveProperty(element))
+            productDetailColumnName.forEach(element => expect(body.message).toHaveProperty(element))
         });
 
         it('Should delete a single product', async () => {
