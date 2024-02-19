@@ -414,8 +414,8 @@ describe('Lists of routes accessible to product manager', () => {
 
     describe('Fail scenario test', () => {
 
-        describe('Create product', () => {
-            it('Should fail to create a product with prohibited name', async () => {
+        describe('Should failt to create product', () => {
+            it('with prohibited name', async () => {
 
                 /**
                  * Test create product api
@@ -437,7 +437,7 @@ describe('Lists of routes accessible to product manager', () => {
                 expect(body.message).toEqual("You can't use this name!")
             })
 
-            it('Should fail to create a product with wrong image mimetype', async () => {
+            it('with wrong image mimetype', async () => {
 
                 /**
                  * Test create product api
@@ -459,7 +459,7 @@ describe('Lists of routes accessible to product manager', () => {
                 expect(body.message).toEqual("Only .jpg and .png format allowed!")
             })
 
-            it('Should fail to create a product with too big image size', async () => {
+            it('with too big image size', async () => {
 
                 /**
                  * Test create product api
@@ -482,8 +482,8 @@ describe('Lists of routes accessible to product manager', () => {
             })
         })
 
-        describe('Update product', () => {
-            it('Should fail to update a product with prohibited name', async () => {
+        describe('Should fail to update product', () => {
+            it('with prohibited name', async () => {
                 const { body, statusCode } = await supertest(app.server)
                     .post('/api/v1/admin/product/update')
                     .set('Authorization', superAdminJwt)
@@ -501,7 +501,7 @@ describe('Lists of routes accessible to product manager', () => {
                 expect(body.message).toEqual("You can't use this name!")
             });
 
-            it('Should fail to update a product with wrong image mimetype', async () => {
+            it('with wrong image mimetype', async () => {
                 const { body, statusCode } = await supertest(app.server)
                     .post('/api/v1/admin/product/update')
                     .set('Authorization', superAdminJwt)
@@ -519,7 +519,7 @@ describe('Lists of routes accessible to product manager', () => {
                 expect(body.message).toEqual("Only .jpg and .png format allowed!")
             });
 
-            it('Should fail to update a product with wrong image mimetype', async () => {
+            it('with wrong image mimetype', async () => {
                 const { body, statusCode } = await supertest(app.server)
                     .post('/api/v1/admin/product/update')
                     .set('Authorization', superAdminJwt)
