@@ -304,7 +304,6 @@ describe('Lists of routes accessible to product manager', () => {
                 .set('user-agent', "Test")
                 .send({ name: newHeadCategory.name, parent_id: newHeadCategory.parent_id })
 
-            console.log({ body })
             expect(body.message).toEqual(true)
         })
 
@@ -318,8 +317,6 @@ describe('Lists of routes accessible to product manager', () => {
             const { body } = await supertest(app.server)
                 .post('/api/v1/product/category/list')
                 .send(reqBody)
-
-            console.log({ body })
 
             //extract the data
             const data = body.message.data[0]
@@ -410,8 +407,6 @@ describe('Lists of routes accessible to product manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send(reqBody)
-
-            console.log({ body, reqBody })
 
             expect(body.message).toEqual(true)
         })
