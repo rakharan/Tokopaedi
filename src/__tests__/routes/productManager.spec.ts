@@ -47,8 +47,10 @@ describe('Lists of routes accessible to product manager', () => {
     const productColumnName = ['id', 'name', 'description', 'category', 'price', 'stock', 'rating', 'review_count', 'public_id', 'img_src']
 
     const productDetailColumnName = ['id', 'name', 'description', 'category_name', 'price', 'stock', 'rating', 'review_count', 'public_id', 'img_src']
-    
+
     const paginationResponseBodyProperty = ['data', 'column', 'lastId', 'hasNext', 'currentPageDataCount']
+
+    const productReviewColumnName = ['id', 'user_id', 'name', 'product_id', 'rating', 'comment', 'created_at']
 
     it('Should create a product', async function () {
 
@@ -227,6 +229,53 @@ describe('Lists of routes accessible to product manager', () => {
         const response = await ProductAppService.CheckLowStockProduct()
         expect(response).toEqual(true)
     });
+
+    describe.sequential(`Product review endpoint.`, async () => {
+        it('Should return a list of a single product reviews', async () => {
+            //sample of requestBody.
+            const reqBody = {
+                id: 2,
+                limit: 1,
+                lastId: 0,
+                sort: "ASC"
+            }
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/product/review/list')
+                .send(reqBody)
+                .expect(200)
+
+            //extract the data
+            const data = body.message.data
+
+            //extract the first element.
+            const firstElement = data[0]
+
+            // expect the review id is matching
+            expect(firstElement[0]).toBe(2)
+
+            expect(data).toHaveLength(1)
+            expect(body.message.column).toHaveLength(7)
+            productReviewColumnName.forEach(element => expect(body.message.column).toContain(element))
+            paginationResponseBodyProperty.forEach(element => expect(body.message).toHaveProperty(element))
+            expect(body.message).toHaveProperty("hasNext", false)
+        })
+
+        it('Should return the detail of a single review', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/product/review/detail')
+                .send({ id: 2 })
+                .expect(200)
+
+            //extract the data
+            const data = body.message
+
+            expect(data.id).toEqual(2)
+            expect(data.user_id).toEqual(6)
+
+            productReviewColumnName.forEach(element => expect(body.message).toHaveProperty(element))
+        })
+    })
 
     describe('Fail scenario test', () => {
 

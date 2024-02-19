@@ -607,6 +607,38 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
         });
     })
 
+    describe.sequential('User interacting with review endpoints', () => {
+        const newReviewData = {
+            product_id: 1,
+            rating: 5,
+            comment: 'Nice product, would recommend it to my friends and family'
+        }
+
+        it('Should create a review of a product', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/review/create')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send(newReviewData)
+
+            expect(body.message).toEqual(true)
+        })
+
+        it.sequential('Should delete newly created review', async () => {
+            // fetch the id of newly created review directly from database
+            const review_id = await AppDataSource.query(`SELECT id from product_review WHERE user_id = ?`, [newlyRegisteredUserId])
+            const id = review_id[0].id
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/review/delete')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id })
+                .expect(200)
+
+            expect(body.message).toEqual(true)
+        })
+    })
+
     describe.sequential('Final step to delete created data', () => {
         it('Should delete the shipping address', async () => {
 
@@ -734,6 +766,48 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 .expect(401)
 
             expect(body.message).toEqual("NOT_ENOUGH_RIGHTS")
+        })
+
+        it('Should fail to create a review with bad words', async () => {
+            const newReviewData = {
+                product_id: 1,
+                rating: 5,
+                comment: 'produk jelek anjing'
+            }
+
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/review/create')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send(newReviewData)
+                .expect(400)
+
+            expect(typeof body).toEqual('object')
+            expect(body.message).toEqual("YOUR_REVIEW_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_COMMENT")
+        })
+
+        it('Should fail to delete non existent review', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/review/delete')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id: 696969 })
+                .expect(400)
+
+            expect(typeof body).toEqual('object')
+            expect(body.message).toEqual("REVIEW_NOT_FOUND")
+        })
+
+        it('Should fail to delete other user review', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/review/delete')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id: 10 })
+                .expect(400)
+
+            expect(typeof body).toEqual('object')
+            expect(body.message).toEqual("THIS_REVIEW_DOES_NOT_BELONG_TO_YOU")
         })
     })
 }, { timeout: 20000 })

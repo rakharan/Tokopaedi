@@ -65,7 +65,7 @@ const productReviews = [
         created_at: 1707736820
     },
     {
-        user_id: 6,
+        user_id: 1,
         product_id: 10,
         rating: 5,
         comment: "Excellent gaming laptop, highly recommend!",

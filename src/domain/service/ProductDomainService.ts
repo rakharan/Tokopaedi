@@ -138,7 +138,12 @@ export default class ProductDomainService {
 
     static async CheckReviewOwnershipDomain(review_id: number, user_id: number) {
         const review = await ProductRepository.CheckReviewOwnership(review_id)
-        if (review[0].user_id !== user_id) {
+
+        if (review.length < 1) {
+            throw new BadInputError("REVIEW_NOT_FOUND")
+        }
+
+        if (review[0].user_id != user_id) {
             throw new BadInputError("THIS_REVIEW_DOES_NOT_BELONG_TO_YOU")
         }
     }

@@ -116,7 +116,8 @@ export default class ProductController {
     static async DeleteReview(request: FastifyRequest) {
         const user = request.user
         const { id } = request.body as { id: number }
-        const deleteReview = await ProductAppService.DeleteReview(id, user.id, {
+
+        const deleteReview = await ProductAppService.DeleteReview(id, user.id, user.level, {
             user_id: user.id,
             action: `Delete Review #${id}`,
             ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),

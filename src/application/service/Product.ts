@@ -339,13 +339,15 @@ export default class ProductAppService {
         return await ProductDomainService.GetProductReviewDetailDomain(id)
     }
 
-    static async DeleteReview(id: number, user_id: number, logData: LogParamsDto.CreateLogParams) {
+    static async DeleteReview(id: number, user_id: number, level: number, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.ReviewId.validateAsync(id)
 
         // Check if the review ownership, does it belong to the user trying to delete it.
         // will throw an error if the review belongs to someone else.
-        await ProductDomainService.CheckReviewOwnershipDomain(id, user_id)
-
+        // level = 3 is a regular user, if admin tryng to delete a review, it doesnt check ownership.
+        if (level == 3) {
+            await ProductDomainService.CheckReviewOwnershipDomain(id, user_id)
+        }
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
