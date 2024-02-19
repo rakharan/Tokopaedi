@@ -22,6 +22,8 @@ describe('Lists of routes accessible to product manager', () => {
     let newlyCreatedProduct: Product;
     let newlyCreatedProductId: number;
     let updateProductRequest
+    let newHeadCategory
+    let newSubCategory
 
     beforeAll(async () => {
         app = await buildServer()
@@ -37,6 +39,20 @@ describe('Lists of routes accessible to product manager', () => {
             stock: 100,
             category: 12, // Men's Clothing category
         };
+
+        newHeadCategory = {
+            id: 0,
+            name: "Daily Needs",
+            parent_id: 0,
+            cat_path: ""
+        }
+
+        newSubCategory = {
+            id: 0,
+            name: "HealthCare",
+            parent_id: 0, // will be updated to be the everyday's need id.
+            cat_path: ""
+        }
     })
 
     afterAll(async () => {
@@ -51,6 +67,8 @@ describe('Lists of routes accessible to product manager', () => {
     const paginationResponseBodyProperty = ['data', 'column', 'lastId', 'hasNext', 'currentPageDataCount']
 
     const productReviewColumnName = ['id', 'user_id', 'name', 'product_id', 'rating', 'comment', 'created_at']
+
+    const productCategoryColumnName = ['id', 'parent_id', 'name', 'cat_path']
 
     it('Should create a product', async function () {
 
@@ -277,6 +295,128 @@ describe('Lists of routes accessible to product manager', () => {
         })
     })
 
+    describe.sequential('Product category endpoint', () => {
+
+        it('Should create a new head category (0 as parent_id)', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/admin/category/create')
+                .set('Authorization', superAdminJwt)
+                .set('user-agent', "Test")
+                .send({ name: newHeadCategory.name, parent_id: newHeadCategory.parent_id })
+
+            console.log({ body })
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should return a category list with name filter (newly created head category)', async () => {
+            const reqBody = {
+                lastId: 0,
+                sort: "ASC",
+                search: `({name} = '${newHeadCategory.name}')`
+            }
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/product/category/list')
+                .send(reqBody)
+
+            console.log({ body })
+
+            //extract the data
+            const data = body.message.data[0]
+
+            const id = data[0]
+            const name = data[1]
+            const parent_id = data[2]
+            const cat_path = data[3]
+
+            // assigning all property above to the head category object.
+            newHeadCategory.id = id
+            newHeadCategory.cat_path = cat_path
+
+            // assigning id to newSubCategory parent_id
+            newSubCategory.parent_id = id
+
+            expect(name).toEqual(newHeadCategory.name)
+            expect(parent_id).toEqual(0)
+
+            // expecting category path to be /0/id/ because this is the head category
+            expect(cat_path).toEqual(`/0/${id}/`)
+
+            expect(data).toHaveLength(4)
+            expect(body.message.column).toHaveLength(4)
+            productCategoryColumnName.forEach(element => expect(body.message.column).toContain(element))
+            paginationResponseBodyProperty.forEach(element => expect(body.message).toHaveProperty(element))
+            expect(body.message).toHaveProperty("hasNext", false)
+        })
+
+        it('Should create a new sub category of newly created head category', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/admin/category/create')
+                .set('Authorization', superAdminJwt)
+                .set('user-agent', "Test")
+                .send({ name: newSubCategory.name, parent_id: newSubCategory.parent_id })
+                .expect(200)
+
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should return a category list with name filter (newly created sub category)', async () => {
+            const reqBody = {
+                lastId: 0,
+                sort: "ASC",
+                search: `({name} = '${newSubCategory.name}')`
+            }
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/product/category/list')
+                .send(reqBody)
+                .expect(200)
+
+            //extract the data
+            const data = body.message.data[0]
+
+            const id = data[0]
+            const name = data[1]
+            const parent_id = data[2]
+            const cat_path = data[3]
+
+            // assigning all property above to the sub category object.
+            newSubCategory.id = id
+            newSubCategory.cat_path = cat_path
+
+            expect(name).toEqual(newSubCategory.name)
+            expect(parent_id).toEqual(newHeadCategory.id)
+
+            // expecting category path to be (parent_cat_path/id/) because this is the sub category
+            const parent_cat_path = newHeadCategory.cat_path
+            expect(cat_path).toEqual(`${parent_cat_path}${id}/`)
+
+            expect(data).toHaveLength(4)
+            expect(body.message.column).toHaveLength(4)
+            productCategoryColumnName.forEach(element => expect(body.message.column).toContain(element))
+            paginationResponseBodyProperty.forEach(element => expect(body.message).toHaveProperty(element))
+            expect(body.message).toHaveProperty("hasNext", false)
+        })
+
+        it('Should update the name of a newly created sub-category', async () => {
+            const reqBody = {
+                id: newSubCategory.id,
+                name: "Food"
+            }
+
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/admin/category/update')
+                .set('Authorization', superAdminJwt)
+                .set('user-agent', "Test")
+                .send(reqBody)
+
+            console.log({ body, reqBody })
+
+            expect(body.message).toEqual(true)
+        })
+    })
+
     describe('Fail scenario test', () => {
 
         describe('Create product', () => {
@@ -402,6 +542,84 @@ describe('Lists of routes accessible to product manager', () => {
                 expect(body.message).toEqual("File too large")
             });
         })
+
+        describe('Category endpoint', () => {
+            describe('Should fail to create new category', () => {
+                it('with existing category name', async () => {
+                    const { body } = await supertest(app.server)
+                        .post('/api/v1/admin/category/create')
+                        .set('Authorization', superAdminJwt)
+                        .set('user-agent', "Test")
+                        .send({ name: "Electronics", parent_id: 0 })
+                        .expect(400)
+
+                    expect(body.code).toEqual("BadInputError")
+                    expect(body.message).toEqual("SAME_CATEGORY_ALREADY_EXISTS")
+                })
+
+                it('with badwords in category name', async () => {
+                    const { body } = await supertest(app.server)
+                        .post('/api/v1/admin/category/create')
+                        .set('Authorization', superAdminJwt)
+                        .set('user-agent', "Test")
+                        .send({ name: "Anjing", parent_id: 0 })
+                        .expect(400)
+
+                    expect(body.code).toEqual("BadInputError")
+                    expect(body.message).toEqual("YOUR_CATEGORY_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_CATEGORY_NAME")
+                })
+
+                it('with non existent category as parent_id', async () => {
+                    const { body } = await supertest(app.server)
+                        .post('/api/v1/admin/category/create')
+                        .set('Authorization', superAdminJwt)
+                        .set('user-agent', "Test")
+                        .send({ name: "test", parent_id: 696969 })
+                        .expect(400)
+
+                    expect(body.code).toEqual("BadInputError")
+                    expect(body.message).toEqual("CATEGORY_DETAIL_NOT_FOUND")
+                })
+            })
+
+            describe('Should fail to update a category', () => {
+                it('with existing category name', async () => {
+                    const { body } = await supertest(app.server)
+                        .post('/api/v1/admin/category/update')
+                        .set('Authorization', superAdminJwt)
+                        .set('user-agent', "Test")
+                        .send({ id: 2, name: "Electronics", parent_id: 0 })
+                        .expect(400)
+
+                    expect(body.code).toEqual("BadInputError")
+                    expect(body.message).toEqual("SAME_CATEGORY_ALREADY_EXISTS")
+                })
+
+                it('with badwords in category name', async () => {
+                    const { body } = await supertest(app.server)
+                        .post('/api/v1/admin/category/update')
+                        .set('Authorization', superAdminJwt)
+                        .set('user-agent', "Test")
+                        .send({ id: 1, name: "Anjing", parent_id: 0 })
+                        .expect(400)
+
+                    expect(body.code).toEqual("BadInputError")
+                    expect(body.message).toEqual("YOUR_CATEGORY_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_CATEGORY_NAME")
+                })
+
+                it('with non existent category as parent_id', async () => {
+                    const { body } = await supertest(app.server)
+                        .post('/api/v1/admin/category/update')
+                        .set('Authorization', superAdminJwt)
+                        .set('user-agent', "Test")
+                        .send({ id: 1, name: "test", parent_id: 696969 })
+                        .expect(400)
+
+                    expect(body.code).toEqual("BadInputError")
+                    expect(body.message).toEqual("CATEGORY_DETAIL_NOT_FOUND")
+                })
+            })
+        })
     })
 
     describe('Final step to delete product', () => {
@@ -433,5 +651,29 @@ describe('Lists of routes accessible to product manager', () => {
             //fifth index is the public_id of the image that we use to delete the image on cloudinary.
             await DeleteImage(public_id)
         });
+
+        it('Should delete a newly created head category', async () => {
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/admin/category/delete')
+                .set('Authorization', superAdminJwt)
+                .set('user-agent', "Test")
+                .send({ id: newHeadCategory.id })
+                .expect(200)
+
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should delete a newly created sub-category', async () => {
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/admin/category/delete')
+                .set('Authorization', superAdminJwt)
+                .set('user-agent', "Test")
+                .send({ id: newSubCategory.id })
+                .expect(200)
+
+            expect(body.message).toEqual(true)
+        })
     })
 }) 

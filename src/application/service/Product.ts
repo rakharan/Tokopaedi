@@ -459,7 +459,7 @@ export default class ProductAppService {
         let cat_path = existingCategory.cat_path;
         if (name) updateCategory.name = name
 
-        if (parent_id || parent_id != existingCategory.parent_id) {
+        if (parent_id && parent_id != existingCategory.parent_id) {
             updateCategory.parent_id = parent_id
 
             // if parent_id = 0, the cat_path is /0/NEW.id/.
