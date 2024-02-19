@@ -13,7 +13,7 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE,
     migrations: process.env.TESTING === "true" ? undefined : [migrationDir()],
     migrationsTableName: "tokopaedi_migration",
-    migrationsRun: true,
+    migrationsRun: false,
     timezone: "+07:00",
     logging: process.env.NODE_ENV === "development" || process.env.NODE_ENV === "testing",
     logger: "file",
