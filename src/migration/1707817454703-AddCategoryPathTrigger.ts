@@ -8,7 +8,10 @@ export class AddCategoryPathTrigger1707817454703 implements MigrationInterface {
             BEFORE INSERT
             ON product_category FOR EACH ROW
             BEGIN
-                 SET new.cat_path = CONCAT(NEW.cat_path, (SELECT MAX(id) + 1 FROM product_category), "/");
+            DECLARE new_id INT;
+            SET new_id = (SELECT AUTO_INCREMENT FROM information_schema.tables
+                          WHERE table_schema = DATABASE() AND table_name = 'product_category');
+            SET NEW.cat_path = CONCAT(NEW.cat_path, new_id, "/");
             END
        `);
     }
