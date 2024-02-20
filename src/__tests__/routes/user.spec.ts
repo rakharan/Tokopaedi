@@ -83,6 +83,17 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
         'currentPageDataCount'
     ]
 
+    const wishlistedProductListColumnName = [
+        "id",
+        "name",
+        "description",
+        "price",
+        "img_src",
+        "public_id",
+        "rating",
+        "review_count"
+    ]
+
     describe.sequential('Auth routes', () => {
         it('Should register new user', async () => {
 
@@ -623,19 +634,355 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
 
             expect(body.message).toEqual(true)
         })
+    })
 
-        it.sequential('Should delete newly created review', async () => {
-            // fetch the id of newly created review directly from database
-            const review_id = await AppDataSource.query(`SELECT id from product_review WHERE user_id = ?`, [newlyRegisteredUserId])
-            const id = review_id[0].id
+    describe.sequential('User interacting with wishlist endpoints', () => {
+        const newCollection = {
+            id: 0, // will be updated later after collection list fetch.
+            name: "New Collection"
+        }
+
+        const wishlistedProduct = [
+            1,
+            "iPhone 9",
+            "An apple mobile which is nothing like apple",
+            "549.00",
+            "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712309/tokopaedi/products/iphone-9.jpg",
+            "tokopaedi/products/iphone-9.jpg",
+            "4.00000",
+            "1"
+        ]
+
+        it('Should be able to create a new wishlist collection', async () => {
             const { body } = await supertest(app.server)
-                .post('/api/v1/user/review/delete')
+                .post('/api/v1/user/wishlist/collection/create')
                 .set('Authorization', newlyRegisteredUserJWTToken)
                 .set('user-agent', "Test")
-                .send({ id })
-                .expect(200)
+                .send({ name: newCollection.name })
 
             expect(body.message).toEqual(true)
+        })
+
+        it('Should return a list of user wishlist collection', async () => {
+            const { body } = await supertest(app.server)
+                .get('/api/v1/user/wishlist/collection/list')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+
+            // extract the data
+            const data = body.message
+
+            // extracting newlyCreated collection data to test.
+            const newData = data.filter((data) => data.name === newCollection.name)
+
+            // assign the id to the newCollection object.
+            newCollection.id = newData[0].id
+
+            expect(typeof newData).toEqual('object')
+
+            expect(newData[0]).toHaveProperty("name", newCollection.name)
+        })
+
+        it('Should be able to update the name of the new wishlist collection', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/wishlist/collection/update')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ collection_id: newCollection.id, name: "Collection just updated" })
+
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should return the detail of a product that has not been wishlisted (logged in)', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/product/detail')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id: 1 })
+
+            // extracting the data
+            const data = body.message
+
+            //expect that the product not yet wishlisted.
+            expect(data.is_wishlisted).toEqual(false)
+        })
+
+        it('Should be able to wishlist a product (add product to wishlist)', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/wishlist/collection/product/add')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ collection_id: newCollection.id, product_id: 1 })
+
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should return the detail of a product that has been wishlisted (logged in)', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/product/detail')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id: 1 })
+
+            // extracting the data
+            const data = body.message
+
+            //expect that the product is wishlisted.
+            expect(data.is_wishlisted).toEqual(true)
+        })
+
+        it('Should return a list of products inside a collection', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/wishlist/collection/product/list')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id: newCollection.id })
+
+            // extracting the data
+            const data = body.message.data
+
+            const firstData = data[0]
+
+            expect(firstData[0]).toEqual(wishlistedProduct[0])
+            expect(firstData[1]).toEqual(wishlistedProduct[1])
+            expect(firstData[2]).toEqual(wishlistedProduct[2])
+
+            expect(body.message).toHaveProperty("hasNext", false)
+            expect(body.message).toHaveProperty("currentPageDataCount", 1)
+            expect(body.message).toHaveProperty("column", wishlistedProductListColumnName)
+            wishlistedProductListColumnName.forEach(element => expect(body.message.column).toContain(element))
+
+            paginationResponseBodyProperty.forEach(element => expect(body.message).toHaveProperty(element))
+        })
+
+        it('Should be able to remove a product from a wishlist', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/wishlist/collection/product/delete')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ collection_id: newCollection.id, product_id: 1 })
+
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should delete the newly created collection', async () => {
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/wishlist/collection/delete')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ collection_id: newCollection.id })
+
+            expect(body.message).toEqual(true)
+        })
+    })
+
+    describe.sequential('User interacting with public product endpoints (no auth needed)', () => {
+        describe('Should return a list of products with filter', () => {
+            it('Price filter min & max', async () => {
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 5,
+                    lastId: 0,
+                    priceMin: 200,
+                    priceMax: 600
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+
+                const dataLength = data.length
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(5)
+
+                // extract the prices of all product listed.
+                const prices = data.map((prod) => prod[4])
+
+                // expecting the price of each product to be between the min and max price.
+                prices.forEach(price => expect(Number(price)).toBeLessThanOrEqual(reqBody.priceMax))
+                prices.forEach(price => expect(Number(price)).toBeGreaterThanOrEqual(reqBody.priceMin))
+            })
+
+            it('Single price filter: minPrice', async () => {
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 5,
+                    lastId: 0,
+                    priceMin: 200,
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+
+                const dataLength = data.length
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(5)
+
+                // extract the prices of all product listed.
+                const prices = data.map((prod) => prod[4])
+
+                // expecting the price of each product to be between the min and max price.
+                prices.forEach(price => expect(Number(price)).toBeGreaterThanOrEqual(reqBody.priceMin))
+            })
+
+            it('Single price filter: maxPrice', async () => {
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 5,
+                    lastId: 0,
+                    priceMax: 1000,
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+
+                const dataLength = data.length
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(5)
+
+                // extract the prices of all product listed.
+                const prices = data.map((prod) => prod[4])
+
+                // expecting the price of each product to be between the min and max price.
+                prices.forEach(price => expect(Number(price)).toBeLessThanOrEqual(reqBody.priceMax))
+            })
+
+            it('Electronics category filter', async () => {
+                const electronicsSubCategory = ["Smartphones", "Laptops", "Computers & Accessories"]
+
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 5,
+                    lastId: 0,
+                    categoriesFilter: "Electronics"
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+
+                const dataLength = data.length
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(5)
+
+                // extract the categories name of all product fetched.
+                const categoriesName = data.map((prod) => prod[3])
+
+                // Check if each category name is included in the electronicsSubCategory array
+                categoriesName.forEach(catName => expect(electronicsSubCategory).toContain(catName))
+            })
+
+            it('Sort filter: highestRating', async () => {
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 10,
+                    lastId: 0,
+                    sortFilter: "highestRating"
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+                const dataLength = data.length
+
+                const firstData = data[0]
+                const lastData = data[dataLength - 1]
+
+                // extract the rating
+                const firstDataRating = firstData[6]
+                const lastDataRating = lastData[6]
+
+                expect(Number(firstDataRating)).toBeGreaterThanOrEqual(Number(lastDataRating))
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(10)
+            })
+
+            it('Sort filter: lowestRating', async () => {
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 10,
+                    lastId: 0,
+                    sortFilter: "lowestRating"
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+                const dataLength = data.length
+
+                const firstData = data[0]
+                const lastData = data[dataLength - 1]
+
+                // extract the rating
+                const firstDataRating = firstData[6]
+                const lastDataRating = lastData[6]
+
+                expect(Number(firstDataRating)).toBeLessThanOrEqual(Number(lastDataRating))
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(10)
+            })
+
+            it('Sort filter: mostReviewed', async () => {
+                //sample of requestBody.
+                const reqBody = {
+                    limit: 10,
+                    lastId: 0,
+                    sortFilter: "mostReviewed"
+                }
+                //extract the response body.
+                const { body } = await supertest(app.server)
+                    .post('/api/v1/product/list')
+                    .send(reqBody)
+                    .expect(200)
+
+                //extract the data
+                const data = body.message.data
+                const dataLength = data.length
+
+                const firstData = data[0]
+                const lastData = data[dataLength - 1]
+
+                // extract the review count
+                const firstDataRevCount = firstData[7]
+                const lastDataRevCount = lastData[7]
+
+                expect(Number(firstDataRevCount)).toBeGreaterThanOrEqual(Number(lastDataRevCount))
+
+                // expecting data length to be <= limit sent to the request.
+                expect(dataLength).toBeLessThanOrEqual(10)
+            })
         })
     })
 
@@ -651,6 +998,20 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
             expect(typeof body.message).toEqual('boolean')
             expect(body.message).toEqual(true)
         });
+
+        it.sequential('Should delete newly created review', async () => {
+            // fetch the id of newly created review directly from database
+            const review_id = await AppDataSource.query(`SELECT id from product_review WHERE user_id = ?`, [newlyRegisteredUserId])
+            const id = review_id[0].id
+            const { body } = await supertest(app.server)
+                .post('/api/v1/user/review/delete')
+                .set('Authorization', newlyRegisteredUserJWTToken)
+                .set('user-agent', "Test")
+                .send({ id })
+                .expect(200)
+
+            expect(body.message).toEqual(true)
+        })
 
         //final step.
         //Delete the user created in test.
@@ -808,6 +1169,23 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
 
             expect(typeof body).toEqual('object')
             expect(body.message).toEqual("THIS_REVIEW_DOES_NOT_BELONG_TO_YOU")
+        })
+
+        it('Should fail to fetch product list with invalid min & max price filter', async () => {
+            //sample of requestBody.
+            const reqBody = {
+                limit: 5,
+                lastId: 0,
+                priceMax: 200,
+                priceMin: 600
+            }
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/product/list')
+                .send(reqBody)
+                .expect(400)
+
+            expect(body.message).toEqual("MAX_PRICE_SHOULD_BE_GREATER_THAN_MIN_PRICE")
         })
     })
 }, { timeout: 20000 })

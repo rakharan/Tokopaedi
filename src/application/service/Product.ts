@@ -52,7 +52,7 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY rev_count DESC`;
+                baseSort = `ORDER BY review_count DESC`;
                 break;
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
@@ -556,7 +556,7 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY rev_count DESC`;
+                baseSort = `ORDER BY review_count DESC`;
                 break;
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
