@@ -3,4 +3,5 @@ export type PaginationRequest = {
     search: string
     sort: string
     lastId: number
+    offset?: number
 }

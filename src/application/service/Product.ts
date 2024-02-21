@@ -22,9 +22,20 @@ export default class ProductAppService {
         // validating productListParams filter
         await ProductSchema.ProductList.validateAsync(productListParams)
 
-        const { lastId = 0, limit = 100, search, sort = "ASC" } = params
-
+        let { lastId = 0 } = params
+        const { limit = 100, search, sort = "ASC", offset = 0 } = params
         const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin } = productListParams
+
+        // vaildation to check if sortFilter is passed, offset is required too.
+        if (sortFilter && !offset) {
+            throw new BadInputError(`PLEASE_PROVDE_OFFSET_IF_YOU_WANT_TO_SORT_BY_${sortFilter.toUpperCase()}`)
+        }
+
+        // if user passes sortFilter, we need to change the lastId to 0
+        // this is to prevent displaying jumbled data when using offset approach.
+        if (sortFilter) {
+            lastId = 0
+        }
 
         // additional validation for price filter.
         // price max can not be lower than price min
@@ -107,12 +118,26 @@ export default class ProductAppService {
             whereClause += ` AND pc.cat_path LIKE CONCAT((SELECT cat_path FROM product_category WHERE name = '${categoriesFilter}'), "%")`
         }
 
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
+        // offset is passed to handle a sort filter pagination.
+        // the default is 0 when user didn't supply it, but when user passes a sortFilter user need to supply an offset.
+        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort, offset: Number(offset) })
 
-        //Generate pagination
-        const result = Paginate({ data: product, limit })
+        /**
+         * If user passes a sort filter, we need to use different approach for the pagination.
+         * we use limit & offset approach when user want to sort filter the data.
+         * if user doesn't pass the sort filter, we use key-pagination approach.
+         */
+        if (!sortFilter) {
+            //Generate pagination
+            return Paginate({ data: product, limit })
+        } else {
+            const result = Paginate({ data: product, limit })
 
-        return result
+            // delete the lastId because, it isnt needed if we use offset approach.
+            delete result.lastId
+
+            return result
+        }
     }
 
     static async GetProductDetail(id: number, user_id?: number) {
