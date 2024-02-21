@@ -61,6 +61,12 @@ export default class ProductAppService {
             case "lowestRating":
                 baseSort = `ORDER BY rating ASC`;
                 break;
+            case "lowestPrice":
+                baseSort = `ORDER BY price ASC`;
+                break;
+            case "highestPrice":
+                baseSort = `ORDER BY price DESC`;
+                break;
             default:
                 baseSort = `ORDER BY p.id ${sort}`;
                 break;

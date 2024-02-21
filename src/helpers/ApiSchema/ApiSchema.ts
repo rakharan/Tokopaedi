@@ -20,9 +20,10 @@ type BaseObjectSchema = {
 }
 
 type BaseParamsSchema = {
-    type: string
-    default?: string
-    items?: { type: string }
+    type: string;
+    default?: string;
+    items?: { type: string };
+    enum?: string[]; // Add the enum property
 }
 
 type BodySchema = {
