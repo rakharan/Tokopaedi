@@ -8,7 +8,7 @@ export default class AdminDomainService {
     static async GetAdminDataDomain(id: number) {
         const result = await AdminRepository.DBGetAdminData(id)
         if (result.length < 1) {
-            throw new ResultNotFoundError("User not found")
+            throw new ResultNotFoundError("USER_NOT_FOUND")
         }
         return result[0]
     }
@@ -20,7 +20,7 @@ export default class AdminDomainService {
 
         const result = await AdminRepository.DBSoftDeleteUser(email, query_runner)
         if (result.affectedRows < 1) {
-            throw new ApiError("Failed delete data")
+            throw new ApiError("FAILED_TO_DELETE_DATA")
         }
         return true
     }
@@ -28,7 +28,7 @@ export default class AdminDomainService {
     static async GetUserListDomain(params: RepoPaginationParams) {
         const result = await AdminRepository.DBGetUserList(params)
         if (result.length < 1) {
-            throw new ResultNotFoundError("Empty User")
+            throw new ResultNotFoundError("EMPTY_USER")
         }
         return result
     }
@@ -36,7 +36,7 @@ export default class AdminDomainService {
     static async GetUserDetailProfileDomain(email: string) {
         const result = await AdminRepository.DBGetUserDetailProfile(email)
         if (result.length < 1) {
-            throw new ResultNotFoundError("Profile not found")
+            throw new ResultNotFoundError("PROFILE_NOT_FOUND")
         }
         return result[0]
     }
@@ -44,7 +44,7 @@ export default class AdminDomainService {
     static async GetAdminList() {
         const adminList = await AdminRepository.DBGetAdminList()
         if (adminList.length < 1) {
-            throw new ResultNotFoundError("No Admin Found!")
+            throw new ResultNotFoundError("NO_ADMIN_FOUND")
         }
         return adminList
     }
@@ -52,7 +52,7 @@ export default class AdminDomainService {
     static async GetRulesList() {
         const rulesList = await AdminRepository.DBGetRulesList()
         if (rulesList.length < 1) {
-            throw new ResultNotFoundError("No Rules Found!")
+            throw new ResultNotFoundError("NO_RULES_FOUND")
         }
         return rulesList
     }
@@ -64,7 +64,7 @@ export default class AdminDomainService {
 
         const newRule = await AdminRepository.DBCreateRules(rule, query_runner)
         if (newRule.affectedRows < 1) {
-            throw new ApiError("Failed to Create New Rule")
+            throw new ApiError("FAILED_TO_CREATE_NEW_RULE")
         }
     }
 
@@ -75,7 +75,7 @@ export default class AdminDomainService {
 
         const newRule = await AdminRepository.DBUpdateRule(params, query_runner)
         if (newRule.affectedRows < 1) {
-            throw new ApiError("Failed to Create New Rule")
+            throw new ApiError("FAILED_TO_UPDATE_RULE")
         }
     }
 
@@ -86,7 +86,7 @@ export default class AdminDomainService {
 
         const deleteRule = await AdminRepository.DBSoftDeleteRule(rules_id, query_runner)
         if (deleteRule.affectedRows < 1) {
-            throw new ApiError("Failed to Delete Rule")
+            throw new ApiError("FAILED_TO_DELETE_RULE")
         }
     }
 
@@ -97,7 +97,7 @@ export default class AdminDomainService {
 
         const assignRule = await AdminRepository.DBAssignRule(params, query_runner)
         if (assignRule.affectedRows < 1) {
-            throw new ApiError("Failed to Assign Rule to Admin")
+            throw new ApiError("FAILED_TO_ASSIGN_RULE")
         }
     }
 
@@ -108,14 +108,14 @@ export default class AdminDomainService {
 
         const revokeRule = await AdminRepository.DBRevokeRule(params, query_runner)
         if (revokeRule.affectedRows < 1) {
-            throw new ApiError("Failed to Revoke Rule From Admin")
+            throw new ApiError("FAILED_TO_REVOKE_RULE")
         }
     }
 
     static async UserGroupRulesList(group_id: number) {
         const listOfRules = await AdminRepository.DBGetUserGroupRulesList(group_id)
         if (listOfRules.length < 1) {
-            throw new ResultNotFoundError("No Group Found!")
+            throw new ResultNotFoundError("NO_GROUP_FOUND")
         }
         return listOfRules[0]
     }
@@ -127,7 +127,7 @@ export default class AdminDomainService {
 
         const result = await AdminRepository.DBChangeUserPass(userid, encryptPass, query_runner)
         if (result.affectedRows < 1) {
-            throw new ApiError("Failed change user password")
+            throw new ApiError("FAILED_TO_CHANGE_USER_PASSWORD")
         }
         return true
     }
@@ -135,7 +135,7 @@ export default class AdminDomainService {
     static async GetTransactionListDomain(paginationParams: RepoPaginationParams) {
         const txList = await AdminRepository.DBGetTransactionList(paginationParams)
         if (txList.length < 1) {
-            throw new ResultNotFoundError("No Transaction Found!")
+            throw new ResultNotFoundError("NO_TRANSACTION_FOUND")
         }
         return txList
     }
@@ -143,7 +143,7 @@ export default class AdminDomainService {
     static async GetUserShippingAddressDomain(paginationParams: RepoPaginationParams) {
         const addressList = await AdminRepository.DBGetUserShippingAddress(paginationParams)
         if (addressList.length < 1) {
-            throw new ResultNotFoundError("No Address Found!")
+            throw new ResultNotFoundError("NO_ADDRESS_FOUND")
         }
         return addressList
     }
@@ -155,7 +155,7 @@ export default class AdminDomainService {
 
         const result = await AdminRepository.DBUpdateUserLevel(user_id, level, query_runner)
         if (result.affectedRows < 1) {
-            throw new ApiError("Failed update user level")
+            throw new ApiError("FAILED_TO_UPDATE_USER_LEVEL")
         }
         return true
     }
@@ -167,14 +167,14 @@ export default class AdminDomainService {
 
         const restore = await AdminRepository.DBRestoreDeletedUser(user_id, query_runner)
         if (restore.affectedRows < 1) {
-            throw new ApiError("Failed to restore user")
+            throw new ApiError("FAILED_TO_RESTORE_USER")
         }
     }
 
     static async CheckIsUserAliveDomain(id: number) {
         const isAlive = await AdminRepository.DBCheckIsUserAlive(id)
         if (isAlive.length < 1) {
-            throw new ApiError("User is deleted")
+            throw new ApiError("USER_IS_DELETED")
         }
         return true
     }
@@ -190,7 +190,7 @@ export default class AdminDomainService {
 
         const deleteUser = await AdminRepository.DBHardDeleteUser(userId, query_runner)
         if (deleteUser.affectedRows < 1) {
-            throw new ApiError("Failed to delete user!")
+            throw new ApiError("FAILED_TO_DELETE_USER")
         }
     }
 }

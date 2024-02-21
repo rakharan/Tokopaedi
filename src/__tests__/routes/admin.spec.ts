@@ -150,7 +150,7 @@ describe('Lists of routes accessible to admin', () => {
                 .send(updateProfileRequest)
                 .expect(400)
 
-            expect(body.message).toEqual("Banned words name")
+            expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         });
     })
 })

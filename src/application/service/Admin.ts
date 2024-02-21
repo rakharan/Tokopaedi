@@ -35,7 +35,7 @@ export default class AdminAppService {
 
         //Add name checking, can not use bad words for the product name
         if (Profanity.flag(name.toLowerCase())) {
-            throw new BadInputError("You can't use this name!")
+            throw new BadInputError("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
         await UserDomainService.GetEmailExistDomain(email)
@@ -87,7 +87,7 @@ export default class AdminAppService {
         const banned = ["SuperAdmin", "Product Management Staff", "User Management Staff", "Shipping and Transaction Management Staff"]
 
         if (banned.includes(params.name) || Profanity.flag(params.name.toLowerCase())) {
-            throw new BadInputError("Banned words name")
+            throw new BadInputError("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
         await AdminDomainService.CheckIsUserAliveDomain(params.id)
@@ -97,7 +97,7 @@ export default class AdminAppService {
         if (user.email != params.email) {
             const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email)
             if (userEmailExist.length > 0) {
-                throw new BadInputError("Email is not available")
+                throw new BadInputError("EMAIL_IS_NOT_AVAILABLE_TO_USE")
             }
         }
 
@@ -137,12 +137,12 @@ export default class AdminAppService {
         if (user.email != params.email) {
             const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email)
             if (userEmailExist.length > 0) {
-                throw new BadInputError("Email is not available")
+                throw new BadInputError("EMAIL_IS_NOT_AVAILABLE_TO_USE")
             }
         }
 
         if (Profanity.flag(params.name.toLowerCase())) {
-            throw new BadInputError("Banned words name")
+            throw new BadInputError("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
         const obj: UserParamsDto.UpdateUserEditProfileParams = {
@@ -261,7 +261,7 @@ export default class AdminAppService {
         const existingRules = await AdminDomainService.GetRulesList()
         const duplicate = existingRules.some((existingRule) => existingRule.rules === rule)
         if (duplicate) {
-            throw new BadInputError("Rule Already Exist!")
+            throw new BadInputError("RULE_ALREADY_EXISTS")
         }
 
         const db = AppDataSource
@@ -291,7 +291,7 @@ export default class AdminAppService {
         const existingRules = await AdminDomainService.GetRulesList()
         const duplicate = existingRules.some((existingRule) => existingRule.rules === params.rule)
         if (duplicate) {
-            throw new BadInputError("Rule Already Exist!")
+            throw new BadInputError("RULE_ALREADY_EXISTS")
         }
 
         const db = AppDataSource
@@ -346,7 +346,7 @@ export default class AdminAppService {
         const duplicate = rulesArray.some((rule) => rule === params.rules_id)
 
         if (duplicate) {
-            throw new BadInputError("Can't Reassign Existing Rule!")
+            throw new BadInputError("CAN'T_REASSIGN_EXISTING_RULE")
         }
 
         const db = AppDataSource
@@ -408,7 +408,7 @@ export default class AdminAppService {
 
             const sama = await checkPassword(params.confirmPassword, encryptPass)
             if (!sama) {
-                throw new BadInputError("Invalid Confirm Password")
+                throw new BadInputError("INVALID_CONFIRM_PASSWORD")
             }
 
             const result = await AdminDomainService.ChangeUserPassDomain(params.userid, encryptPass, query_runner)
@@ -443,7 +443,7 @@ export default class AdminAppService {
 
             const sama = await checkPassword(params.oldPassword, getUserById.password)
             if (!sama) {
-                throw new BadInputError("Invalid old password")
+                throw new BadInputError("INVALID_OLD_PASSWORD")
             }
             const result = await UserDomainService.UpdatePasswordDomain(passEncrypt, params.id, query_runner)
 

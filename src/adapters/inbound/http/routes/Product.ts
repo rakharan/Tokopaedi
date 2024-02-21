@@ -20,6 +20,7 @@ const routes: RouteOptions[] = [
                     ratingSort: { type: "string" },
                     priceMin: { type: "number" },
                     priceMax: { type: "number" },
+                    offset: { type: "number" }, 
                 }
             }),
             response: Schema.BasePaginationResultSchema,

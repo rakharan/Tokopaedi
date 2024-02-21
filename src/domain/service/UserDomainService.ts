@@ -12,7 +12,7 @@ export default class UserDomainService {
 
         const createUser = await UserRepository.DBCreateUser(user, query_runner)
         if (createUser.affectedRows < 1) {
-            throw new ApiError("Failed to create user.")
+            throw new ApiError("FAILED_TO_CREATE_USER")
         }
         return createUser
     }
@@ -21,7 +21,7 @@ export default class UserDomainService {
         const result = await UserRepository.DBGetEmailExist(email)
 
         if (result.length > 0) {
-            throw new BadInputError("Email already exist")
+            throw new BadInputError("EMAIL_ALREADY_EXISTS")
         }
 
         return result
@@ -30,7 +30,7 @@ export default class UserDomainService {
     static async CheckUserExistsDomain(email: string) {
         const user = await UserRepository.DBCheckUserExists(email)
         if (user.length < 1) {
-            throw new ResultNotFoundError("Account not found!")
+            throw new ResultNotFoundError("ACCOUNT_NOT_FOUND")
         }
         return user[0]
     }
@@ -38,7 +38,7 @@ export default class UserDomainService {
     static async GetUserDataByIdDomain(id: number) {
         const result = await UserRepository.DBGetUserDataById(id)
         if (result.length < 1) {
-            throw new ResultNotFoundError("User not found")
+            throw new ResultNotFoundError("USER_NOT_FOUND")
         }
 
         return result[0]
@@ -51,7 +51,7 @@ export default class UserDomainService {
 
         const result = await UserRepository.DBGetUserById(id, query_runner)
         if (result.length < 1) {
-            throw new ApiError("Cant get user")
+            throw new ApiError("USER_NOT_FOUND")
         }
 
         return result[0]
@@ -68,7 +68,7 @@ export default class UserDomainService {
 
         const result = await UserRepository.DBUpdateUserEditProfile(params, query_runner)
         if (result.affectedRows < 1) {
-            throw new ApiError("Failed update data")
+            throw new ApiError("FAILED_TO_EDIT_PROFILE")
         }
         return result
     }
@@ -76,7 +76,7 @@ export default class UserDomainService {
     static async GetUserPasswordByIdDomain(id: number) {
         const result = await UserRepository.DBGetUserPasswordById(id)
         if (result.length < 1) {
-            throw new ResultNotFoundError("User not found")
+            throw new ResultNotFoundError("USER_NOT_FOUND")
         }
 
         return result[0]
@@ -89,7 +89,7 @@ export default class UserDomainService {
 
         const result = await UserRepository.DBUpdatePassword(passEncrypt, id, query_runner)
         if (result.affectedRows < 1) {
-            throw new ApiError("Failed change password")
+            throw new ApiError("FAILED_TO_CHANGE_PASSWORD")
         }
         return true
     }
@@ -97,7 +97,7 @@ export default class UserDomainService {
     static async FindUserByTokenDomain(token: string) {
         const user = await UserRepository.DBFindUserByToken(token)
         if (user.length < 1) {
-            throw new ResultNotFoundError("User not found")
+            throw new ResultNotFoundError("USER_NOT_FOUND")
         }
         return user[0]
     }
@@ -109,7 +109,7 @@ export default class UserDomainService {
 
         const verify = await UserRepository.DBVerifyEmail(email, query_runner)
         if (verify.affectedRows < 1) {
-            throw new ApiError("Failed to verify email")
+            throw new ApiError("FAILED_TO_VERIFY_EMAIL")
         }
     }
 }

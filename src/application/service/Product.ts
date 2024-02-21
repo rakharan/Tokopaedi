@@ -22,19 +22,23 @@ export default class ProductAppService {
         // validating productListParams filter
         await ProductSchema.ProductList.validateAsync(productListParams)
 
-        let { lastId = 0 } = params
-        const { limit = 100, search, sort = "ASC", offset = 0 } = params
+        let { lastId = 0, offset } = params
+        const { limit = 100, search, sort = "ASC" } = params
         const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin } = productListParams
 
         // vaildation to check if sortFilter is passed, offset is required too.
-        if (sortFilter && !offset) {
-            throw new BadInputError(`PLEASE_PROVDE_OFFSET_IF_YOU_WANT_TO_SORT_BY_${sortFilter.toUpperCase()}`)
+        if (sortFilter && offset === undefined) {
+            throw new BadInputError(`PLEASE_PROVIDE_OFFSET_IF_YOU_WANT_TO_SORT_BY_${sortFilter.toUpperCase()}`)
         }
 
         // if user passes sortFilter, we need to change the lastId to 0
         // this is to prevent displaying jumbled data when using offset approach.
         if (sortFilter) {
             lastId = 0
+        } else {
+        // if user didnt passes sortFilter, we need to change the offset to 0
+        // this is to prevent displaying jumbled data when using key-pagination approach.
+            offset = 0
         }
 
         // additional validation for price filter.
@@ -178,7 +182,7 @@ export default class ProductAppService {
 
         //checking if the product name contains bad word.
         if (Profanity.flag(product.name.toLowerCase())) {
-            throw new Error("You can't use this name!")
+            throw new Error("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
         const db = AppDataSource
@@ -240,7 +244,7 @@ export default class ProductAppService {
 
         //Add name checking, can not use bad words for the product name
         if (name && Profanity.flag(product.name.toLowerCase())) {
-            throw new Error("You can't use this name!")
+            throw new Error("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
         updateProductData.name = name
 

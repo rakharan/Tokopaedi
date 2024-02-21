@@ -9,7 +9,7 @@ export default class ProductDomainService {
     static async GetProductListDomain(params: RepoPaginationParams) {
         const productList = await ProductRepository.DBGetProductList(params)
         if (productList.length < 1) {
-            throw new ResultNotFoundError("Product is empty!")
+            throw new ResultNotFoundError("PRODUCT_IS_EMPTY")
         }
         return productList
     }
@@ -17,7 +17,7 @@ export default class ProductDomainService {
     static async GetProductDetailDomain(id: number, user_id?: number) {
         const productDetail = await ProductRepository.DBGetProductDetail(id, user_id)
         if (productDetail.length < 1) {
-            throw new ResultNotFoundError("Product not found!")
+            throw new ResultNotFoundError("PRODUCT_NOT_FOUND")
         }
         return productDetail[0]
     }
@@ -29,7 +29,7 @@ export default class ProductDomainService {
 
         const deleteProduct = await ProductRepository.DBSoftDeleteProduct(id, query_runner)
         if (deleteProduct.affectedRows < 1) {
-            throw new ApiError("Delete Failed")
+            throw new ApiError("FAILED_TO_DELETE_PRODUCT")
         }
     }
 
@@ -40,7 +40,7 @@ export default class ProductDomainService {
 
         const newProduct = await ProductRepository.DBCreateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
-            throw new ApiError("Create Product Failed!")
+            throw new ApiError("FAILED_TO_CREATE_PRODUCT")
         }
     }
 
@@ -51,7 +51,7 @@ export default class ProductDomainService {
 
         const newProduct = await ProductRepository.DBUpdateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
-            throw new ApiError("Update Product Failed!")
+            throw new ApiError("FAILED_TO_UPDATE_PRODUCT")
         }
         return newProduct
     }
@@ -75,7 +75,7 @@ export default class ProductDomainService {
             }
         }
         if (products.length < 1) {
-            throw new ResultNotFoundError(`Product not found`)
+            throw new ResultNotFoundError(`PRODUCT_NOT_FOUND`)
         }
         return products
     }
@@ -83,7 +83,7 @@ export default class ProductDomainService {
     static async CheckIsProductAliveDomain(id: number) {
         const isAlive = await ProductRepository.DBCheckIsProductAlive(id)
         if (isAlive.length < 1) {
-            throw new BadInputError("Product is deleted")
+            throw new BadInputError("PRODUCT_IS_DELETED")
         }
         return true
     }

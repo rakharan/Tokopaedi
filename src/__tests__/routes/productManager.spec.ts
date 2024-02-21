@@ -434,7 +434,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .attach('image', newImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
-                expect(body.message).toEqual("You can't use this name!")
+                expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
             })
 
             it('with wrong image mimetype', async () => {
@@ -498,7 +498,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .attach('image', updateImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toBe(500)
-                expect(body.message).toEqual("You can't use this name!")
+                expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
             });
 
             it('with wrong image mimetype', async () => {

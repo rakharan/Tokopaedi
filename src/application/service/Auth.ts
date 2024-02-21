@@ -23,7 +23,7 @@ export default class AuthAppService {
 
         //Add name checking, can not use bad words for the user name
         if (Profanity.flag(name.toLowerCase()) || name.toLowerCase() === "superadmin") {
-            throw new BadInputError("You can't use this name!")
+            throw new BadInputError("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
         const db = AppDataSource
@@ -74,16 +74,16 @@ export default class AuthAppService {
 
         //if user is deleted and they attempt to login, throw an error.
         if (existingUser.is_deleted === 1) {
-            throw new BadInputError("Your account is deleted, please contact an admin")
+            throw new BadInputError("YOUR_ACCOUNT_IS_DELETED_PLEASE_CONTACT_ADMIN")
         }
 
         if (existingUser.is_verified === 0) {
-            throw new BadInputError("Please verify your email first!")
+            throw new BadInputError("PLEASE_VERIFY_YOUR_EMAIL_FIRST")
         }
 
         const checkPasswordUser = await checkPassword(params.password, existingUser.password)
         if (!checkPasswordUser) {
-            throw new BadInputError("Wrong Username Or Password")
+            throw new BadInputError("WRONG_USERNAME_OR_PASSWORD")
         }
 
         const tmp_userdata = await UserDomainService.GetUserDataByIdDomain(existingUser.id)

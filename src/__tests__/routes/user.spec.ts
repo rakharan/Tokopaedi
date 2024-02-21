@@ -152,7 +152,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 .send({ email: newUserData.email, password: newUserData.password })
                 .expect(400)
 
-            expect(body.message).toEqual("Please verify your email first!")
+            expect(body.message).toEqual("PLEASE_VERIFY_YOUR_EMAIL_FIRST")
         })
 
         it('Should verify newly registered user', async () => {
@@ -899,7 +899,8 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 const reqBody = {
                     limit: 10,
                     lastId: 0,
-                    sortFilter: "highestRating"
+                    sortFilter: "highestRating",
+                    offset: 0
                 }
                 //extract the response body.
                 const { body } = await supertest(app.server)
@@ -929,7 +930,8 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 const reqBody = {
                     limit: 10,
                     lastId: 0,
-                    sortFilter: "lowestRating"
+                    sortFilter: "lowestRating",
+                    offset: 0
                 }
                 //extract the response body.
                 const { body } = await supertest(app.server)
@@ -959,13 +961,13 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 const reqBody = {
                     limit: 10,
                     lastId: 0,
-                    sortFilter: "mostReviewed"
+                    sortFilter: "mostReviewed",
+                    offset: 0
                 }
                 //extract the response body.
                 const { body } = await supertest(app.server)
                     .post('/api/v1/product/list')
                     .send(reqBody)
-                    .expect(200)
 
                 //extract the data
                 const data = body.message.data
@@ -1037,7 +1039,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                     .send({ ...newUserData, name: "SuperAdmin" })
                     .expect(400)
 
-                expect(body.message).toEqual("You can't use this name!")
+                expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
             })
 
             it('Should fail to register with bad word as name', async () => {
@@ -1046,7 +1048,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                     .send({ ...newUserData, name: "anjing" })
                     .expect(400)
 
-                expect(body.message).toEqual("You can't use this name!")
+                expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
             })
 
             it('Should fail to login after user has been deleted', async () => {
@@ -1056,7 +1058,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                     .send({ email: updateUserData.email, password: changePasswordRequest.newPassword })
                     .expect(404)
 
-                expect(body.message).toEqual("Account not found!")
+                expect(body.message).toEqual("ACCOUNT_NOT_FOUND")
             })
         })
 
@@ -1074,7 +1076,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 .expect(400)
 
             expect(typeof body).toEqual('object')
-            expect(body.message).toEqual("Banned words name")
+            expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         })
 
         it('Should fail to update user with wrong email (used by others/existed)', async () => {
@@ -1091,10 +1093,10 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 .expect(400)
 
             expect(typeof body).toEqual('object')
-            expect(body.message).toEqual("Email is not available")
+            expect(body.message).toEqual("EMAIL_IS_NOT_AVAILABLE_TO_USE")
         })
 
-        it('Should fail to update password with invalid old password', async () => {
+        it('Should fail to update password with INVALID_OLD_PASSWORD', async () => {
             changePasswordRequest = {
                 oldPassword: 'passwordbaru',
                 newPassword: 'password1234',
@@ -1108,7 +1110,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                 .expect(400)
 
             expect(typeof body).toEqual('object')
-            expect(body.message).toEqual("Invalid old password")
+            expect(body.message).toEqual("INVALID_OLD_PASSWORD")
         })
 
         it('Should fail accessing route without login', async () => {

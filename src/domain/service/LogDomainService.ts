@@ -12,14 +12,14 @@ export default class LogDomainService {
 
         const createLog = await LogRepository.CreateLog(params, query_runner)
         if (createLog.affectedRows < 1) {
-            throw new ApiError("Failed to insert log.")
+            throw new ApiError("FAILED_TO_INSERT_LOG")
         }
     }
 
     static async GetSystemLogDomain(params: RepoPaginationParams) {
         const logList = await LogRepository.GetSystemLog(params)
         if (logList.length < 1) {
-            throw new ResultNotFoundError("No log found!")
+            throw new ResultNotFoundError("NO_LOG_FOUND")
         }
         return logList
     }
