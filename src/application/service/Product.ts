@@ -420,13 +420,13 @@ export default class ProductAppService {
 
         let cat_path: string;
 
-        // if parent_id = 0, the cat_path is /0/NEW.id/.
-        //  when parent_id = 0, the category is the head category / doesn't have parent category.
-        // if parent_id > 0, category is a sub-category.
-        if (parent_id === 0) {
+        // if parent_id = null, the cat_path is /0/NEW.id/.
+        //  when parent_id = null, the category is the head category / doesn't have parent category.
+        // if parent_id != null, category is a sub-category.
+        if (parent_id === null) {
             cat_path = "/0/"
         } else {
-            // Getting parent cat_path if parent_id > 0
+            // Getting parent cat_path if parent_id != null
             const parent = await ProductDomainService.GetProductCategoryDetailDomain(parent_id)
             cat_path = parent.cat_path
         }

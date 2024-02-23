@@ -75,7 +75,7 @@ const products = [
     },
     {
         name: "Infinix Inbook X1",
-        description: "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year Warranty",
+        description: "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey 1 Year Warranty",
         category: 7,
         price: 1099,
         stock: 100,
