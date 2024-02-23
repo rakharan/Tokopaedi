@@ -408,7 +408,7 @@ export default class ProductAppService {
     static async CreateProductCategory(params: ProductRequestDto.CreateProductCategoryRequest, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.CreateCategory.validateAsync(params)
 
-        const { name, parent_id } = params
+        let { name, parent_id } = params
 
         // checking if name is containing bad word
         if (Profanity.flag(name.toLowerCase())) {
@@ -423,7 +423,7 @@ export default class ProductAppService {
         // if parent_id = null, the cat_path is /0/NEW.id/.
         //  when parent_id = null, the category is the head category / doesn't have parent category.
         // if parent_id != null, category is a sub-category.
-        if (parent_id === null) {
+        if (parent_id === 0) {
             cat_path = "/0/"
         } else {
             // Getting parent cat_path if parent_id != null
@@ -437,7 +437,6 @@ export default class ProductAppService {
 
         try {
             await query_runner.startTransaction()
-
             await ProductDomainService.CreateProductCategoryDomain({ ...params, cat_path }, query_runner)
 
             await LogDomainService.CreateLogDomain(logData, query_runner)

@@ -167,7 +167,15 @@ export default class ProductRepository {
         `, [id])
     }
 
-    static async CreateNewCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
+    static async CreateNewHeadCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
+        const { cat_path, name } = params
+        return await db.query<ResultSetHeader>(`
+        INSERT INTO product_category(name, cat_path)
+        VALUES(?, ?)
+        `, [name, cat_path], query_runner)
+    }
+
+    static async CreateNewSubCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
         const { cat_path, name, parent_id } = params
         return await db.query<ResultSetHeader>(`
         INSERT INTO product_category(name, parent_id, cat_path)

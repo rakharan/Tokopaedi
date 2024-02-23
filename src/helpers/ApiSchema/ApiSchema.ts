@@ -214,7 +214,7 @@ export const BasePaginationResultSchema = {
                                 {
                                     type: "array",
                                     items: {
-                                        anyOf: [{ type: "string" }, { type: "integer" }, { type: "boolean" }, { type: "object", additionalProperties: true }],
+                                        anyOf: [{ type: "string", nullable: true }, { type: "integer", nullable: true }, { type: "boolean", nullable: true }, { type: "object", additionalProperties: true }],
                                     },
                                 },
                             ],

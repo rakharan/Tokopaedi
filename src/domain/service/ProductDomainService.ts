@@ -149,7 +149,14 @@ export default class ProductDomainService {
     }
 
     static async CreateProductCategoryDomain(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
-        const category = await ProductRepository.CreateNewCategory(params, query_runner)
+        let category;
+        // if parent_id is null/0, that means we creating new head category.
+        if (params.parent_id == 0 || params.parent_id == null) {
+            category = await ProductRepository.CreateNewHeadCategory(params, query_runner)
+        } else {
+            // if parent_id is a number ( > 0 ), that means we creating new sub category.
+            category = await ProductRepository.CreateNewSubCategory(params, query_runner)
+        }
         if (category.affectedRows < 1) {
             throw new ApiError("FAILED_TO_CREATE_CATEGORY")
         }
