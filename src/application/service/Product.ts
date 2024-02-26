@@ -36,8 +36,8 @@ export default class ProductAppService {
         if (sortFilter) {
             lastId = 0
         } else {
-        // if user didnt passes sortFilter, we need to change the offset to 0
-        // this is to prevent displaying jumbled data when using key-pagination approach.
+            // if user didnt passes sortFilter, we need to change the offset to 0
+            // this is to prevent displaying jumbled data when using key-pagination approach.
             offset = 0
         }
 
@@ -185,36 +185,57 @@ export default class ProductAppService {
             throw new Error("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
+        if (!files.thumbnailImage) {
+            throw new BadInputError("YOU_NEED_TO_PROVIDE_THUMBNAIL_FOR_THE_PRODUCT")
+        }
+
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
         try {
             await query_runner.startTransaction()
 
+            // initiate imageObjects variable to hold files of image/images.
             const imageObjects: Partial<File[]> = []
 
             for (const key in files) {
                 if (files && Object.prototype.hasOwnProperty.call(files, key)) {
                     const fileArray = files[key]
                     if (Array.isArray(fileArray) && fileArray.length > 0) {
-                        const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
-
-                        imageObjects.push({
-                            fieldname: imageFile.fieldname,
-                            encoding: imageFile.encoding,
-                            mimetype: imageFile.mimetype,
-                            originalname: imageFile.originalname,
-                            filename: imageFile.filename,
-                        })
+                        for (const imageFile of fileArray) {
+                            imageObjects.push({
+                                fieldname: imageFile.fieldname,
+                                encoding: imageFile.encoding,
+                                mimetype: imageFile.mimetype,
+                                originalname: imageFile.originalname,
+                                filename: imageFile.filename,
+                            })
+                        }
                     }
                 }
             }
 
-            //upload image to cloudinary and extract the url & public_id.
-            const { secure_url, public_id } = await UploadImage(imageObjects[0])
+            console.log({ imageObjects })
 
             //create the product, insert into database.
-            await ProductDomainService.CreateProductDomain({ ...product, img_src: secure_url, public_id }, query_runner)
+            // extract the insertId (newly created product id)
+            const { insertId } = await ProductDomainService.CreateProductDomain(product, query_runner)
+
+            let img_src;
+            let img_public_id;
+            // insert product images to gallery
+            await Promise.all(imageObjects.map(async (image, index) => {
+                //upload image to cloudinary and extract the url & public_id.
+                const { secure_url, public_id } = await UploadImage(image);
+
+                img_src = secure_url;
+                img_public_id = public_id;
+
+                let thumbnail = 0
+                if (image.fieldname === "thumbnailImage") thumbnail = 1
+
+                await ProductDomainService.AddImageProductGalleryDomain({ img_src, public_id: img_public_id, product_id: insertId, display_order: index + 1, thumbnail }, query_runner)
+            }));
 
             //Insert into log, to track user action.
             await LogDomainService.CreateLogDomain({ ...logData, action: `Create Product #${product.name}` }, query_runner)
@@ -230,7 +251,7 @@ export default class ProductAppService {
         }
     }
 
-    static async UpdateProduct(product: ProductRequestDto.UpdateProductRequest, files: FilesObject, logData: LogParamsDto.CreateLogParams) {
+    static async UpdateProduct(product: ProductRequestDto.UpdateProductRequest, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.UpdateProduct.validateAsync(product)
         const { id, description, name, price, stock, category } = product
 
@@ -253,36 +274,6 @@ export default class ProductAppService {
         if (description) updateProductData.description = description
         if (price) updateProductData.price = price
         if (stock) updateProductData.stock = stock
-
-        if (files) {
-            for (const key in files) {
-                if (Object.prototype.hasOwnProperty.call(files, key)) {
-                    const fileArray = files[key]
-                    if (Array.isArray(fileArray) && fileArray.length > 0) {
-                        const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
-
-                        const imageObjects: Partial<File[]> = []
-
-                        imageObjects.push({
-                            fieldname: imageFile.fieldname,
-                            encoding: imageFile.encoding,
-                            mimetype: imageFile.mimetype,
-                            originalname: imageFile.originalname,
-                            filename: imageFile.filename,
-                        })
-
-                        //delete the old image from cloudinary if user passed a new image
-                        await DeleteImage(existingProduct.public_id)
-
-                        //upload new image to cloudinary and extract the url & public_id.
-                        const { secure_url, public_id } = await UploadImage(imageObjects[0])
-
-                        updateProductData.public_id = public_id
-                        updateProductData.img_src = secure_url
-                    }
-                }
-            }
-        }
 
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
@@ -673,5 +664,80 @@ export default class ProductAppService {
         await ProductSchema.RemoveProductFromWishlist.validateAsync({ collection_id, product_id })
         await ProductDomainService.RemoveProductFromWishlistDomain(collection_id, product_id)
         return true
+    }
+
+    static async UpdateImageGallery(params: ProductParamsDto.UpdateProductImageGalleryParams, files: FilesObject) {
+        const { product_id, public_id, display_order, thumbnail } = params
+
+        const existingImage = await ProductDomainService.FindProductImageDetailDomain(public_id, product_id)
+
+        type ImageDetail = {
+            product_id: number
+            img_src: string
+            public_id: string
+            thumbnail: number
+            display_order: number
+        }
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+        try {
+            await query_runner.startTransaction()
+
+            const updateObject: Partial<ImageDetail> = existingImage
+
+            if (display_order && display_order !== existingImage.display_order) {
+                updateObject.display_order = display_order
+            }
+
+            if (thumbnail && display_order !== existingImage.display_order) {
+                updateObject.thumbnail = thumbnail
+            }
+
+            if (files) {
+                // initiate imageObjects variable to hold files of image/images.
+                const imageObjects: Partial<File[]> = []
+
+                for (const key in files) {
+                    if (files && Object.prototype.hasOwnProperty.call(files, key)) {
+                        const fileArray = files[key]
+                        if (Array.isArray(fileArray) && fileArray.length > 0) {
+                            for (const imageFile of fileArray) {
+                                imageObjects.push({
+                                    fieldname: imageFile.fieldname,
+                                    encoding: imageFile.encoding,
+                                    mimetype: imageFile.mimetype,
+                                    originalname: imageFile.originalname,
+                                    filename: imageFile.filename,
+                                })
+                            }
+                        }
+                    }
+                }
+
+                // insert product images to gallery
+                await Promise.all(imageObjects.map(async (image) => {
+                    // delete existing image and replace it with new image
+                    await DeleteImage(updateObject.public_id)
+
+                    //upload image to cloudinary and extract the url & public_id.
+                    const { secure_url, public_id } = await UploadImage(image);
+
+                    updateObject.img_src = secure_url;
+                    updateObject.public_id = public_id;
+                }));
+            }
+
+            await ProductDomainService.UpdateImageProductGalleryDomain(updateObject, query_runner)
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
+        }
     }
 }

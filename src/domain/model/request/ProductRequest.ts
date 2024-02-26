@@ -4,6 +4,8 @@ export type CreateProductRequest = {
     category: number
     price: number
     stock: number
+    thumbnail: number
+    display_order: number
 }
 
 export type UpdateProductRequest = {

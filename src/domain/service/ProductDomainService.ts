@@ -42,6 +42,7 @@ export default class ProductDomainService {
         if (newProduct.affectedRows < 1) {
             throw new ApiError("FAILED_TO_CREATE_PRODUCT")
         }
+        return newProduct
     }
 
     static async UpdateProductDomain(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {
@@ -247,6 +248,35 @@ export default class ProductDomainService {
         const removeFromWishlist = await ProductRepository.RemoveProductFromWishlist(collection_id, product_id)
         if (removeFromWishlist.affectedRows < 1) {
             throw new ApiError("FAILED_TO_REMOVE_PRODUCT_FROM_WISHLIST")
+        }
+    }
+
+    static async AddImageProductGalleryDomain(params: ProductParamsDto.AddProductImageGalleryParams, query_runner: QueryRunner) {
+        const addImageGallery = await ProductRepository.AddProductImageToGallery(params, query_runner)
+        if (addImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_ADD_IMAGE_TO_GALLERY")
+        }
+    }
+
+    static async FindProductImageDetailDomain(public_id: string, product_id: number) {
+        const updateImage = await ProductRepository.FindProductImageDetail(public_id, product_id)
+        if (updateImage.length < 1) {
+            throw new ResultNotFoundError("IMAGE_DETAIL_NOT_FOUND")
+        }
+        return updateImage[0]
+    }
+
+    static async DeleteImageProductGalleryDomain(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner: QueryRunner) {
+        const deleteImageGallery = await ProductRepository.DeleteProductImageFromGallery(params, query_runner)
+        if (deleteImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_DELETE_IMAGE_GALLERY")
+        }
+    }
+
+    static async UpdateImageProductGalleryDomain(params: ProductParamsDto.UpdateProductImageGalleryParams, query_runner: QueryRunner) {
+        const updateImageGallery = await ProductRepository.UpdateProductImageGallery(params, query_runner)
+        if (updateImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_UPDATE_IMAGE_GALLERY")
         }
     }
 }
