@@ -274,7 +274,7 @@ describe('List of routes accessible to super admin', () => {
                     .send({ rule: "UPDATE_USER_LEVEL" })
                     .expect(400)
 
-                expect(body.message).toEqual("Rule Already Exist!")
+                expect(body.message).toEqual("RULE_ALREADY_EXISTS")
             })
 
             it('Should fail to update rule to an existing rule', async () => {
@@ -285,7 +285,7 @@ describe('List of routes accessible to super admin', () => {
                     .send({ rules_id: 101, rule: "VIEW_USER_PROFILE" })
                     .expect(400)
 
-                expect(body.message).toEqual("Rule Already Exist!")
+                expect(body.message).toEqual("RULE_ALREADY_EXISTS")
             });
 
             it('Should fail to reassign existing rule to a group', async () => {
@@ -296,7 +296,7 @@ describe('List of routes accessible to super admin', () => {
                     .send({ rules_id: 101, group_id: 1 })
                     .expect(400)
 
-                expect(body.message).toEqual("Can't Reassign Existing Rule!")
+                expect(body.message).toEqual("CAN'T_REASSIGN_EXISTING_RULE")
             })
 
             it('Should fail to revoke a nonexistent rule', async () => {
@@ -307,7 +307,7 @@ describe('List of routes accessible to super admin', () => {
                     .send({ rules_id: 101, group_id: 6 })
                     .expect(500)
 
-                expect(body.message).toEqual("Failed to Revoke Rule From Admin")
+                expect(body.message).toEqual("FAILED_TO_REVOKE_RULE")
             });
         })
     })

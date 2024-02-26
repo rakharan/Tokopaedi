@@ -155,7 +155,7 @@ describe.sequential('Lists of routes accessible to user manager', () => {
                 .send({ ...createNewUserData, name: "anjing" })
                 .expect(400)
 
-            expect(body.message).toEqual("You can't use this name!")
+            expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         })
 
         it('Should fail update user data with bad name', async () => {
@@ -166,7 +166,7 @@ describe.sequential('Lists of routes accessible to user manager', () => {
                 .send({ ...updateUserDataRequest, name: "anjing", userid: newlyRegisteredUserId })
                 .expect(400)
 
-            expect(body.message).toEqual("Banned words name")
+            expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         });
 
         it('Should fail to update user email with existent email', async () => {
@@ -177,7 +177,7 @@ describe.sequential('Lists of routes accessible to user manager', () => {
                 .send({ ...updateUserDataRequest, email: "user.admin@gmail.com", userid: newlyRegisteredUserId })
                 .expect(400)
 
-            expect(body.message).toEqual("Email is not available")
+            expect(body.message).toEqual("EMAIL_IS_NOT_AVAILABLE_TO_USE")
         })
 
         it('Should fail update/change user password', async () => {
@@ -194,7 +194,7 @@ describe.sequential('Lists of routes accessible to user manager', () => {
                 .send(changeUserPasswordRequest)
                 .expect(400)
 
-            expect(body.message).toEqual("Invalid Confirm Password")
+            expect(body.message).toEqual("INVALID_CONFIRM_PASSWORD")
         });
     })
 

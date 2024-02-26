@@ -4,7 +4,7 @@ const category = [
     {
         id: 1,
         name: "Electronics",
-        parent_id: 0,
+        parent_id: null,
         cat_path: "/0/1/"
     },
     {
@@ -58,7 +58,7 @@ const category = [
     {
         id: 10,
         name: "Fashion",
-        parent_id: 0,
+        parent_id: null,
         cat_path: "/0/10/"
     },
     {

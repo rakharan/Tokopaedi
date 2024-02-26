@@ -9,7 +9,7 @@ const db = AppDataSource
 
 export default class ProductRepository {
     static async DBGetProductList(params: RepoPaginationParams) {
-        const { limit, sort, whereClause } = params
+        const { limit, sort, whereClause, offset = 0 } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
         SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock,
@@ -24,17 +24,21 @@ export default class ProductRepository {
             SELECT COUNT(*)
             FROM product_review
             WHERE product_id = p.id
-        ) AS review_count, 
-        p.public_id, p.img_src
+        ) AS review_count,
+        GROUP_CONCAT(pg.img_src SEPARATOR ",") AS img_src,
+        GROUP_CONCAT(pg.public_id SEPARATOR ",") AS public_id
         FROM product p
         JOIN product_category pc
             ON p.category = pc.id
+        JOIN product_gallery pg
+            ON p.id = pg.product_id
         ${whereClause}
         AND p.is_deleted <> 1
         GROUP BY p.id
         ${sort}
-        LIMIT ?`,
-            [limit + 1]
+        LIMIT ? 
+        OFFSET ?`,
+            [limit + 1, offset]
         )
     }
 
@@ -80,13 +84,13 @@ export default class ProductRepository {
     }
 
     static async DBCreateProduct(product: ProductParamsDto.CreateProductParams, query_runner?: QueryRunner) {
-        const { name, description, price, stock, img_src, public_id, category } = product
-        return await db.query<ResultSetHeader>(`INSERT INTO product(name, description, price, category, stock, img_src, public_id) VALUES(?, ?, ?, ?, ?, ?, ?)`, [name, description, price, category, stock, img_src, public_id], query_runner)
+        const { name, description, price, stock, category } = product
+        return await db.query<ResultSetHeader>(`INSERT INTO product(name, description, price, category, stock) VALUES(?, ?, ?, ?, ?)`, [name, description, price, category, stock], query_runner)
     }
 
     static async DBUpdateProduct(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {
-        const { id, name, description, price, stock, img_src, public_id } = product
-        return await db.query<ResultSetHeader>(`UPDATE product SET name = ?, description = ?, price = ?, stock = ?, img_src = ?, public_id = ? WHERE id = ?`, [name, description, price, stock, img_src, public_id, id], query_runner)
+        const { id, name, description, price, stock } = product
+        return await db.query<ResultSetHeader>(`UPDATE product SET name = ?, description = ?, price = ?, stock = ? WHERE id = ?`, [name, description, price, stock, id], query_runner)
     }
 
     static async DBCheckIsProductAlive(id: number) {
@@ -166,7 +170,15 @@ export default class ProductRepository {
         `, [id])
     }
 
-    static async CreateNewCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
+    static async CreateNewHeadCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
+        const { cat_path, name } = params
+        return await db.query<ResultSetHeader>(`
+        INSERT INTO product_category(name, cat_path)
+        VALUES(?, ?)
+        `, [name, cat_path], query_runner)
+    }
+
+    static async CreateNewSubCategory(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
         const { cat_path, name, parent_id } = params
         return await db.query<ResultSetHeader>(`
         INSERT INTO product_category(name, parent_id, cat_path)
@@ -258,5 +270,38 @@ export default class ProductRepository {
 
     static async RemoveProductFromWishlist(collection_id: number, product_id: number) {
         return await db.query<ResultSetHeader>(`DELETE FROM wishlist WHERE collection_id = ? AND product_id = ?`, [collection_id, product_id])
+    }
+
+    static async AddProductImageToGallery(params: ProductParamsDto.AddProductImageGalleryParams, query_runner: QueryRunner) {
+        const { img_src, product_id, public_id, display_order, thumbnail } = params
+
+        return await db.query<ResultSetHeader>(`
+        INSERT INTO product_gallery(product_id, img_src, public_id, thumbnail, display_order)
+        VALUES (?, ?, ?, ?, ?)
+        `, [product_id, img_src, public_id, thumbnail, display_order], query_runner)
+    }
+
+    static async FindProductImageDetail(public_id: string, product_id: number) {
+        return await db.query<{ product_id: number; img_src: string; public_id: string; thumbnail: number; display_order: number }[]>(`
+        SELECT pg.product_id, pg.img_src, pg.public_id, pg.thumbnail, pg.display_order
+        FROM product_gallery pg
+        WHERE pg.public_id = ? AND pg.product_id = ?
+        `, [public_id, product_id])
+    }
+
+    static async DeleteProductImageFromGallery(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner: QueryRunner) {
+        const { product_id, public_id } = params
+
+        return await db.query<ResultSetHeader>(`
+        DELETE FROM product_gallery WHERE product_id = ? and public_id = ?
+        `, [product_id, public_id], query_runner)
+    }
+
+    static async UpdateProductImageGallery(params: ProductParamsDto.UpdateProductImageGalleryParams, query_runner: QueryRunner) {
+        const { product_id, display_order, img_src, public_id, thumbnail } = params
+
+        return await db.query<ResultSetHeader>(`
+        UPDATE product_gallery SET product_id = ?,display_order = ?, img_src = ?, public_id = ?, thumbnail = ? 
+        `, [product_id, display_order, img_src, public_id, thumbnail], query_runner)
     }
 }

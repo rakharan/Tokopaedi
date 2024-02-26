@@ -1,3 +1,4 @@
+/* v8 ignore start */
 import ProductAppService from "@application/service/Product"
 import { IScheduler, Scheduler } from "@cronJobs/Scheduler"
 
@@ -20,3 +21,4 @@ export class ProductScheduler extends Scheduler {
         return await this.CheckLowStockProduct()
     }
 }
+/* v8 ignore end */

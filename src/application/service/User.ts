@@ -22,7 +22,7 @@ export default class UserAppService {
         const banned = ["SuperAdmin", "Product Management Staff", "User Management Staff", "Shipping and Transaction Management Staff"]
 
         if (banned.includes(params.name) || Profanity.flag(params.name.toLowerCase())) {
-            throw new BadInputError("Banned words name")
+            throw new BadInputError("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
 
         const user = await UserDomainService.GetUserDataByIdDomain(params.id)
@@ -30,7 +30,7 @@ export default class UserAppService {
         if (user.email != params.email) {
             const userEmailExist = await UserDomainService.GetUserEmailExistDomainService(params.email)
             if (userEmailExist.length > 0) {
-                throw new BadInputError("Email is not available")
+                throw new BadInputError("EMAIL_IS_NOT_AVAILABLE_TO_USE")
             }
         }
 
@@ -72,7 +72,7 @@ export default class UserAppService {
 
         const sama = await checkPassword(params.oldPassword, getUserById.password)
         if (!sama) {
-            throw new BadInputError("Invalid old password")
+            throw new BadInputError("INVALID_OLD_PASSWORD")
         }
 
         const db = AppDataSource

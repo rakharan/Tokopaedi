@@ -22,9 +22,24 @@ export default class ProductAppService {
         // validating productListParams filter
         await ProductSchema.ProductList.validateAsync(productListParams)
 
-        const { lastId = 0, limit = 100, search, sort = "ASC" } = params
-
+        let { lastId = 0, offset } = params
+        const { limit = 100, search, sort = "ASC" } = params
         const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin } = productListParams
+
+        // vaildation to check if sortFilter is passed, offset is required too.
+        if (sortFilter && offset === undefined) {
+            throw new BadInputError(`PLEASE_PROVIDE_OFFSET_IF_YOU_WANT_TO_SORT_BY_${sortFilter.toUpperCase()}`)
+        }
+
+        // if user passes sortFilter, we need to change the lastId to 0
+        // this is to prevent displaying jumbled data when using offset approach.
+        if (sortFilter) {
+            lastId = 0
+        } else {
+            // if user didnt passes sortFilter, we need to change the offset to 0
+            // this is to prevent displaying jumbled data when using key-pagination approach.
+            offset = 0
+        }
 
         // additional validation for price filter.
         // price max can not be lower than price min
@@ -52,7 +67,7 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY rev_count DESC`;
+                baseSort = `ORDER BY review_count DESC`;
                 break;
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
@@ -60,6 +75,12 @@ export default class ProductAppService {
                 break;
             case "lowestRating":
                 baseSort = `ORDER BY rating ASC`;
+                break;
+            case "lowestPrice":
+                baseSort = `ORDER BY price ASC`;
+                break;
+            case "highestPrice":
+                baseSort = `ORDER BY price DESC`;
                 break;
             default:
                 baseSort = `ORDER BY p.id ${sort}`;
@@ -101,12 +122,26 @@ export default class ProductAppService {
             whereClause += ` AND pc.cat_path LIKE CONCAT((SELECT cat_path FROM product_category WHERE name = '${categoriesFilter}'), "%")`
         }
 
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
+        // offset is passed to handle a sort filter pagination.
+        // the default is 0 when user didn't supply it, but when user passes a sortFilter user need to supply an offset.
+        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort, offset: Number(offset) })
 
-        //Generate pagination
-        const result = Paginate({ data: product, limit })
+        /**
+         * If user passes a sort filter, we need to use different approach for the pagination.
+         * we use limit & offset approach when user want to sort filter the data.
+         * if user doesn't pass the sort filter, we use key-pagination approach.
+         */
+        if (!sortFilter) {
+            //Generate pagination
+            return Paginate({ data: product, limit })
+        } else {
+            const result = Paginate({ data: product, limit })
 
-        return result
+            // delete the lastId because, it isnt needed if we use offset approach.
+            delete result.lastId
+
+            return result
+        }
     }
 
     static async GetProductDetail(id: number, user_id?: number) {
@@ -147,7 +182,11 @@ export default class ProductAppService {
 
         //checking if the product name contains bad word.
         if (Profanity.flag(product.name.toLowerCase())) {
-            throw new Error("You can't use this name!")
+            throw new Error("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
+        }
+
+        if (!files.thumbnailImage) {
+            throw new BadInputError("YOU_NEED_TO_PROVIDE_THUMBNAIL_FOR_THE_PRODUCT")
         }
 
         const db = AppDataSource
@@ -156,30 +195,47 @@ export default class ProductAppService {
         try {
             await query_runner.startTransaction()
 
+            // initiate imageObjects variable to hold files of image/images.
             const imageObjects: Partial<File[]> = []
 
             for (const key in files) {
                 if (files && Object.prototype.hasOwnProperty.call(files, key)) {
                     const fileArray = files[key]
                     if (Array.isArray(fileArray) && fileArray.length > 0) {
-                        const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
-
-                        imageObjects.push({
-                            fieldname: imageFile.fieldname,
-                            encoding: imageFile.encoding,
-                            mimetype: imageFile.mimetype,
-                            originalname: imageFile.originalname,
-                            filename: imageFile.filename,
-                        })
+                        for (const imageFile of fileArray) {
+                            imageObjects.push({
+                                fieldname: imageFile.fieldname,
+                                encoding: imageFile.encoding,
+                                mimetype: imageFile.mimetype,
+                                originalname: imageFile.originalname,
+                                filename: imageFile.filename,
+                            })
+                        }
                     }
                 }
             }
 
-            //upload image to cloudinary and extract the url & public_id.
-            const { secure_url, public_id } = await UploadImage(imageObjects[0])
+            console.log({ imageObjects })
 
             //create the product, insert into database.
-            await ProductDomainService.CreateProductDomain({ ...product, img_src: secure_url, public_id }, query_runner)
+            // extract the insertId (newly created product id)
+            const { insertId } = await ProductDomainService.CreateProductDomain(product, query_runner)
+
+            let img_src;
+            let img_public_id;
+            // insert product images to gallery
+            await Promise.all(imageObjects.map(async (image, index) => {
+                //upload image to cloudinary and extract the url & public_id.
+                const { secure_url, public_id } = await UploadImage(image);
+
+                img_src = secure_url;
+                img_public_id = public_id;
+
+                let thumbnail = 0
+                if (image.fieldname === "thumbnailImage") thumbnail = 1
+
+                await ProductDomainService.AddImageProductGalleryDomain({ img_src, public_id: img_public_id, product_id: insertId, display_order: index + 1, thumbnail }, query_runner)
+            }));
 
             //Insert into log, to track user action.
             await LogDomainService.CreateLogDomain({ ...logData, action: `Create Product #${product.name}` }, query_runner)
@@ -195,7 +251,7 @@ export default class ProductAppService {
         }
     }
 
-    static async UpdateProduct(product: ProductRequestDto.UpdateProductRequest, files: FilesObject, logData: LogParamsDto.CreateLogParams) {
+    static async UpdateProduct(product: ProductRequestDto.UpdateProductRequest, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.UpdateProduct.validateAsync(product)
         const { id, description, name, price, stock, category } = product
 
@@ -209,7 +265,7 @@ export default class ProductAppService {
 
         //Add name checking, can not use bad words for the product name
         if (name && Profanity.flag(product.name.toLowerCase())) {
-            throw new Error("You can't use this name!")
+            throw new Error("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
         }
         updateProductData.name = name
 
@@ -218,36 +274,6 @@ export default class ProductAppService {
         if (description) updateProductData.description = description
         if (price) updateProductData.price = price
         if (stock) updateProductData.stock = stock
-
-        if (files) {
-            for (const key in files) {
-                if (Object.prototype.hasOwnProperty.call(files, key)) {
-                    const fileArray = files[key]
-                    if (Array.isArray(fileArray) && fileArray.length > 0) {
-                        const imageFile = fileArray[0] // Assuming each key in files is an array and you want the first file
-
-                        const imageObjects: Partial<File[]> = []
-
-                        imageObjects.push({
-                            fieldname: imageFile.fieldname,
-                            encoding: imageFile.encoding,
-                            mimetype: imageFile.mimetype,
-                            originalname: imageFile.originalname,
-                            filename: imageFile.filename,
-                        })
-
-                        //delete the old image from cloudinary if user passed a new image
-                        await DeleteImage(existingProduct.public_id)
-
-                        //upload new image to cloudinary and extract the url & public_id.
-                        const { secure_url, public_id } = await UploadImage(imageObjects[0])
-
-                        updateProductData.public_id = public_id
-                        updateProductData.img_src = secure_url
-                    }
-                }
-            }
-        }
 
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
@@ -373,7 +399,7 @@ export default class ProductAppService {
     static async CreateProductCategory(params: ProductRequestDto.CreateProductCategoryRequest, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.CreateCategory.validateAsync(params)
 
-        const { name, parent_id } = params
+        let { name, parent_id } = params
 
         // checking if name is containing bad word
         if (Profanity.flag(name.toLowerCase())) {
@@ -385,13 +411,13 @@ export default class ProductAppService {
 
         let cat_path: string;
 
-        // if parent_id = 0, the cat_path is /0/NEW.id/.
-        //  when parent_id = 0, the category is the head category / doesn't have parent category.
-        // if parent_id > 0, category is a sub-category.
+        // if parent_id = null, the cat_path is /0/NEW.id/.
+        //  when parent_id = null, the category is the head category / doesn't have parent category.
+        // if parent_id != null, category is a sub-category.
         if (parent_id === 0) {
             cat_path = "/0/"
         } else {
-            // Getting parent cat_path if parent_id > 0
+            // Getting parent cat_path if parent_id != null
             const parent = await ProductDomainService.GetProductCategoryDetailDomain(parent_id)
             cat_path = parent.cat_path
         }
@@ -402,7 +428,6 @@ export default class ProductAppService {
 
         try {
             await query_runner.startTransaction()
-
             await ProductDomainService.CreateProductCategoryDomain({ ...params, cat_path }, query_runner)
 
             await LogDomainService.CreateLogDomain(logData, query_runner)
@@ -556,7 +581,7 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY rev_count DESC`;
+                baseSort = `ORDER BY review_count DESC`;
                 break;
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
@@ -639,5 +664,80 @@ export default class ProductAppService {
         await ProductSchema.RemoveProductFromWishlist.validateAsync({ collection_id, product_id })
         await ProductDomainService.RemoveProductFromWishlistDomain(collection_id, product_id)
         return true
+    }
+
+    static async UpdateImageGallery(params: ProductParamsDto.UpdateProductImageGalleryParams, files: FilesObject) {
+        const { product_id, public_id, display_order, thumbnail } = params
+
+        const existingImage = await ProductDomainService.FindProductImageDetailDomain(public_id, product_id)
+
+        type ImageDetail = {
+            product_id: number
+            img_src: string
+            public_id: string
+            thumbnail: number
+            display_order: number
+        }
+
+        const db = AppDataSource
+        const query_runner = db.createQueryRunner()
+        await query_runner.connect()
+        try {
+            await query_runner.startTransaction()
+
+            const updateObject: Partial<ImageDetail> = existingImage
+
+            if (display_order && display_order !== existingImage.display_order) {
+                updateObject.display_order = display_order
+            }
+
+            if (thumbnail && display_order !== existingImage.display_order) {
+                updateObject.thumbnail = thumbnail
+            }
+
+            if (files) {
+                // initiate imageObjects variable to hold files of image/images.
+                const imageObjects: Partial<File[]> = []
+
+                for (const key in files) {
+                    if (files && Object.prototype.hasOwnProperty.call(files, key)) {
+                        const fileArray = files[key]
+                        if (Array.isArray(fileArray) && fileArray.length > 0) {
+                            for (const imageFile of fileArray) {
+                                imageObjects.push({
+                                    fieldname: imageFile.fieldname,
+                                    encoding: imageFile.encoding,
+                                    mimetype: imageFile.mimetype,
+                                    originalname: imageFile.originalname,
+                                    filename: imageFile.filename,
+                                })
+                            }
+                        }
+                    }
+                }
+
+                // insert product images to gallery
+                await Promise.all(imageObjects.map(async (image) => {
+                    // delete existing image and replace it with new image
+                    await DeleteImage(updateObject.public_id)
+
+                    //upload image to cloudinary and extract the url & public_id.
+                    const { secure_url, public_id } = await UploadImage(image);
+
+                    updateObject.img_src = secure_url;
+                    updateObject.public_id = public_id;
+                }));
+            }
+
+            await ProductDomainService.UpdateImageProductGalleryDomain(updateObject, query_runner)
+            await query_runner.commitTransaction()
+            await query_runner.release()
+
+            return true
+        } catch (error) {
+            await query_runner.rollbackTransaction()
+            await query_runner.release()
+            throw error
+        }
     }
 }

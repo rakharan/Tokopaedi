@@ -334,7 +334,7 @@ describe('Lists of routes accessible to product manager', () => {
             newSubCategory.parent_id = id
 
             expect(name).toEqual(newHeadCategory.name)
-            expect(parent_id).toEqual(0)
+            expect(parent_id).toEqual(null)
 
             // expecting category path to be /0/id/ because this is the head category
             expect(cat_path).toEqual(`/0/${id}/`)
@@ -434,7 +434,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .attach('image', newImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
-                expect(body.message).toEqual("You can't use this name!")
+                expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
             })
 
             it('with wrong image mimetype', async () => {
@@ -498,7 +498,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .attach('image', updateImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toBe(500)
-                expect(body.message).toEqual("You can't use this name!")
+                expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
             });
 
             it('with wrong image mimetype', async () => {
@@ -617,7 +617,7 @@ describe('Lists of routes accessible to product manager', () => {
         })
     })
 
-    describe('Final step to delete product', () => {
+    describe.sequential('Final step to delete product', () => {
         let public_id: string;
 
         it('Should return a detail of newly updated product', async () => {
@@ -647,17 +647,6 @@ describe('Lists of routes accessible to product manager', () => {
             await DeleteImage(public_id)
         });
 
-        it('Should delete a newly created head category', async () => {
-            //extract the response body.
-            const { body } = await supertest(app.server)
-                .post('/api/v1/admin/category/delete')
-                .set('Authorization', superAdminJwt)
-                .set('user-agent', "Test")
-                .send({ id: newHeadCategory.id })
-                .expect(200)
-
-            expect(body.message).toEqual(true)
-        })
 
         it('Should delete a newly created sub-category', async () => {
             //extract the response body.
@@ -666,6 +655,18 @@ describe('Lists of routes accessible to product manager', () => {
                 .set('Authorization', superAdminJwt)
                 .set('user-agent', "Test")
                 .send({ id: newSubCategory.id })
+                .expect(200)
+
+            expect(body.message).toEqual(true)
+        })
+
+        it('Should delete a newly created head category', async () => {
+            //extract the response body.
+            const { body } = await supertest(app.server)
+                .post('/api/v1/admin/category/delete')
+                .set('Authorization', superAdminJwt)
+                .set('user-agent', "Test")
+                .send({ id: newHeadCategory.id })
                 .expect(200)
 
             expect(body.message).toEqual(true)

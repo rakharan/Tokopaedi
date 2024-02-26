@@ -42,7 +42,7 @@ export default class ShippingAddressAppService {
         const shippingAddressDetail = await ShippingAddressDomainService.GetShippingAddressDetailDomain(id)
 
         if (user_id !== shippingAddressDetail.user_id) {
-            throw new ApiError("This Shipping Address Doesn't Belong To You!")
+            throw new ApiError("THIS_SHIPPING_ADDRESS_DOESN'T_BELONG_TO_YOU")
         }
         return shippingAddressDetail
     }
@@ -82,7 +82,7 @@ export default class ShippingAddressAppService {
         const shippingAddressDetail = await ShippingAddressDomainService.GetShippingAddressDetailDomain(id)
 
         if (user_id !== shippingAddressDetail.user_id) {
-            throw new ApiError("This Shipping Address Doesn't Belong To You!")
+            throw new ApiError("THIS_SHIPPING_ADDRESS_DOESN'T_BELONG_TO_YOU")
         }
 
         const db = AppDataSource
@@ -118,7 +118,7 @@ export default class ShippingAddressAppService {
         const existingAddress = await ShippingAddressDomainService.GetShippingAddressDetailDomain(id)
 
         if (user_id !== existingAddress.user_id) {
-            throw new ApiError("This Shipping Address Doesn't Belong To You!")
+            throw new ApiError("THIS_SHIPPING_ADDRESS_DOESN'T_BELONG_TO_YOU")
         }
 
         const updateAddressData: Partial<ShippingAddress> = existingAddress

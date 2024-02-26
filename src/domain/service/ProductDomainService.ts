@@ -9,7 +9,7 @@ export default class ProductDomainService {
     static async GetProductListDomain(params: RepoPaginationParams) {
         const productList = await ProductRepository.DBGetProductList(params)
         if (productList.length < 1) {
-            throw new ResultNotFoundError("Product is empty!")
+            throw new ResultNotFoundError("PRODUCT_IS_EMPTY")
         }
         return productList
     }
@@ -17,7 +17,7 @@ export default class ProductDomainService {
     static async GetProductDetailDomain(id: number, user_id?: number) {
         const productDetail = await ProductRepository.DBGetProductDetail(id, user_id)
         if (productDetail.length < 1) {
-            throw new ResultNotFoundError("Product not found!")
+            throw new ResultNotFoundError("PRODUCT_NOT_FOUND")
         }
         return productDetail[0]
     }
@@ -29,7 +29,7 @@ export default class ProductDomainService {
 
         const deleteProduct = await ProductRepository.DBSoftDeleteProduct(id, query_runner)
         if (deleteProduct.affectedRows < 1) {
-            throw new ApiError("Delete Failed")
+            throw new ApiError("FAILED_TO_DELETE_PRODUCT")
         }
     }
 
@@ -40,8 +40,9 @@ export default class ProductDomainService {
 
         const newProduct = await ProductRepository.DBCreateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
-            throw new ApiError("Create Product Failed!")
+            throw new ApiError("FAILED_TO_CREATE_PRODUCT")
         }
+        return newProduct
     }
 
     static async UpdateProductDomain(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {
@@ -51,7 +52,7 @@ export default class ProductDomainService {
 
         const newProduct = await ProductRepository.DBUpdateProduct(product, query_runner)
         if (newProduct.affectedRows < 1) {
-            throw new ApiError("Update Product Failed!")
+            throw new ApiError("FAILED_TO_UPDATE_PRODUCT")
         }
         return newProduct
     }
@@ -75,7 +76,7 @@ export default class ProductDomainService {
             }
         }
         if (products.length < 1) {
-            throw new ResultNotFoundError(`Product not found`)
+            throw new ResultNotFoundError(`PRODUCT_NOT_FOUND`)
         }
         return products
     }
@@ -83,7 +84,7 @@ export default class ProductDomainService {
     static async CheckIsProductAliveDomain(id: number) {
         const isAlive = await ProductRepository.DBCheckIsProductAlive(id)
         if (isAlive.length < 1) {
-            throw new BadInputError("Product is deleted")
+            throw new BadInputError("PRODUCT_IS_DELETED")
         }
         return true
     }
@@ -149,7 +150,14 @@ export default class ProductDomainService {
     }
 
     static async CreateProductCategoryDomain(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
-        const category = await ProductRepository.CreateNewCategory(params, query_runner)
+        let category;
+        // if parent_id is null/0, that means we creating new head category.
+        if (params.parent_id == 0 || params.parent_id == null) {
+            category = await ProductRepository.CreateNewHeadCategory(params, query_runner)
+        } else {
+            // if parent_id is a number ( > 0 ), that means we creating new sub category.
+            category = await ProductRepository.CreateNewSubCategory(params, query_runner)
+        }
         if (category.affectedRows < 1) {
             throw new ApiError("FAILED_TO_CREATE_CATEGORY")
         }
@@ -240,6 +248,35 @@ export default class ProductDomainService {
         const removeFromWishlist = await ProductRepository.RemoveProductFromWishlist(collection_id, product_id)
         if (removeFromWishlist.affectedRows < 1) {
             throw new ApiError("FAILED_TO_REMOVE_PRODUCT_FROM_WISHLIST")
+        }
+    }
+
+    static async AddImageProductGalleryDomain(params: ProductParamsDto.AddProductImageGalleryParams, query_runner: QueryRunner) {
+        const addImageGallery = await ProductRepository.AddProductImageToGallery(params, query_runner)
+        if (addImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_ADD_IMAGE_TO_GALLERY")
+        }
+    }
+
+    static async FindProductImageDetailDomain(public_id: string, product_id: number) {
+        const updateImage = await ProductRepository.FindProductImageDetail(public_id, product_id)
+        if (updateImage.length < 1) {
+            throw new ResultNotFoundError("IMAGE_DETAIL_NOT_FOUND")
+        }
+        return updateImage[0]
+    }
+
+    static async DeleteImageProductGalleryDomain(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner: QueryRunner) {
+        const deleteImageGallery = await ProductRepository.DeleteProductImageFromGallery(params, query_runner)
+        if (deleteImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_DELETE_IMAGE_GALLERY")
+        }
+    }
+
+    static async UpdateImageProductGalleryDomain(params: ProductParamsDto.UpdateProductImageGalleryParams, query_runner: QueryRunner) {
+        const updateImageGallery = await ProductRepository.UpdateProductImageGallery(params, query_runner)
+        if (updateImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_UPDATE_IMAGE_GALLERY")
         }
     }
 }

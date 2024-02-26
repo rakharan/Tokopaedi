@@ -7,8 +7,6 @@ const products = [
         category: 3,
         price: 549,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712309/tokopaedi/products/iphone-9.jpg",
-        public_id: "tokopaedi/products/iphone-9.jpg"
     },
     {
         name: "iPhone X",
@@ -16,8 +14,6 @@ const products = [
         category: 3,
         price: 899,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712315/tokopaedi/products/iphone-x.jpg",
-        public_id: "tokopaedi/products/iphone-x.jpg"
     },
     {
         name: "Samsung Universe 9",
@@ -25,8 +21,6 @@ const products = [
         category: 3,
         price: 1249,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712300/tokopaedi/products/samsung-universe-94.jpg",
-        public_id: "tokopaedi/products/samsung-universe-94.jpg"
     },
     {
         name: "OPPOF19",
@@ -34,8 +28,6 @@ const products = [
         category: 3,
         price: 280,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712173/tokopaedi/products/oppo-f19.jpg",
-        public_id: "tokopaedi/products/oppo-f19.jpg"
     },
     {
         name: "Huawei P30",
@@ -43,8 +35,6 @@ const products = [
         category: 3,
         price: 280,
         stock: 5,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712164/tokopaedi/products/huawei-p30.jpg",
-        public_id: "tokopaedi/products/huawei-p30.jpg"
     },
     {
         name: "MacBook Pro",
@@ -52,8 +42,6 @@ const products = [
         category: 7,
         price: 1749,
         stock: 7,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712144/tokopaedi/products/macbook-pro.jpg",
-        public_id: "tokopaedi/products/macbook-pro.jpg"
     },
     {
         name: "Samsung Galaxy Book",
@@ -61,8 +49,6 @@ const products = [
         category: 7,
         price: 1499,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712131/tokopaedi/products/samsung-galaxy-book.jpg",
-        public_id: "tokopaedi/products/samsung-galaxy-book.jpg"
     },
     {
         name: "Microsoft Surface Laptop 4",
@@ -70,17 +56,13 @@ const products = [
         category: 7,
         price: 1499,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712122/tokopaedi/products/microsoft-surface-pro-4.jpg",
-        public_id: "tokopaedi/products/microsoft-surface-pro-4.jpg"
     },
     {
         name: "Infinix Inbook X1",
-        description: "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey – 1 Year Warranty",
+        description: "Infinix Inbook X1 Ci3 10th 8GB 256GB 14 Win10 Grey 1 Year Warranty",
         category: 7,
         price: 1099,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704712108/tokopaedi/products/infinix-inbook-x1.jpg",
-        public_id: "tokopaedi/products/infinix-inbook-x1.jpg"
     },
     {
         name: "HP Pavilion 15-DK1056WM",
@@ -88,8 +70,6 @@ const products = [
         category: 7,
         price: 1099,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1704714272/tokopaedi/products/hp-pavilion-15-DK1056WM.jpg",
-        public_id: "tokopaedi/products/hp-pavilion-15-DK1056WM"
     },
     {
         name: "PlayStation 5 (PS5)",
@@ -97,8 +77,6 @@ const products = [
         category: 6,
         price: 499,
         stock: 30,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1707732319/tokopaedi/products/20240212170516-playstation-5.jpg",
-        public_id: "tokopaedi/products/20240212170516-playstation-5"
     },
     {
         name: "Retro Gaming T-Shirt",
@@ -106,8 +84,6 @@ const products = [
         category: 11,
         price: 25,
         stock: 100,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1707732219/tokopaedi/products/20240212170336-retro-gaming-tshirt.jpg",
-        public_id: "tokopaedi/products/20240212170336-retro-gaming-tshirt"
     },
     {
         name: "Urban Cargo Pants",
@@ -115,8 +91,6 @@ const products = [
         category: 11,
         price: 45,
         stock: 75,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1707732370/tokopaedi/products/20240212170607-urban-cargo-pants.png",
-        public_id: "tokopaedi/products/20240212170607-urban-cargo-pants"
     },
     {
         name: "Nike Air Max 270",
@@ -124,15 +98,13 @@ const products = [
         category: 15,
         price: 120,
         stock: 50,
-        img_src: "https://res.cloudinary.com/dizgcsbsq/image/upload/v1707732411/tokopaedi/products/20240212170647-nike-air-max-720.png",
-        public_id: "tokopaedi/products/20240212170647-nike-air-max-720"
     }
 ]
 
 export class InsertIntoProducts1701859009819 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         for (const product of products) {
-            await queryRunner.query(`INSERT INTO product (name, description, category, price, stock, img_src, public_id) VALUES (?, ?, ?, ?, ?, ?, ?)`, [product.name, product.description, product.category, product.price, product.stock, product.img_src, product.public_id])
+            await queryRunner.query(`INSERT INTO product (name, description, category, price, stock) VALUES (?, ?, ?, ?, ?)`, [product.name, product.description, product.category, product.price, product.stock])
         }
     }
 

@@ -72,7 +72,7 @@ describe('List of routes accessible to transaction manager', () => {
             .send(newTransactionRequestData)
             .expect(400)
 
-        expect(body.message).toEqual(`Product Huawei P30 is out of stock!`)
+        expect(body.message).toEqual(`PRODUCT_HUAWEI P30_IS_OUT_OF_STOCK`)
     })
 
     it('Should create a new transaction for testing', async () => {
@@ -106,7 +106,7 @@ describe('List of routes accessible to transaction manager', () => {
                 .send(newTransactionRequestData)
                 .expect(500)
 
-            expect(body.message).toEqual("Please pay your current transaction.")
+            expect(body.message).toEqual("PLEASE_PAY_YOUR_CURRENT_TRANSACTION")
         })
 
         it('Should fail to create transaction with mismatch length of qty & prodcut_id', async () => {
@@ -122,7 +122,7 @@ describe('List of routes accessible to transaction manager', () => {
                 .send(newTransactionRequestData)
                 .expect(400)
 
-            expect(body.message).toEqual("Product_id and qty not match")
+            expect(body.message).toEqual("PRODUCT_AND_QTY_LENGTH_DON'T_MATCH")
         })
     })
 
@@ -287,7 +287,7 @@ describe('List of routes accessible to transaction manager', () => {
                 .send(updateDeliveryStatusRequest)
                 .expect(400)
 
-            expect(body.message).toEqual("Please approve the transaction first!")
+            expect(body.message).toEqual("PLEASE_APPROVE_THE_TRANSACTION_FIRST")
         });
 
         it('Should approve a transaction', async () => {

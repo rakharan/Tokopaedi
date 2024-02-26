@@ -15,11 +15,12 @@ const routes: RouteOptions[] = [
                     name: "string",
                 },
                 additional_body: {
-                    sortFilter: { type: "string" },
+                    sortFilter: { type: "string", enum: ["mostReviewed", "highestPrice", "lowestPrice", "lowestRating", "highestRating"] },
                     categoriesFilter: { type: "string" },
                     ratingSort: { type: "string" },
                     priceMin: { type: "number" },
                     priceMax: { type: "number" },
+                    offset: { type: "number" }, 
                 }
             }),
             response: Schema.BasePaginationResultSchema,

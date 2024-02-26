@@ -20,9 +20,10 @@ type BaseObjectSchema = {
 }
 
 type BaseParamsSchema = {
-    type: string
-    default?: string
-    items?: { type: string }
+    type: string;
+    default?: string;
+    items?: { type: string };
+    enum?: string[]; // Add the enum property
 }
 
 type BodySchema = {
@@ -213,7 +214,7 @@ export const BasePaginationResultSchema = {
                                 {
                                     type: "array",
                                     items: {
-                                        anyOf: [{ type: "string" }, { type: "integer" }, { type: "boolean" }, { type: "object", additionalProperties: true }],
+                                        anyOf: [{ type: "string", nullable: true }, { type: "integer", nullable: true }, { type: "boolean", nullable: true }, { type: "object", additionalProperties: true }],
                                     },
                                 },
                             ],

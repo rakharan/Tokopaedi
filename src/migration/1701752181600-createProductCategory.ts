@@ -6,8 +6,9 @@ export class CreateProductCategory1701752181600 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE product_category (        
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 name VARCHAR(50),
-                parent_id INT REFERENCES product_category(id) ON DELETE CASCADE,
-                cat_path VARCHAR(50)
+                parent_id INT NULL,
+                cat_path VARCHAR(50),
+                FOREIGN KEY(parent_id) REFERENCES product_category(id) ON DELETE CASCADE ON UPDATE CASCADE
             )
         `)
     }

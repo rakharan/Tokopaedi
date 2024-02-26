@@ -24,13 +24,13 @@ export default class TransactionAppService {
 
         await TransactionSchema.CreateTransaction.validateAsync(params)
         if (product_id.length != qty.length) {
-            throw new BadInputError("Product_id and qty not match")
+            throw new BadInputError("PRODUCT_AND_QTY_LENGTH_DON'T_MATCH")
         }
 
         //check if there's an unpaid transaction
         const pendingTransaction = await TransactionDomainService.GetPendingTransactionDomain(id)
         if (pendingTransaction.length > 0) {
-            throw new ApiError("Please pay your current transaction.")
+            throw new ApiError("PLEASE_PAY_YOUR_CURRENT_TRANSACTION")
         }
 
         const products = await ProductDomainService.GetProductsPricesAndStockDomain(product_id)
@@ -42,7 +42,7 @@ export default class TransactionAppService {
             //Additional layer of checking the product stock, if it's 0, user can't buy it & throw error.
             //If the user trying to buy more than the available stock, will throw the same error
             if (product.stock === 0 || product.stock < qty[i]) {
-                throw new BadInputError(`Product ${product.name} is out of stock!`)
+                throw new BadInputError(`PRODUCT_${product.name.toUpperCase()}_IS_OUT_OF_STOCK`)
             }
 
             items_price += parseFloat(product.price.toString()) * qty[i]
@@ -482,11 +482,11 @@ export default class TransactionAppService {
         if (transactionStatus.status !== 1) {
             switch (transactionStatus.status) {
                 case 0:
-                    throw new BadInputError("Please approve the transaction first!")
+                    throw new BadInputError("PLEASE_APPROVE_THE_TRANSACTION_FIRST")
                 case 2:
-                    throw new ApiError("This transaction is rejected!")
+                    throw new ApiError("THIS_TRANSACTION_IS_REJECTED")
                 default:
-                    throw new ApiError("Invalid transaction status!")
+                    throw new ApiError("INVALID_TRANSACTION_STATUS")
             }
         }
 

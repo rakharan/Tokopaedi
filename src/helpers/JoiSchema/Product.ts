@@ -105,7 +105,7 @@ export const UpdateCategory = Joi.object({
 }).options({ abortEarly: false })
 
 export const ProductList = Joi.object({
-    sortFilter: Joi.string().valid('mostReviewed', 'highestRating', 'lowestRating').optional(),
+    sortFilter: Joi.string().valid('mostReviewed', 'highestRating', 'lowestRating', 'lowestPrice', 'highestPrice').optional(),
     categoriesFilter: Joi.string().optional(),
     ratingSort: Joi.string().valid('greaterThanOrEqualFour', 'greaterThanOrEqualThree', 'greaterThanOrEqualTwo').optional(),
     priceMin: Price,
