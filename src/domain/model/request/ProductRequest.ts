@@ -40,4 +40,6 @@ export type GetProductListRequest = {
     ratingSort: string
     priceMin: number
     priceMax: number
+    lastPrice: number
+    lastRating: number
 }

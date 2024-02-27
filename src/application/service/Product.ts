@@ -22,24 +22,8 @@ export default class ProductAppService {
         // validating productListParams filter
         await ProductSchema.ProductList.validateAsync(productListParams)
 
-        let { lastId = 0, offset } = params
-        const { limit = 100, search, sort = "ASC" } = params
-        const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin } = productListParams
-
-        // vaildation to check if sortFilter is passed, offset is required too.
-        if (sortFilter && offset === undefined) {
-            throw new BadInputError(`PLEASE_PROVIDE_OFFSET_IF_YOU_WANT_TO_SORT_BY_${sortFilter.toUpperCase()}`)
-        }
-
-        // if user passes sortFilter, we need to change the lastId to 0
-        // this is to prevent displaying jumbled data when using offset approach.
-        if (sortFilter) {
-            lastId = 0
-        } else {
-            // if user didnt passes sortFilter, we need to change the offset to 0
-            // this is to prevent displaying jumbled data when using key-pagination approach.
-            offset = 0
-        }
+        const { limit = 100, search, sort = "ASC", lastId = 0 } = params
+        const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin, lastPrice, lastRating } = productListParams
 
         // additional validation for price filter.
         // price max can not be lower than price min
@@ -67,20 +51,20 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY review_count DESC`;
+                baseSort = `ORDER BY review_count DESC, p.id ${sort}`;
                 break;
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
-                baseSort = `ORDER BY rating DESC`;
+                baseSort = `ORDER BY rating DESC, p.id ${sort}`;
                 break;
             case "lowestRating":
-                baseSort = `ORDER BY rating ASC`;
+                baseSort = `ORDER BY rating ASC, p.id ${sort}`;
                 break;
             case "lowestPrice":
-                baseSort = `ORDER BY price ASC`;
+                baseSort = `ORDER BY price ASC, p.id ${sort}`;
                 break;
             case "highestPrice":
-                baseSort = `ORDER BY price DESC`;
+                baseSort = `ORDER BY price DESC, p.id ${sort}`;
                 break;
             default:
                 baseSort = `ORDER BY p.id ${sort}`;
@@ -122,26 +106,35 @@ export default class ProductAppService {
             whereClause += ` AND pc.cat_path LIKE CONCAT((SELECT cat_path FROM product_category WHERE name = '${categoriesFilter}'), "%")`
         }
 
-        // offset is passed to handle a sort filter pagination.
-        // the default is 0 when user didn't supply it, but when user passes a sortFilter user need to supply an offset.
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort, offset: Number(offset) })
-
+        // Default id for determining if its the first time hit or not based on lastId.
+        const DEFAULT_ID = 1
         /**
-         * If user passes a sort filter, we need to use different approach for the pagination.
-         * we use limit & offset approach when user want to sort filter the data.
-         * if user doesn't pass the sort filter, we use key-pagination approach.
+         * If user passes sort based on highest/lowest rating/price.
+         * we need to modify the whereClause to ensure pagination working properly.
          */
-        if (!sortFilter) {
-            //Generate pagination
-            return Paginate({ data: product, limit })
-        } else {
-            const result = Paginate({ data: product, limit })
-
-            // delete the lastId because, it isnt needed if we use offset approach.
-            delete result.lastId
-
-            return result
+        if (sortFilter && lastId >= DEFAULT_ID) {
+            switch (sortFilter) {
+                case "highestRating":
+                    whereClause += ` AND rating = ${lastRating} OR rating < ${lastRating}`;
+                    break;
+                case "lowestRating":
+                    whereClause += ` AND rating = ${lastRating} OR rating > ${lastRating}`;
+                    break;
+                case "lowestPrice":
+                    whereClause += ` AND price = ${lastPrice} OR price > ${lastPrice}`;
+                    break;
+                case "highestPrice":
+                    whereClause += ` AND price = ${lastPrice} OR price < ${lastPrice}`;
+                    break;
+                default:
+                    break;
+            }
         }
+
+        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
+
+        //Generate pagination
+        return Paginate({ data: product, limit })
     }
 
     static async GetProductDetail(id: number, user_id?: number) {
@@ -399,7 +392,7 @@ export default class ProductAppService {
     static async CreateProductCategory(params: ProductRequestDto.CreateProductCategoryRequest, logData: LogParamsDto.CreateLogParams) {
         await ProductSchema.CreateCategory.validateAsync(params)
 
-        let { name, parent_id } = params
+        const { name, parent_id } = params
 
         // checking if name is containing bad word
         if (Profanity.flag(name.toLowerCase())) {

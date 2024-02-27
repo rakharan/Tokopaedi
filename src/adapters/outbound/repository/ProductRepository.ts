@@ -9,7 +9,7 @@ const db = AppDataSource
 
 export default class ProductRepository {
     static async DBGetProductList(params: RepoPaginationParams) {
-        const { limit, sort, whereClause, offset = 0 } = params
+        const { limit, sort, whereClause } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
         SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock,
@@ -36,9 +36,8 @@ export default class ProductRepository {
         AND p.is_deleted <> 1
         GROUP BY p.id
         ${sort}
-        LIMIT ? 
-        OFFSET ?`,
-            [limit + 1, offset]
+        LIMIT ?`,
+            [limit + 1]
         )
     }
 
