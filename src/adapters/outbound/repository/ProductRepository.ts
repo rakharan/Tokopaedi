@@ -8,7 +8,7 @@ import { QueryRunner } from "typeorm"
 const db = AppDataSource
 
 export default class ProductRepository {
-    static async DBGetProductList(params: RepoPaginationParams) {
+    static async DBGetProductList(params: RepoPaginationParams, having?: string) {
         const { limit, sort, whereClause } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
@@ -35,6 +35,7 @@ export default class ProductRepository {
         ${whereClause}
         AND p.is_deleted <> 1
         GROUP BY p.id
+        ${having}
         ${sort}
         LIMIT ?`,
             [limit + 1]

@@ -25,6 +25,9 @@ export default class ProductAppService {
         const { limit = 100, search, sort = "ASC", lastId = 0 } = params
         const { categoriesFilter, ratingSort, sortFilter, priceMax, priceMin, lastPrice, lastRating } = productListParams
 
+        // variable to hold having filter for rating & review_count (aggregated)
+        let having = ""
+
         // additional validation for price filter.
         // price max can not be lower than price min
         if (priceMax < priceMin) {
@@ -74,13 +77,13 @@ export default class ProductAppService {
         // rating filter, for example: > 4 star review.
         switch (ratingSort) {
             case "greaterThanOrEqualFour":
-                whereClause += ` AND rating >= 4`;
+                having = `HAVING rating >= 4`;
                 break;
             case "greaterThanOrEqualThree":
-                whereClause += ` AND rating >= 3`;
+                having = `HAVING rating >= 3`;
                 break;
             case "greaterThanOrEqualTwo":
-                whereClause += ` AND rating >= 2`;
+                having = `HAVING rating >= 2`;
                 break;
         }
 
@@ -115,10 +118,10 @@ export default class ProductAppService {
         if (sortFilter && lastId >= DEFAULT_ID) {
             switch (sortFilter) {
                 case "highestRating":
-                    whereClause += ` AND rating = ${lastRating} OR rating < ${lastRating}`;
+                    having = `HAVING rating = ${lastRating} OR rating < ${lastRating}`;
                     break;
                 case "lowestRating":
-                    whereClause += ` AND rating = ${lastRating} OR rating > ${lastRating}`;
+                    having = `HAVING rating = ${lastRating} OR rating > ${lastRating}`;
                     break;
                 case "lowestPrice":
                     whereClause += ` AND price = ${lastPrice} OR price > ${lastPrice}`;
@@ -131,7 +134,7 @@ export default class ProductAppService {
             }
         }
 
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort })
+        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort }, having)
 
         //Generate pagination
         return Paginate({ data: product, limit })
@@ -207,8 +210,6 @@ export default class ProductAppService {
                     }
                 }
             }
-
-            console.log({ imageObjects })
 
             //create the product, insert into database.
             // extract the insertId (newly created product id)
