@@ -10,9 +10,9 @@ export class AddProductGalleries1708926593464 implements MigrationInterface {
             img_src VARCHAR(150),
             public_id VARCHAR(100),
             thumbnail TINYINT(1),
-            display_order SMALLINT(1),
-            created_at INT DEFAULT UNIX_TIMESTAMP(),
-            updated_at INT DEFAULT UNIX_TIMESTAMP(),
+            display_order INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (product_id) REFERENCES product(id) ON UPDATE CASCADE ON DELETE CASCADE
         )
         `)
