@@ -3,10 +3,10 @@ import autocannon from 'autocannon';
 function runProductListTest() {
     const url = 'http://localhost:8080/api/v1/product/list';
     const body = JSON.stringify({
-        limit:  100,
-        offset:  0,
-        sortFilter: "highestPrice"
-        // sort: 'asc',
+        limit: 100,
+        lastId: 0,
+        sortFilter: "highestPrice",
+        sort: 'ASC'
     });
 
     const options = {
@@ -19,6 +19,7 @@ function runProductListTest() {
         // Additional options for Autocannon, such as concurrency, duration, etc.
         connections: 10,
         duration: 10, // seconds
+        title: "Product List Load Test"
     };
 
     autocannon({ ...options, method: "POST" }, (err, result) => {

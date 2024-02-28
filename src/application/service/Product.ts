@@ -14,6 +14,7 @@ import { emailer } from "@infrastructure/mailer/mailer"
 import { DeleteImage, UploadImage } from "@helpers/utils/image/imageHelper"
 import { File, FilesObject } from "fastify-multer/lib/interfaces"
 import { BadInputError } from "@domain/model/Error/Error"
+import { redisClient } from "@infrastructure/redis/redis"
 
 export default class ProductAppService {
     static async GetProductList(params: CommonRequestDto.PaginationRequest, productListParams: ProductParamsDto.GetProductListParams) {
@@ -134,10 +135,20 @@ export default class ProductAppService {
             }
         }
 
-        const product = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort }, having)
+        // Use caching for product list.
+        let products;
+        const key = `productList:${whereClause}:${lastId}:${limit}:${baseSort}:${having}`;
+        const value = await redisClient.get(key);
+
+        if (value) {
+            products = JSON.parse(value);
+        } else {
+            products = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort }, having)
+            redisClient.setex(key, 300, JSON.stringify(products));
+        }
 
         //Generate pagination
-        return Paginate({ data: product, limit })
+        return Paginate({ data: products, limit })
     }
 
     static async GetProductDetail(id: number, user_id?: number) {
