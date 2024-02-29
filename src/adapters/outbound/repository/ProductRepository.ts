@@ -215,8 +215,8 @@ export default class ProductRepository {
             p.name,
             p.description,
             p.price,
-            p.img_src,
-            p.public_id,
+            GROUP_CONCAT(pg.img_src SEPARATOR ",") AS img_src,
+            GROUP_CONCAT(pg.public_id SEPARATOR ",") AS public_id,
             (
                 SELECT AVG(rating)
                 FROM product_review
@@ -234,8 +234,10 @@ export default class ProductRepository {
             ON wc.user_id = u.id
         JOIN product p 
             ON p.id = w.product_id
-        JOIN product_category pc 
+        JOIN product_category pc
             ON p.category = pc.id
+        JOIN product_gallery pg 
+            ON p.id = pg.product_id
         ${whereClause}
         GROUP BY p.name
         ${sort}
