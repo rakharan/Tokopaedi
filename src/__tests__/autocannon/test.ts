@@ -1,3 +1,4 @@
+/* v8 ignore start */
 import autocannon from 'autocannon';
 
 function runProductListTest() {
@@ -9,7 +10,7 @@ function runProductListTest() {
         sort: 'ASC'
     });
 
-    const options = {
+    const options: autocannon.Options = {
         url,
         method: 'POST',
         body,
@@ -19,7 +20,7 @@ function runProductListTest() {
         // Additional options for Autocannon, such as concurrency, duration, etc.
         connections: 10,
         duration: 10, // seconds
-        title: "Product List Load Test"
+        title: "Product List Load Test",
     };
 
     autocannon({ ...options, method: "POST" }, (err, result) => {
@@ -33,3 +34,4 @@ function runProductListTest() {
 }
 
 runProductListTest();
+/* v8 ignore stop */
