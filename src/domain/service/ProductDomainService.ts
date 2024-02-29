@@ -258,8 +258,8 @@ export default class ProductDomainService {
         }
     }
 
-    static async FindProductImageDetailDomain(public_id: string, product_id: number) {
-        const updateImage = await ProductRepository.FindProductImageDetail(public_id, product_id)
+    static async FindProductImageDetailDomain(id: number, product_id: number) {
+        const updateImage = await ProductRepository.FindProductImageDetail(id, product_id)
         if (updateImage.length < 1) {
             throw new ResultNotFoundError("IMAGE_DETAIL_NOT_FOUND")
         }

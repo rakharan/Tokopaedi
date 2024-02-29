@@ -59,7 +59,7 @@ export default class ProductController {
     static async UpdateProduct(request: FastifyRequest) {
         const jwt = request.user
         const productUpdate = request.body as ProductRequestDto.UpdateProductRequest
-        
+
         const updateProduct = await ProductAppService.UpdateProduct(productUpdate, {
             user_id: jwt.id,
             action: `Update Product`,
@@ -211,5 +211,23 @@ export default class ProductController {
 
         const removeProduct = await ProductAppService.RemoveProductFromWishlist(collection_id, product_id)
         return { message: removeProduct }
+    }
+
+    static async UpdateImageGallery(request: FastifyRequest) {
+        const files = request.files
+        const params = request.body as ProductRequestDto.UpdateProductImageGalleryRequest
+        try {
+            const updateImage = await ProductAppService.UpdateImageGallery(params, files)
+            return { message: updateImage }
+        } catch (error) {
+            // Delete tmp files when error occured
+            for (const file in files) {
+                const imagePath = files[file][0].path
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath)
+                }
+            }
+            throw error
+        }
     }
 }

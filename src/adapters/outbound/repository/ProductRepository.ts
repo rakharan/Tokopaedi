@@ -215,8 +215,8 @@ export default class ProductRepository {
             p.name,
             p.description,
             p.price,
-            p.img_src,
-            p.public_id,
+            GROUP_CONCAT(pg.img_src SEPARATOR ",") AS img_src,
+            GROUP_CONCAT(pg.public_id SEPARATOR ",") AS public_id,
             (
                 SELECT AVG(rating)
                 FROM product_review
@@ -234,8 +234,10 @@ export default class ProductRepository {
             ON wc.user_id = u.id
         JOIN product p 
             ON p.id = w.product_id
-        JOIN product_category pc 
+        JOIN product_category pc
             ON p.category = pc.id
+        JOIN product_gallery pg 
+            ON p.id = pg.product_id
         ${whereClause}
         GROUP BY p.name
         ${sort}
@@ -282,12 +284,12 @@ export default class ProductRepository {
         `, [product_id, img_src, public_id, thumbnail, display_order], query_runner)
     }
 
-    static async FindProductImageDetail(public_id: string, product_id: number) {
+    static async FindProductImageDetail(id: number, product_id: number) {
         return await db.query<{ product_id: number; img_src: string; public_id: string; thumbnail: number; display_order: number }[]>(`
         SELECT pg.product_id, pg.img_src, pg.public_id, pg.thumbnail, pg.display_order
         FROM product_gallery pg
-        WHERE pg.public_id = ? AND pg.product_id = ?
-        `, [public_id, product_id])
+        WHERE pg.id = ? AND pg.product_id = ?
+        `, [id, product_id])
     }
 
     static async DeleteProductImageFromGallery(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner: QueryRunner) {
@@ -299,10 +301,10 @@ export default class ProductRepository {
     }
 
     static async UpdateProductImageGallery(params: ProductParamsDto.UpdateProductImageGalleryParams, query_runner: QueryRunner) {
-        const { product_id, display_order, img_src, public_id, thumbnail } = params
+        const { product_id, display_order, img_src, public_id, thumbnail, id } = params
 
         return await db.query<ResultSetHeader>(`
-        UPDATE product_gallery SET product_id = ?,display_order = ?, img_src = ?, public_id = ?, thumbnail = ? 
-        `, [product_id, display_order, img_src, public_id, thumbnail], query_runner)
+        UPDATE product_gallery SET display_order = ?, img_src = ?, public_id = ?, thumbnail = ? 
+        WHERE product_id = ? AND id = ?`, [product_id, display_order, img_src, public_id, thumbnail, product_id, id], query_runner)
     }
 }
