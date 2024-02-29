@@ -153,7 +153,20 @@ export default class ProductAppService {
 
     static async GetProductDetail(id: number, user_id?: number) {
         await ProductSchema.ProductId.validateAsync(id)
-        return await ProductDomainService.GetProductDetailDomain(id, user_id)
+
+        // Use caching for product detail.
+        let productDetail;
+        const key = `productDetail:${id}:${user_id || 0}`;
+        const value = await redisClient.get(key);
+
+        if (value) {
+            productDetail = JSON.parse(value);
+        } else {
+            productDetail = await ProductDomainService.GetProductDetailDomain(id, user_id)
+            redisClient.setex(key, 300, JSON.stringify(productDetail));
+        }
+
+        return productDetail
     }
 
     static async SoftDeleteProduct(id: number, logData: LogParamsDto.CreateLogParams) {
