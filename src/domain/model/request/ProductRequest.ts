@@ -17,6 +17,15 @@ export type UpdateProductRequest = {
     stock?: number
 }
 
+export type UpdateProductImageGalleryRequest = {
+    id: number
+    product_id: number
+    public_id: string
+    img_src?: string
+    thumbnail?: number
+    display_order?: number
+}
+
 export type CreateProductReviewRequest = {
     product_id: number
     rating: number

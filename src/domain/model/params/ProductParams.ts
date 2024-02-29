@@ -30,6 +30,7 @@ export type DeleteProductImageGalleryParams = {
 }
 
 export type UpdateProductImageGalleryParams = {
+    id?: number
     product_id?: number
     public_id?: string
     img_src?: string

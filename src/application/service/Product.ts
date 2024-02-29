@@ -215,8 +215,6 @@ export default class ProductAppService {
                 }
             }
 
-            console.log({ imageObjects })
-
             //create the product, insert into database.
             // extract the insertId (newly created product id)
             const { insertId } = await ProductDomainService.CreateProductDomain(product, query_runner)
@@ -666,10 +664,10 @@ export default class ProductAppService {
         return true
     }
 
-    static async UpdateImageGallery(params: ProductParamsDto.UpdateProductImageGalleryParams, files: FilesObject) {
-        const { product_id, public_id, display_order, thumbnail } = params
+    static async UpdateImageGallery(params: ProductRequestDto.UpdateProductImageGalleryRequest, files: FilesObject) {
+        const { product_id, display_order, thumbnail, id } = params
 
-        const existingImage = await ProductDomainService.FindProductImageDetailDomain(public_id, product_id)
+        const existingImage = await ProductDomainService.FindProductImageDetailDomain(id, product_id)
 
         type ImageDetail = {
             product_id: number
@@ -691,7 +689,7 @@ export default class ProductAppService {
                 updateObject.display_order = display_order
             }
 
-            if (thumbnail && display_order !== existingImage.display_order) {
+            if (thumbnail && thumbnail !== existingImage.thumbnail) {
                 updateObject.thumbnail = thumbnail
             }
 
@@ -729,7 +727,7 @@ export default class ProductAppService {
                 }));
             }
 
-            await ProductDomainService.UpdateImageProductGalleryDomain(updateObject, query_runner)
+            await ProductDomainService.UpdateImageProductGalleryDomain({ ...updateObject, id }, query_runner)
             await query_runner.commitTransaction()
             await query_runner.release()
 

@@ -1,8 +1,8 @@
 /* v8 ignore start */
-import { TransactionScheduler } from "@cronJobs/transaction-scheduler/Transaction"
+// import { TransactionScheduler } from "@cronJobs/transaction-scheduler/Transaction"
 import buildServer from "./index"
-import { UserScheduler } from "@cronJobs/user-scheduler/User"
-import { ProductScheduler } from "@cronJobs/product-scheduler/Product"
+// import { UserScheduler } from "@cronJobs/user-scheduler/User"
+// import { ProductScheduler } from "@cronJobs/product-scheduler/Product"
 import dotenvFlow from "dotenv-flow"
 import path from "path"
 
@@ -15,7 +15,6 @@ const config = {
     PORT: process.env.HTTP_PORT,
 }
 
-/* istanbul ignore if -- @preserve */
 async function main() {
     try {
         const port = Number(config.PORT)
@@ -26,9 +25,9 @@ async function main() {
             }
             console.log(`Server listening at ${address}`)
             // CronJobs
-            new TransactionScheduler()
-            new UserScheduler()
-            new ProductScheduler()
+            // new TransactionScheduler()
+            // new UserScheduler()
+            // new ProductScheduler()
         })
     } catch (e) {
         console.error(e)
