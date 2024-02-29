@@ -900,7 +900,6 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                     limit: 10,
                     lastId: 0,
                     sortFilter: "highestRating",
-                    offset: 0
                 }
                 //extract the response body.
                 const { body } = await supertest(app.server)
@@ -931,7 +930,6 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                     limit: 10,
                     lastId: 0,
                     sortFilter: "lowestRating",
-                    offset: 0
                 }
                 //extract the response body.
                 const { body } = await supertest(app.server)
@@ -962,7 +960,6 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
                     limit: 10,
                     lastId: 0,
                     sortFilter: "mostReviewed",
-                    offset: 0
                 }
                 //extract the response body.
                 const { body } = await supertest(app.server)

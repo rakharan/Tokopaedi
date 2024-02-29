@@ -50,8 +50,8 @@ export default class ProductRepository {
             pc.name AS category_name,
             p.price,
             p.stock,
-            p.img_src,
-            p.public_id,
+            GROUP_CONCAT(pg.img_src SEPARATOR ",") AS img_src,
+            GROUP_CONCAT(pg.public_id SEPARATOR ",") AS public_id,
             IFNULL(
                 (
                     SELECT AVG(rating)
@@ -76,6 +76,7 @@ export default class ProductRepository {
                 END AS is_wishlisted
         FROM product p
         JOIN product_category pc ON p.category = pc.id
+        JOIN product_gallery pg ON p.id = pg.product_id
         WHERE p.id = ?`, [user_id, id], query_runner)
     }
 
