@@ -8,8 +8,8 @@ import { QueryRunner } from "typeorm"
 const db = AppDataSource
 
 export default class ProductRepository {
-    static async DBGetProductList(params: RepoPaginationParams) {
-        const { limit, sort, whereClause, offset = 0 } = params
+    static async DBGetProductList(params: RepoPaginationParams, having?: string) {
+        const { limit, sort, whereClause } = params
         return await db.query<ProductResponseDto.ProductListResponse>(
             `
         SELECT p.id, p.name, p.description, pc.name as category, p.price, p.stock,
@@ -35,10 +35,10 @@ export default class ProductRepository {
         ${whereClause}
         AND p.is_deleted <> 1
         GROUP BY p.id
+        ${having}
         ${sort}
-        LIMIT ? 
-        OFFSET ?`,
-            [limit + 1, offset]
+        LIMIT ?`,
+            [limit + 1]
         )
     }
 
@@ -50,8 +50,8 @@ export default class ProductRepository {
             pc.name AS category_name,
             p.price,
             p.stock,
-            p.img_src,
-            p.public_id,
+            GROUP_CONCAT(pg.img_src SEPARATOR ",") AS img_src,
+            GROUP_CONCAT(pg.public_id SEPARATOR ",") AS public_id,
             IFNULL(
                 (
                     SELECT AVG(rating)
@@ -76,6 +76,7 @@ export default class ProductRepository {
                 END AS is_wishlisted
         FROM product p
         JOIN product_category pc ON p.category = pc.id
+        JOIN product_gallery pg ON p.id = pg.product_id
         WHERE p.id = ?`, [user_id, id], query_runner)
     }
 
@@ -214,8 +215,8 @@ export default class ProductRepository {
             p.name,
             p.description,
             p.price,
-            p.img_src,
-            p.public_id,
+            GROUP_CONCAT(pg.img_src SEPARATOR ",") AS img_src,
+            GROUP_CONCAT(pg.public_id SEPARATOR ",") AS public_id,
             (
                 SELECT AVG(rating)
                 FROM product_review
@@ -233,8 +234,10 @@ export default class ProductRepository {
             ON wc.user_id = u.id
         JOIN product p 
             ON p.id = w.product_id
-        JOIN product_category pc 
+        JOIN product_category pc
             ON p.category = pc.id
+        JOIN product_gallery pg 
+            ON p.id = pg.product_id
         ${whereClause}
         GROUP BY p.name
         ${sort}

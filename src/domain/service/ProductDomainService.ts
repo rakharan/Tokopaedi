@@ -6,8 +6,8 @@ import { RepoPaginationParams } from "key-pagination-sql"
 import { QueryRunner } from "typeorm"
 
 export default class ProductDomainService {
-    static async GetProductListDomain(params: RepoPaginationParams) {
-        const productList = await ProductRepository.DBGetProductList(params)
+    static async GetProductListDomain(params: RepoPaginationParams, having?: string) {
+        const productList = await ProductRepository.DBGetProductList(params, having)
         if (productList.length < 1) {
             throw new ResultNotFoundError("PRODUCT_IS_EMPTY")
         }
