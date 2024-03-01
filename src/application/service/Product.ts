@@ -137,7 +137,13 @@ export default class ProductAppService {
 
         // Use caching for product list.
         let products;
-        const key = `productList:${whereClause}:${lastId}:${limit}:${baseSort}:${having}`;
+        const encodedWhereClause = encodeURIComponent(whereClause)
+        const encodedLastId = encodeURIComponent(lastId)
+        const encodedLimit = encodeURIComponent(limit)
+        const encodedSort = encodeURIComponent(baseSort)
+        const encodedHaving = encodeURIComponent(having)
+        
+        const key = `productList:where=${encodedWhereClause}:lastId=${encodedLastId}:limit=${encodedLimit}:sort=${encodedSort}:having=${encodedHaving}`
         const value = await redisClient.get(key);
 
         if (value) {
@@ -156,7 +162,7 @@ export default class ProductAppService {
 
         // Use caching for product detail.
         let productDetail;
-        const key = `productDetail:${id}:${user_id || 0}`;
+        const key = `productDetail:id=${id}:user=${user_id || 0}`;
         const value = await redisClient.get(key);
 
         if (value) {
