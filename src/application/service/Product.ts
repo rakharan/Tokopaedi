@@ -736,71 +736,19 @@ export default class ProductAppService {
     }
 
     static async AddImageGallery(params: ProductParamsDto.AddImageGalleryParams, files: FilesObject) {
-        const { product_id } = params
+        const { product_id } = params;
 
-        await ProductSchema.ProductId.validateAsync(product_id)
+        await ProductSchema.ProductId.validateAsync(product_id);
 
-        // initiate imageObjects variable to hold files of image/images.
-        const imageObjects: Partial<File[]> = []
+        const imageObjects = this.processFiles(files);
 
-        for (const key in files) {
-            if (files && Object.prototype.hasOwnProperty.call(files, key)) {
-                const fileArray = files[key]
-                if (Array.isArray(fileArray) && fileArray.length > 0) {
-                    for (const imageFile of fileArray) {
-                        imageObjects.push({
-                            fieldname: imageFile.fieldname,
-                            encoding: imageFile.encoding,
-                            mimetype: imageFile.mimetype,
-                            originalname: imageFile.originalname,
-                            filename: imageFile.filename,
-                        })
-                    }
-                }
-            }
-        }
-
-        // Additional checking for the imageObjects.
         if (imageObjects.length === 0) {
-            throw new BadInputError("PLEASE_PROVIDE_IMAGE")
+            throw new BadInputError("PLEASE_PROVIDE_IMAGE");
         }
 
-        let img_src;
-        let img_public_id;
-        // insert product images to gallery
-        await Promise.all(imageObjects.map(async (image) => {
-            //upload image to cloudinary and extract the url & public_id.
-            const { secure_url, public_id } = await UploadImage(image);
+        await this.uploadImagesToGallery(imageObjects, product_id);
 
-            img_src = secure_url;
-            img_public_id = public_id;
-
-            let thumbnail = 0
-            if (image.fieldname === "thumbnailImage") thumbnail = 1
-
-            let display_order = 1;
-            switch (image.fieldname) {
-                case "secondImage":
-                    display_order = 2;
-                    break;
-                case "thirdImage":
-                    display_order = 3;
-                    break;
-                case "fourthImage":
-                    display_order = 4;
-                    break;
-                case "fifthImage":
-                    display_order = 5;
-                    break;
-                default:
-                    display_order = 1;
-                    break;
-            }
-
-            await ProductDomainService.AddImageProductGalleryDomain({ img_src, public_id: img_public_id, product_id, display_order, thumbnail })
-        }));
-
-        return true
+        return true;
     }
 
     static async DeleteImageGallery(params: ProductRequestDto.DeleteImageGalleryRequest) {
@@ -812,5 +760,53 @@ export default class ProductAppService {
         // delete image data from database
         await ProductDomainService.DeleteImageProductGalleryDomain(params)
         return true
+    }
+
+
+    private static processFiles(files: FilesObject): Partial<File[]> {
+        const imageObjects: Partial<File[]> = [];
+
+        for (const key in files) {
+            if (Object.prototype.hasOwnProperty.call(files, key)) {
+                const fileArray = files[key];
+                if (Array.isArray(fileArray) && fileArray.length > 0) {
+                    for (const imageFile of fileArray) {
+                        imageObjects.push({
+                            fieldname: imageFile.fieldname,
+                            encoding: imageFile.encoding,
+                            mimetype: imageFile.mimetype,
+                            originalname: imageFile.originalname,
+                            filename: imageFile.filename,
+                        });
+                    }
+                }
+            }
+        }
+
+        return imageObjects;
+    }
+
+    private static async uploadImagesToGallery(imageObjects: Partial<File[]>, product_id: number) {
+        const displayOrderMap = {
+            thumbnailImage: 1,
+            secondImage: 2,
+            thirdImage: 3,
+            fourthImage: 4,
+            fifthImage: 5,
+        };
+
+        await Promise.all(imageObjects.map(async (image) => {
+            const { secure_url, public_id } = await UploadImage(image);
+            const thumbnail = image.fieldname === "thumbnailImage" ? 1 : 0;
+            const display_order = displayOrderMap[image.fieldname] || 1;
+
+            await ProductDomainService.AddImageProductGalleryDomain({
+                img_src: secure_url,
+                public_id,
+                product_id,
+                display_order,
+                thumbnail,
+            });
+        }));
     }
 }
