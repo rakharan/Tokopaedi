@@ -706,6 +706,17 @@ const routes: RouteOptions[] = [
             response: Schema.BaseResponse({ type: "Boolean" }),
         },
     },
+    {
+        method: ["POST"],
+        url: "product/hard-delete",
+        preHandler: CheckAuthAdmin({ rules: Rules.DELETE_PRODUCT }),
+        handler: ProductController.HardDeleteProduct,
+        schema: {
+            tags: ["Admin"],
+            body: Schema.BaseRequestSchema("Rakha", { id: { type: "integer" } }),
+            response: Schema.BaseResponse({ type: "Boolean" }),
+        },
+    },
 ]
 
 export default async function AdminRoute(fastify: FastifyInstance, options: FastifyPluginOptions) {

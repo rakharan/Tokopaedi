@@ -254,4 +254,11 @@ export default class ProductController {
         const addImage = await ProductAppService.DeleteImageGallery(params)
         return { message: addImage }
     }
+
+    static async HardDeleteProduct(request: FastifyRequest) {
+        const { id } = request.body as { id: number }
+
+        const deleteProduct = await ProductAppService.HardDeleteProduct(id)
+        return { message: deleteProduct }
+    }
 }
