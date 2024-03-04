@@ -230,4 +230,28 @@ export default class ProductController {
             throw error
         }
     }
+
+    static async AddImageGallery(request: FastifyRequest) {
+        const files = request.files
+        const params = request.body as ProductRequestDto.AddImageGalleryRequest
+        try {
+            const addImage = await ProductAppService.AddImageGallery(params, files)
+            return { message: addImage }
+        } catch (error) {
+            // Delete tmp files when error occured
+            for (const file in files) {
+                const imagePath = files[file][0].path
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath)
+                }
+            }
+            throw error
+        }
+    }
+
+    static async DeleteImageGallery(request: FastifyRequest) {
+        const params = request.body as ProductRequestDto.DeleteImageGalleryRequest
+        const addImage = await ProductAppService.DeleteImageGallery(params)
+        return { message: addImage }
+    }
 }

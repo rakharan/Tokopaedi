@@ -664,6 +664,48 @@ const routes: RouteOptions[] = [
             response: Schema.BaseResponse({ type: "Boolean" }),
         },
     },
+    {
+        method: ["POST"],
+        url: "product/gallery/add",
+        preHandler: CheckAuthAdmin({ rules: Rules.UPDATE_PRODUCT }),
+        handler: ProductController.AddImageGallery,
+        preValidation: [upload.fields([
+            { name: "thumbnailImage", maxCount: 1 },
+            { name: "secondImage", maxCount: 1 },
+            { name: "thirdImage", maxCount: 1 },
+            { name: "fourthImage", maxCount: 1 },
+            { name: "fifthImage", maxCount: 1 },
+        ])],
+        schema: {
+            tags: ["Admin"],
+            consumes: ["multipart/form-data"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                product_id: { type: "integer" },
+                display_order: { type: "number" },
+                thumbnailImage: { type: "file" },
+                secondimage: { type: "file" },
+                thirdImage: { type: "file" },
+                fourthImage: { type: "file" },
+                fifthImage: { type: "file" },
+            }),
+            response: Schema.BaseResponse({ type: "Boolean" }),
+        },
+    },
+    {
+        method: ["POST"],
+        url: "product/gallery/delete",
+        preHandler: CheckAuthAdmin({ rules: Rules.UPDATE_PRODUCT }),
+        handler: ProductController.DeleteImageGallery,
+        schema: {
+            tags: ["Admin"],
+            consumes: ["multipart/form-data"],
+            body: Schema.BaseRequestSchema("Rakha", {
+                product_id: { type: "integer" },
+                public_id: { type: "string" },
+            }),
+            response: Schema.BaseResponse({ type: "Boolean" }),
+        },
+    },
 ]
 
 export default async function AdminRoute(fastify: FastifyInstance, options: FastifyPluginOptions) {

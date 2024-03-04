@@ -52,3 +52,12 @@ export type GetProductListRequest = {
     lastPrice: number
     lastRating: number
 }
+
+export type AddImageGalleryRequest = {
+    product_id: number
+}
+
+export type DeleteImageGalleryRequest = {
+    product_id: number
+    public_id: string
+}

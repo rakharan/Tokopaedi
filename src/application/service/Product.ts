@@ -734,4 +734,83 @@ export default class ProductAppService {
             throw error
         }
     }
+
+    static async AddImageGallery(params: ProductParamsDto.AddImageGalleryParams, files: FilesObject) {
+        const { product_id } = params
+
+        await ProductSchema.ProductId.validateAsync(product_id)
+
+        // initiate imageObjects variable to hold files of image/images.
+        const imageObjects: Partial<File[]> = []
+
+        for (const key in files) {
+            if (files && Object.prototype.hasOwnProperty.call(files, key)) {
+                const fileArray = files[key]
+                if (Array.isArray(fileArray) && fileArray.length > 0) {
+                    for (const imageFile of fileArray) {
+                        imageObjects.push({
+                            fieldname: imageFile.fieldname,
+                            encoding: imageFile.encoding,
+                            mimetype: imageFile.mimetype,
+                            originalname: imageFile.originalname,
+                            filename: imageFile.filename,
+                        })
+                    }
+                }
+            }
+        }
+
+        // Additional checking for the imageObjects.
+        if (imageObjects.length === 0) {
+            throw new BadInputError("PLEASE_PROVIDE_IMAGE")
+        }
+
+        let img_src;
+        let img_public_id;
+        // insert product images to gallery
+        await Promise.all(imageObjects.map(async (image) => {
+            //upload image to cloudinary and extract the url & public_id.
+            const { secure_url, public_id } = await UploadImage(image);
+
+            img_src = secure_url;
+            img_public_id = public_id;
+
+            let thumbnail = 0
+            if (image.fieldname === "thumbnailImage") thumbnail = 1
+
+            let display_order = 1;
+            switch (image.fieldname) {
+                case "secondImage":
+                    display_order = 2;
+                    break;
+                case "thirdImage":
+                    display_order = 3;
+                    break;
+                case "fourthImage":
+                    display_order = 4;
+                    break;
+                case "fifthImage":
+                    display_order = 5;
+                    break;
+                default:
+                    display_order = 1;
+                    break;
+            }
+
+            await ProductDomainService.AddImageProductGalleryDomain({ img_src, public_id: img_public_id, product_id, display_order, thumbnail })
+        }));
+
+        return true
+    }
+
+    static async DeleteImageGallery(params: ProductRequestDto.DeleteImageGalleryRequest) {
+        ProductSchema.DeleteImageGallery.validateAsync(params)
+
+        // delete image from cloudinary
+        await DeleteImage(params.public_id)
+
+        // delete image data from database
+        await ProductDomainService.DeleteImageProductGalleryDomain(params)
+        return true
+    }
 }

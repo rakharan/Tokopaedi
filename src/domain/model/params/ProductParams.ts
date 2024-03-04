@@ -1,4 +1,4 @@
-import { CreateProductCategoryRequest, CreateProductReviewRequest, GetProductListRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
+import { AddImageGalleryRequest, CreateProductCategoryRequest, CreateProductReviewRequest, GetProductListRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
 
 export type CreateProductParams = {
     name: string
@@ -52,3 +52,5 @@ export type UpdateProductCategoryParams = UpdateProductCategoryRequest & {
 }
 
 export type GetProductListParams = GetProductListRequest
+
+export type AddImageGalleryParams = AddImageGalleryRequest
