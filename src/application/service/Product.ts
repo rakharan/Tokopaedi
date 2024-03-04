@@ -14,6 +14,7 @@ import { emailer } from "@infrastructure/mailer/mailer"
 import { DeleteImage, UploadImage } from "@helpers/utils/image/imageHelper"
 import { File, FilesObject } from "fastify-multer/lib/interfaces"
 import { BadInputError } from "@domain/model/Error/Error"
+import { QueryRunner } from "typeorm"
 
 export default class ProductAppService {
     static async GetProductList(params: CommonRequestDto.PaginationRequest, productListParams: ProductParamsDto.GetProductListParams) {
@@ -192,45 +193,14 @@ export default class ProductAppService {
             await query_runner.startTransaction()
 
             // initiate imageObjects variable to hold files of image/images.
-            const imageObjects: Partial<File[]> = []
-
-            for (const key in files) {
-                if (files && Object.prototype.hasOwnProperty.call(files, key)) {
-                    const fileArray = files[key]
-                    if (Array.isArray(fileArray) && fileArray.length > 0) {
-                        for (const imageFile of fileArray) {
-                            imageObjects.push({
-                                fieldname: imageFile.fieldname,
-                                encoding: imageFile.encoding,
-                                mimetype: imageFile.mimetype,
-                                originalname: imageFile.originalname,
-                                filename: imageFile.filename,
-                            })
-                        }
-                    }
-                }
-            }
+            const imageObjects = this.processFiles(files)
 
             //create the product, insert into database.
             // extract the insertId (newly created product id)
             const { insertId } = await ProductDomainService.CreateProductDomain(product, query_runner)
-
-            let img_src;
-            let img_public_id;
-            // insert product images to gallery
-            await Promise.all(imageObjects.map(async (image, index) => {
-                //upload image to cloudinary and extract the url & public_id.
-                const { secure_url, public_id } = await UploadImage(image);
-
-                img_src = secure_url;
-                img_public_id = public_id;
-
-                let thumbnail = 0
-                if (image.fieldname === "thumbnailImage") thumbnail = 1
-
-                await ProductDomainService.AddImageProductGalleryDomain({ img_src, public_id: img_public_id, product_id: insertId, display_order: index + 1, thumbnail }, query_runner)
-            }));
-
+          
+            await this.uploadImagesToGallery(imageObjects, insertId, query_runner)
+            
             //Insert into log, to track user action.
             await LogDomainService.CreateLogDomain({ ...logData, action: `Create Product #${product.name}` }, query_runner)
 
@@ -762,6 +732,12 @@ export default class ProductAppService {
         return true
     }
 
+    static async HardDeleteProduct(product_id: number) {
+        ProductSchema.ProductId.validateAsync(product_id)
+
+        await ProductDomainService.HardDeleteProductDomain(product_id)
+        return true
+    }
 
     private static processFiles(files: FilesObject): Partial<File[]> {
         const imageObjects: Partial<File[]> = [];
@@ -786,7 +762,7 @@ export default class ProductAppService {
         return imageObjects;
     }
 
-    private static async uploadImagesToGallery(imageObjects: Partial<File[]>, product_id: number) {
+    private static async uploadImagesToGallery(imageObjects: Partial<File[]>, product_id: number, query_runner?: QueryRunner) {
         const displayOrderMap = {
             thumbnailImage: 1,
             secondImage: 2,
@@ -799,14 +775,13 @@ export default class ProductAppService {
             const { secure_url, public_id } = await UploadImage(image);
             const thumbnail = image.fieldname === "thumbnailImage" ? 1 : 0;
             const display_order = displayOrderMap[image.fieldname] || 1;
-
             await ProductDomainService.AddImageProductGalleryDomain({
                 img_src: secure_url,
                 public_id,
                 product_id,
                 display_order,
                 thumbnail,
-            });
+            }, query_runner);
         }));
     }
 }

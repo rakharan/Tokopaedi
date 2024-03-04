@@ -252,6 +252,9 @@ export default class ProductDomainService {
     }
 
     static async AddImageProductGalleryDomain(params: ProductParamsDto.AddProductImageGalleryParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
         const addImageGallery = await ProductRepository.AddProductImageToGallery(params, query_runner)
         if (addImageGallery.affectedRows < 1) {
             throw new ApiError("FAILED_TO_ADD_IMAGE_TO_GALLERY")
