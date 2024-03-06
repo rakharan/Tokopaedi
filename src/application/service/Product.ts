@@ -698,7 +698,7 @@ export default class ProductAppService {
          * so that we can delete the image on cloudinary.
          */
         const publicIds = await ProductDomainService.GetProductImagePublicIdDomain(product_id)
-        await Promise.all(publicIds.map(img => DeleteImage(img.public_id)))
+        await Promise.all(publicIds.map(async (img) => await DeleteImage(img.public_id)))
 
         await ProductDomainService.HardDeleteProductDomain(product_id)
         return true
