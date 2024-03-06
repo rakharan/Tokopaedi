@@ -282,4 +282,13 @@ export default class ProductDomainService {
             throw new ApiError("FAILED_TO_UPDATE_IMAGE_GALLERY")
         }
     }
+
+    static async GetProductImagePublicIdDomain(product_id: number) {
+        const publicIds = await ProductRepository.GetProductImagePublicId(product_id)
+        if (publicIds.length < 1) {
+            throw new ResultNotFoundError("PRODUCT_IMAGES_NOT_FOUND")
+        }
+
+        return publicIds
+    }
 }

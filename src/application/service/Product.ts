@@ -15,6 +15,7 @@ import { DeleteImage, UploadImage } from "@helpers/utils/image/imageHelper"
 import { File, FilesObject } from "fastify-multer/lib/interfaces"
 import { BadInputError } from "@domain/model/Error/Error"
 import { QueryRunner } from "typeorm"
+import { ImageDetail } from "@domain/model/params/HelperParams"
 
 export default class ProductAppService {
     static async GetProductList(params: CommonRequestDto.PaginationRequest, productListParams: ProductParamsDto.GetProductListParams) {
@@ -198,9 +199,9 @@ export default class ProductAppService {
             //create the product, insert into database.
             // extract the insertId (newly created product id)
             const { insertId } = await ProductDomainService.CreateProductDomain(product, query_runner)
-          
+
             await this.uploadImagesToGallery(imageObjects, insertId, query_runner)
-            
+
             //Insert into log, to track user action.
             await LogDomainService.CreateLogDomain({ ...logData, action: `Create Product #${product.name}` }, query_runner)
 
@@ -635,62 +636,19 @@ export default class ProductAppService {
 
         const existingImage = await ProductDomainService.FindProductImageDetailDomain(id, product_id)
 
-        type ImageDetail = {
-            product_id: number
-            img_src: string
-            public_id: string
-            thumbnail: number
-            display_order: number
-        }
-
         const db = AppDataSource
         const query_runner = db.createQueryRunner()
         await query_runner.connect()
         try {
             await query_runner.startTransaction()
 
-            const updateObject: Partial<ImageDetail> = existingImage
+            // initiate an updateObject to hold all the update arguments.
+            const updateObject = this.createUpdateObject(existingImage, display_order, thumbnail)
 
-            if (display_order && display_order !== existingImage.display_order) {
-                updateObject.display_order = display_order
-            }
-
-            if (thumbnail && thumbnail !== existingImage.thumbnail) {
-                updateObject.thumbnail = thumbnail
-            }
-
+            // if user want to update image and it is supplied, process the image and update it.
             if (files) {
-                // initiate imageObjects variable to hold files of image/images.
-                const imageObjects: Partial<File[]> = []
-
-                for (const key in files) {
-                    if (files && Object.prototype.hasOwnProperty.call(files, key)) {
-                        const fileArray = files[key]
-                        if (Array.isArray(fileArray) && fileArray.length > 0) {
-                            for (const imageFile of fileArray) {
-                                imageObjects.push({
-                                    fieldname: imageFile.fieldname,
-                                    encoding: imageFile.encoding,
-                                    mimetype: imageFile.mimetype,
-                                    originalname: imageFile.originalname,
-                                    filename: imageFile.filename,
-                                })
-                            }
-                        }
-                    }
-                }
-
-                // insert product images to gallery
-                await Promise.all(imageObjects.map(async (image) => {
-                    // delete existing image and replace it with new image
-                    await DeleteImage(updateObject.public_id)
-
-                    //upload image to cloudinary and extract the url & public_id.
-                    const { secure_url, public_id } = await UploadImage(image);
-
-                    updateObject.img_src = secure_url;
-                    updateObject.public_id = public_id;
-                }));
+                const imageObjects = this.processFiles(files)
+                await this.updateImagesToGallery(imageObjects, updateObject);
             }
 
             await ProductDomainService.UpdateImageProductGalleryDomain({ ...updateObject, id }, query_runner)
@@ -735,6 +693,13 @@ export default class ProductAppService {
     static async HardDeleteProduct(product_id: number) {
         ProductSchema.ProductId.validateAsync(product_id)
 
+        /**
+         * extract the public id of images of a product that we want to delete
+         * so that we can delete the image on cloudinary.
+         */
+        const publicIds = await ProductDomainService.GetProductImagePublicIdDomain(product_id)
+        await Promise.all(publicIds.map(img => DeleteImage(img.public_id)))
+
         await ProductDomainService.HardDeleteProductDomain(product_id)
         return true
     }
@@ -763,18 +728,10 @@ export default class ProductAppService {
     }
 
     private static async uploadImagesToGallery(imageObjects: Partial<File[]>, product_id: number, query_runner?: QueryRunner) {
-        const displayOrderMap = {
-            thumbnailImage: 1,
-            secondImage: 2,
-            thirdImage: 3,
-            fourthImage: 4,
-            fifthImage: 5,
-        };
-
         await Promise.all(imageObjects.map(async (image) => {
             const { secure_url, public_id } = await UploadImage(image);
             const thumbnail = image.fieldname === "thumbnailImage" ? 1 : 0;
-            const display_order = displayOrderMap[image.fieldname] || 1;
+            const display_order = this.getDisplayOrder(image.fieldname) || 1;
             await ProductDomainService.AddImageProductGalleryDomain({
                 img_src: secure_url,
                 public_id,
@@ -783,5 +740,48 @@ export default class ProductAppService {
                 thumbnail,
             }, query_runner);
         }));
+    }
+
+    private static createUpdateObject(existingImage: ImageDetail, display_order: number, thumbnail: number) {
+
+        const updateObject: Partial<ImageDetail> = existingImage;
+
+        if (display_order && display_order !== existingImage.display_order) {
+            updateObject.display_order = display_order;
+        }
+
+        if (thumbnail && thumbnail !== existingImage.thumbnail) {
+            updateObject.thumbnail = thumbnail;
+        }
+
+        return updateObject;
+    }
+
+    private static async updateImagesToGallery(imageObjects: Partial<File[]>, updateObject: Partial<ImageDetail>) {
+        if (imageObjects.length === 0) {
+            throw new BadInputError("PLEASE_PROVIDE_IMAGE");
+        }
+
+        await Promise.all(imageObjects.map(async (image) => {
+            // delete existing image and replace it with new image
+            await DeleteImage(updateObject.public_id)
+
+            //upload image to cloudinary and extract the url & public_id.
+            const { secure_url, public_id } = await UploadImage(image);
+
+            updateObject.img_src = secure_url;
+            updateObject.public_id = public_id;
+        }));
+    }
+
+    private static getDisplayOrder(fieldname: string): number | undefined {
+        const displayOrderMap = {
+            thumbnailImage: 1,
+            secondImage: 2,
+            thirdImage: 3,
+            fourthImage: 4,
+            fifthImage: 5,
+        };
+        return displayOrderMap[fieldname];
     }
 }
