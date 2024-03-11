@@ -232,12 +232,9 @@ describe('Lists of routes accessible to product manager', () => {
             .set('Authorization', superAdminJwt)
             .set('user-agent', "Test")
             .set('Authorization', superAdminJwt)
-            .field('id', updateProductRequest.id)
-            .field('name', updateProductRequest.name)
-            .field('description', updateProductRequest.description)
-            .field('price', updateProductRequest.price)
-            .field('stock', updateProductRequest.stock)
-            .attach('image', updateImageFilepath, { contentType: 'image/jpeg' })
+            .send(updateProductRequest)
+
+        console.log({ body })
 
         expect(statusCode).toBe(200)
         expect(body.message).toEqual(true)
@@ -484,18 +481,21 @@ describe('Lists of routes accessible to product manager', () => {
 
         describe('Should fail to update product', () => {
             it('with prohibited name', async () => {
+                const productUpdate = {
+                    id: updateProductRequest.id,
+                    name: "bajingan",
+                    description: updateProductRequest.description,
+                    price: updateProductRequest.price,
+                    stock: updateProductRequest.stock,
+                    category: newProductRequestData.category,
+                }
+
                 const { body, statusCode } = await supertest(app.server)
                     .post('/api/v1/admin/product/update')
                     .set('Authorization', superAdminJwt)
                     .set('user-agent', "Test")
                     .set('Authorization', superAdminJwt)
-                    .field('id', updateProductRequest.id)
-                    .field('name', "bajingan")
-                    .field('description', updateProductRequest.description)
-                    .field('price', updateProductRequest.price)
-                    .field('stock', updateProductRequest.stock)
-                    .field('category', newProductRequestData.category)
-                    .attach('image', updateImageFilepath, { contentType: 'image/jpeg' })
+                    .send(productUpdate)
 
                 expect(statusCode).toBe(500)
                 expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
@@ -503,35 +503,27 @@ describe('Lists of routes accessible to product manager', () => {
 
             it('with wrong image mimetype', async () => {
                 const { body, statusCode } = await supertest(app.server)
-                    .post('/api/v1/admin/product/update')
+                    .post('/api/v1/admin/product/gallery/update')
                     .set('Authorization', superAdminJwt)
                     .set('user-agent', "Test")
                     .set('Authorization', superAdminJwt)
-                    .field('id', updateProductRequest.id)
-                    .field('name', updateProductRequest.name)
-                    .field('description', updateProductRequest.description)
-                    .field('price', updateProductRequest.price)
-                    .field('stock', updateProductRequest.stock)
-                    .field('category', newProductRequestData.category)
-                    .attach('image', updateImageFilepath, { contentType: 'text/csv' })
+                    .field('product_id', updateProductRequest.id)
+                    .field('thumbnail', 1)
+                    .attach('thumbnailImage', updateImageFilepath, { contentType: 'text/csv' })
 
                 expect(statusCode).toEqual(400)
                 expect(body.message).toEqual("Only .jpg and .png format allowed!")
             });
 
-            it('with wrong image mimetype', async () => {
+            it('with image that is too big in size', async () => {
                 const { body, statusCode } = await supertest(app.server)
-                    .post('/api/v1/admin/product/update')
+                    .post('/api/v1/admin/product/gallery/update')
                     .set('Authorization', superAdminJwt)
                     .set('user-agent', "Test")
                     .set('Authorization', superAdminJwt)
-                    .field('id', updateProductRequest.id)
-                    .field('name', updateProductRequest.name)
-                    .field('description', updateProductRequest.description)
-                    .field('price', updateProductRequest.price)
-                    .field('stock', updateProductRequest.stock)
-                    .field('category', newProductRequestData.category)
-                    .attach('image', bigImageFilepath, { contentType: 'image/jpeg' })
+                    .field('product_id', updateProductRequest.id)
+                    .field('thumbnail', 1)
+                    .attach('thumbnailImage', bigImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
                 expect(body.message).toEqual("File too large")

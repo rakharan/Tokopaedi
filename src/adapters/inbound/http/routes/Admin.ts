@@ -71,7 +71,6 @@ const routes: RouteOptions[] = [
         url: "product/update",
         preHandler: CheckAuthAdmin({ rules: Rules.UPDATE_PRODUCT }),
         handler: ProductController.UpdateProduct,
-        preValidation: [upload.fields([{ name: "image", maxCount: 1 }])],
         schema: {
             tags: ["Admin"],
             consumes: ["multipart/form-data"],
@@ -82,7 +81,6 @@ const routes: RouteOptions[] = [
                 category: { type: "integer" },
                 price: { type: "integer" },
                 stock: { type: "integer" },
-                image: { type: "file" },
             }),
             response: Schema.BaseResponse({ type: "Boolean" }),
         },
