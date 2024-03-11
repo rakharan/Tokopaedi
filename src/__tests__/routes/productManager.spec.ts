@@ -86,7 +86,7 @@ describe('Lists of routes accessible to product manager', () => {
             .field('price', newProductRequestData.price)
             .field('stock', newProductRequestData.stock)
             .field('category', newProductRequestData.category)
-            .attach('image', newImageFilepath, { contentType: 'image/jpeg' })
+            .attach('thumbnailImage', newImageFilepath, { contentType: 'image/jpeg' })
 
         expect(body.message).toEqual(true)
         expect(statusCode).toBe(200)
@@ -431,7 +431,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('price', newProductRequestData.price)
                     .field('stock', newProductRequestData.stock)
                     .field('category', newProductRequestData.category)
-                    .attach('image', newImageFilepath, { contentType: 'image/jpeg' })
+                    .attach('thumbnailImage', newImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
                 expect(body.message).toEqual("YOUR_NAME_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_NAME")
@@ -453,7 +453,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('price', newProductRequestData.price)
                     .field('stock', newProductRequestData.stock)
                     .field('category', newProductRequestData.category)
-                    .attach('image', newImageFilepath, { contentType: 'text/csv' })
+                    .attach('thumbnailImage', newImageFilepath, { contentType: 'text/csv' })
 
                 expect(statusCode).toEqual(400)
                 expect(body.message).toEqual("Only .jpg and .png format allowed!")
@@ -475,7 +475,7 @@ describe('Lists of routes accessible to product manager', () => {
                     .field('price', newProductRequestData.price)
                     .field('stock', newProductRequestData.stock)
                     .field('category', newProductRequestData.category)
-                    .attach('image', bigImageFilepath, { contentType: 'image/jpeg' })
+                    .attach('thumbnailImage', bigImageFilepath, { contentType: 'image/jpeg' })
 
                 expect(statusCode).toEqual(500)
                 expect(body.message).toEqual("File too large")
