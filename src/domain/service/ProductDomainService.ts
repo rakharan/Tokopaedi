@@ -251,7 +251,10 @@ export default class ProductDomainService {
         }
     }
 
-    static async AddImageProductGalleryDomain(params: ProductParamsDto.AddProductImageGalleryParams, query_runner: QueryRunner) {
+    static async AddImageProductGalleryDomain(params: ProductParamsDto.AddProductImageGalleryParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
         const addImageGallery = await ProductRepository.AddProductImageToGallery(params, query_runner)
         if (addImageGallery.affectedRows < 1) {
             throw new ApiError("FAILED_TO_ADD_IMAGE_TO_GALLERY")
@@ -266,7 +269,7 @@ export default class ProductDomainService {
         return updateImage[0]
     }
 
-    static async DeleteImageProductGalleryDomain(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner: QueryRunner) {
+    static async DeleteImageProductGalleryDomain(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner?: QueryRunner) {
         const deleteImageGallery = await ProductRepository.DeleteProductImageFromGallery(params, query_runner)
         if (deleteImageGallery.affectedRows < 1) {
             throw new ApiError("FAILED_TO_DELETE_IMAGE_GALLERY")
@@ -278,5 +281,14 @@ export default class ProductDomainService {
         if (updateImageGallery.affectedRows < 1) {
             throw new ApiError("FAILED_TO_UPDATE_IMAGE_GALLERY")
         }
+    }
+
+    static async GetProductImagePublicIdDomain(product_id: number) {
+        const publicIds = await ProductRepository.GetProductImagePublicId(product_id)
+        if (publicIds.length < 1) {
+            throw new ResultNotFoundError("PRODUCT_IMAGES_NOT_FOUND")
+        }
+
+        return publicIds
     }
 }

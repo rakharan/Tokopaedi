@@ -307,4 +307,8 @@ export default class ProductRepository {
         UPDATE product_gallery SET display_order = ?, img_src = ?, public_id = ?, thumbnail = ? 
         WHERE product_id = ? AND id = ?`, [product_id, display_order, img_src, public_id, thumbnail, product_id, id], query_runner)
     }
+
+    static async GetProductImagePublicId(product_id: number) {
+        return await db.query<{ public_id: string }[]>(`SELECT public_id FROM product_gallery where product_id = ?`, [product_id])
+    }
 }

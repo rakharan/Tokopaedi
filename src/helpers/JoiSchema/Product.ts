@@ -52,6 +52,11 @@ const Name = Joi.string().messages({
     "string.base": "Name must be a string",
 })
 
+const PublicId = Joi.string().required().messages({
+    "string.base": "Public Id must be a string",
+    "any.required": "Public Id is required",
+})
+
 export const CreateProduct = Joi.object({
     name: Name.required().messages({
         "any.required": "Product name is required",
@@ -132,4 +137,9 @@ export const AddProductToWishlist = Joi.object({
 export const RemoveProductFromWishlist = Joi.object({
     collection_id: CollectionId,
     product_id: ProductId
+})
+
+export const DeleteImageGallery = Joi.object({
+    product_id: ProductId,
+    public_id: PublicId
 })
