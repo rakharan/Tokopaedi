@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+    depends_on:
+      - backend_app
+    ports:
+      - 8080:8080
+
+  backend_app:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+volumes:
+  db-data:
