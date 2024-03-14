@@ -16,6 +16,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - mysql_server
+
+  mysql_server:
+    container_name: tokopaedi-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    image: mysql:latest
+    volumes:
+      - db-data:/var/lib/mysql
 
 volumes:
   db-data:

@@ -10,3 +10,7 @@ fly.toml
 
 .env.*
 docker-compose*
+
+
+## NOTE FOR LINUX (VPS) ##
+# we need to change the back slash to front slash \ -> / for file pathing
