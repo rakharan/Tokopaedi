@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx:latest
+    restart: always
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+    depends_on:
+      - backend_app
+    ports:
+      - 8080:8080
+
+  backend_app:
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql_server
+
+  mysql_server:
+    container_name: tokopaedi-mysql
+    command: --default-authentication-plugin=mysql_native_password
+    image: mysql:latest
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:
