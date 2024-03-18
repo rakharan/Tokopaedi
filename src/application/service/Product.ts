@@ -44,7 +44,7 @@ export default class ProductAppService {
         let searchFilter = search || ""
         searchFilter = unicorn(searchFilter, {
             name: "p.name",
-            single_category: "pc.name"
+            single_category: "pc.name",
         })
 
         //Generate whereClause
@@ -56,37 +56,37 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY review_count DESC, p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY review_count DESC, p.id ${sort}`
+                break
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
-                baseSort = `ORDER BY rating DESC, p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY rating DESC, p.id ${sort}`
+                break
             case "lowestRating":
-                baseSort = `ORDER BY rating ASC, p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY rating ASC, p.id ${sort}`
+                break
             case "lowestPrice":
-                baseSort = `ORDER BY price ASC, p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY price ASC, p.id ${sort}`
+                break
             case "highestPrice":
-                baseSort = `ORDER BY price DESC, p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY price DESC, p.id ${sort}`
+                break
             default:
-                baseSort = `ORDER BY p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY p.id ${sort}`
+                break
         }
 
         // rating filter, for example: > 4 star review.
         switch (ratingSort) {
             case "greaterThanOrEqualFour":
-                having = `HAVING rating >= 4`;
-                break;
+                having = `HAVING rating >= 4`
+                break
             case "greaterThanOrEqualThree":
-                having = `HAVING rating >= 3`;
-                break;
+                having = `HAVING rating >= 3`
+                break
             case "greaterThanOrEqualTwo":
-                having = `HAVING rating >= 2`;
-                break;
+                having = `HAVING rating >= 2`
+                break
         }
 
         // single price filter
@@ -120,19 +120,19 @@ export default class ProductAppService {
         if (sortFilter && lastId >= DEFAULT_ID) {
             switch (sortFilter) {
                 case "highestRating":
-                    having = `HAVING rating = ${lastRating} OR rating < ${lastRating}`;
-                    break;
+                    having = `HAVING rating = ${lastRating} OR rating < ${lastRating}`
+                    break
                 case "lowestRating":
-                    having = `HAVING rating = ${lastRating} OR rating > ${lastRating}`;
-                    break;
+                    having = `HAVING rating = ${lastRating} OR rating > ${lastRating}`
+                    break
                 case "lowestPrice":
-                    whereClause += ` AND price = ${lastPrice} OR price > ${lastPrice}`;
-                    break;
+                    whereClause += ` AND price = ${lastPrice} OR price > ${lastPrice}`
+                    break
                 case "highestPrice":
-                    whereClause += ` AND price = ${lastPrice} OR price < ${lastPrice}`;
-                    break;
+                    whereClause += ` AND price = ${lastPrice} OR price < ${lastPrice}`
+                    break
                 default:
-                    break;
+                    break
             }
         }
 
@@ -297,7 +297,7 @@ export default class ProductAppService {
 
         // Check if the comment contains bad words.
         if (comment && Profanity.flag(comment)) {
-            throw new BadInputError("YOUR_REVIEW_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_COMMENT");
+            throw new BadInputError("YOUR_REVIEW_CONTAINS_CONTENT_THAT_DOES_NOT_MEET_OUR_COMMUNITY_STANDARDS_PLEASE_REVISE_YOUR_COMMENT")
         }
 
         // Check if user already reviewed the product, will return error if true.
@@ -374,7 +374,7 @@ export default class ProductAppService {
         // checking if there's already a category with the same name, if it's true, throw an error.
         await ProductDomainService.CheckExistingCategoryDomain(name)
 
-        let cat_path: string;
+        let cat_path: string
 
         // if parent_id = null, the cat_path is /0/NEW.id/.
         //  when parent_id = null, the category is the head category / doesn't have parent category.
@@ -417,7 +417,7 @@ export default class ProductAppService {
         searchFilter = unicorn(searchFilter, {
             name: "pc.name",
             parent_id: "pc.parent_id",
-            sub_category: "pc.cat_path"
+            sub_category: "pc.cat_path",
         })
 
         //Generate whereClause
@@ -446,7 +446,7 @@ export default class ProductAppService {
 
         const updateCategory = existingCategory
 
-        let cat_path = existingCategory.cat_path;
+        let cat_path = existingCategory.cat_path
         if (name) updateCategory.name = name
 
         if (parent_id && parent_id != existingCategory.parent_id) {
@@ -534,7 +534,7 @@ export default class ProductAppService {
         searchFilter = unicorn(searchFilter, {
             name: "p.name",
             price: "p.price",
-            single_category: "pc.name"
+            single_category: "pc.name",
         })
 
         //Generate whereClause
@@ -546,31 +546,31 @@ export default class ProductAppService {
         switch (sortFilter) {
             // Add mostReviewed product if user want to sort by review count.
             case "mostReviewed":
-                baseSort = `ORDER BY review_count DESC`;
-                break;
+                baseSort = `ORDER BY review_count DESC`
+                break
             // Add ratingSort if user want to sort by lowest/highest rating.
             case "highestRating":
-                baseSort = `ORDER BY rating DESC`;
-                break;
+                baseSort = `ORDER BY rating DESC`
+                break
             case "lowestRating":
-                baseSort = `ORDER BY rating ASC`;
-                break;
+                baseSort = `ORDER BY rating ASC`
+                break
             default:
-                baseSort = `ORDER BY p.id ${sort}`;
-                break;
+                baseSort = `ORDER BY p.id ${sort}`
+                break
         }
 
         // rating filter, for example: > 4 star review.
         switch (ratingSort) {
             case "greaterThanOrEqualFour":
-                whereClause += ` AND rating >= 4`;
-                break;
+                whereClause += ` AND rating >= 4`
+                break
             case "greaterThanOrEqualThree":
-                whereClause += ` AND rating >= 3`;
-                break;
+                whereClause += ` AND rating >= 3`
+                break
             case "greaterThanOrEqualTwo":
-                whereClause += ` AND rating >= 2`;
-                break;
+                whereClause += ` AND rating >= 2`
+                break
         }
 
         //  Add category filter, to fetch the categories and it's sub-categories.
@@ -648,7 +648,7 @@ export default class ProductAppService {
             // if user want to update image and it is supplied, process the image and update it.
             if (files) {
                 const imageObjects = this.processFiles(files)
-                await this.updateImagesToGallery(imageObjects, updateObject);
+                await this.updateImagesToGallery(imageObjects, updateObject)
             }
 
             await ProductDomainService.UpdateImageProductGalleryDomain({ ...updateObject, id }, query_runner)
@@ -664,19 +664,19 @@ export default class ProductAppService {
     }
 
     static async AddImageGallery(params: ProductParamsDto.AddImageGalleryParams, files: FilesObject) {
-        const { product_id } = params;
+        const { product_id } = params
 
-        await ProductSchema.ProductId.validateAsync(product_id);
+        await ProductSchema.ProductId.validateAsync(product_id)
 
-        const imageObjects = this.processFiles(files);
+        const imageObjects = this.processFiles(files)
 
         if (imageObjects.length === 0) {
-            throw new BadInputError("PLEASE_PROVIDE_IMAGE");
+            throw new BadInputError("PLEASE_PROVIDE_IMAGE")
         }
 
-        await this.uploadImagesToGallery(imageObjects, product_id);
+        await this.uploadImagesToGallery(imageObjects, product_id)
 
-        return true;
+        return true
     }
 
     static async DeleteImageGallery(params: ProductRequestDto.DeleteImageGalleryRequest) {
@@ -705,11 +705,11 @@ export default class ProductAppService {
     }
 
     private static processFiles(files: FilesObject): Partial<File[]> {
-        const imageObjects: Partial<File[]> = [];
+        const imageObjects: Partial<File[]> = []
 
         for (const key in files) {
             if (Object.prototype.hasOwnProperty.call(files, key)) {
-                const fileArray = files[key];
+                const fileArray = files[key]
                 if (Array.isArray(fileArray) && fileArray.length > 0) {
                     for (const imageFile of fileArray) {
                         imageObjects.push({
@@ -718,60 +718,66 @@ export default class ProductAppService {
                             mimetype: imageFile.mimetype,
                             originalname: imageFile.originalname,
                             filename: imageFile.filename,
-                        });
+                        })
                     }
                 }
             }
         }
 
-        return imageObjects;
+        return imageObjects
     }
 
     private static async uploadImagesToGallery(imageObjects: Partial<File[]>, product_id: number, query_runner?: QueryRunner) {
-        await Promise.all(imageObjects.map(async (image) => {
-            const { secure_url, public_id } = await UploadImage(image);
-            const thumbnail = image.fieldname === "thumbnailImage" ? 1 : 0;
-            const display_order = this.getDisplayOrder(image.fieldname) || 1;
-            await ProductDomainService.AddImageProductGalleryDomain({
-                img_src: secure_url,
-                public_id,
-                product_id,
-                display_order,
-                thumbnail,
-            }, query_runner);
-        }));
+        await Promise.all(
+            imageObjects.map(async (image) => {
+                const { secure_url, public_id } = await UploadImage(image)
+                const thumbnail = image.fieldname === "thumbnailImage" ? 1 : 0
+                const display_order = this.getDisplayOrder(image.fieldname) || 1
+                await ProductDomainService.AddImageProductGalleryDomain(
+                    {
+                        img_src: secure_url,
+                        public_id,
+                        product_id,
+                        display_order,
+                        thumbnail,
+                    },
+                    query_runner
+                )
+            })
+        )
     }
 
     private static createUpdateObject(existingImage: ImageDetail, display_order: number, thumbnail: number) {
-
-        const updateObject: Partial<ImageDetail> = existingImage;
+        const updateObject: Partial<ImageDetail> = existingImage
 
         if (display_order && display_order !== existingImage.display_order) {
-            updateObject.display_order = display_order;
+            updateObject.display_order = display_order
         }
 
         if (thumbnail && thumbnail !== existingImage.thumbnail) {
-            updateObject.thumbnail = thumbnail;
+            updateObject.thumbnail = thumbnail
         }
 
-        return updateObject;
+        return updateObject
     }
 
     private static async updateImagesToGallery(imageObjects: Partial<File[]>, updateObject: Partial<ImageDetail>) {
         if (imageObjects.length === 0) {
-            throw new BadInputError("PLEASE_PROVIDE_IMAGE");
+            throw new BadInputError("PLEASE_PROVIDE_IMAGE")
         }
 
-        await Promise.all(imageObjects.map(async (image) => {
-            // delete existing image and replace it with new image
-            await DeleteImage(updateObject.public_id)
+        await Promise.all(
+            imageObjects.map(async (image) => {
+                // delete existing image and replace it with new image
+                await DeleteImage(updateObject.public_id)
 
-            //upload image to cloudinary and extract the url & public_id.
-            const { secure_url, public_id } = await UploadImage(image);
+                //upload image to cloudinary and extract the url & public_id.
+                const { secure_url, public_id } = await UploadImage(image)
 
-            updateObject.img_src = secure_url;
-            updateObject.public_id = public_id;
-        }));
+                updateObject.img_src = secure_url
+                updateObject.public_id = public_id
+            })
+        )
     }
 
     private static getDisplayOrder(fieldname: string): number | undefined {
@@ -781,7 +787,7 @@ export default class ProductAppService {
             thirdImage: 3,
             fourthImage: 4,
             fifthImage: 5,
-        };
-        return displayOrderMap[fieldname];
+        }
+        return displayOrderMap[fieldname]
     }
 }

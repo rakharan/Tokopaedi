@@ -150,7 +150,7 @@ export default class ProductDomainService {
     }
 
     static async CreateProductCategoryDomain(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
-        let category;
+        let category
         // if parent_id is null/0, that means we creating new head category.
         if (params.parent_id == 0 || params.parent_id == null) {
             category = await ProductRepository.CreateNewHeadCategory(params, query_runner)

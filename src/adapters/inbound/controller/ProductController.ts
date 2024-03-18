@@ -83,13 +83,16 @@ export default class ProductController {
         const params = request.body as ProductRequestDto.CreateProductReviewRequest
 
         const now = moment().unix()
-        const createReview = await ProductAppService.CreateReview({ ...params, user_id: id, created_at: now }, {
-            user_id: id,
-            action: `Create Review #${params.product_id}`,
-            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
-            browser: request.headers["user-agent"],
-            time: now,
-        })
+        const createReview = await ProductAppService.CreateReview(
+            { ...params, user_id: id, created_at: now },
+            {
+                user_id: id,
+                action: `Create Review #${params.product_id}`,
+                ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+                browser: request.headers["user-agent"],
+                time: now,
+            }
+        )
 
         return { message: createReview }
     }
@@ -186,7 +189,7 @@ export default class ProductController {
     }
 
     static async UpdateWishlistCollectionName(request: FastifyRequest) {
-        const { name, collection_id } = request.body as { name: string, collection_id: number }
+        const { name, collection_id } = request.body as { name: string; collection_id: number }
 
         const updateCollection = await ProductAppService.UpdateWishlistCollection(name, collection_id)
         return { message: updateCollection }
@@ -200,14 +203,14 @@ export default class ProductController {
     }
 
     static async AddProductToWishlist(request: FastifyRequest) {
-        const { collection_id, product_id } = request.body as { collection_id: number, product_id: number }
+        const { collection_id, product_id } = request.body as { collection_id: number; product_id: number }
 
         const wishlistAProduct = await ProductAppService.AddProductToWishlist(collection_id, product_id)
         return { message: wishlistAProduct }
     }
 
     static async RemoveProductFromWishlist(request: FastifyRequest) {
-        const { collection_id, product_id } = request.body as { collection_id: number, product_id: number }
+        const { collection_id, product_id } = request.body as { collection_id: number; product_id: number }
 
         const removeProduct = await ProductAppService.RemoveProductFromWishlist(collection_id, product_id)
         return { message: removeProduct }

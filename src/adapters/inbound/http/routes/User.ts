@@ -298,7 +298,7 @@ const routes: RouteOptions[] = [
                     categoriesFilter: { type: "string" },
                     ratingSort: { type: "string" },
                     collection_id: { type: "integer" },
-                }
+                },
             }),
             response: Schema.BasePaginationResultSchema,
         },
@@ -351,7 +351,7 @@ const routes: RouteOptions[] = [
                 message: {
                     id: { type: "integer" },
                     name: { type: "string" },
-                }
+                },
             }),
         },
     },
@@ -363,7 +363,7 @@ const routes: RouteOptions[] = [
             tags: ["Product"],
             body: Schema.BaseRequestSchema("Rakha", {
                 collection_id: { type: "integer" },
-                name: { type: "string" }
+                name: { type: "string" },
             }),
             response: Schema.BaseResponse({
                 type: "Boolean",
