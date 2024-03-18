@@ -30,13 +30,15 @@ const routes: RouteOptions[] = [
         url: "product/create",
         preHandler: CheckAuthAdmin({ rules: Rules.CREATE_PRODUCT }),
         handler: ProductController.CreateProduct,
-        preValidation: [upload.fields([
-            { name: "thumbnailImage", maxCount: 1 },
-            { name: "secondImage", maxCount: 1 },
-            { name: "thirdImage", maxCount: 1 },
-            { name: "fourthImage", maxCount: 1 },
-            { name: "fifthImage", maxCount: 1 },
-        ])],
+        preValidation: [
+            upload.fields([
+                { name: "thumbnailImage", maxCount: 1 },
+                { name: "secondImage", maxCount: 1 },
+                { name: "thirdImage", maxCount: 1 },
+                { name: "fourthImage", maxCount: 1 },
+                { name: "fifthImage", maxCount: 1 },
+            ]),
+        ],
         schema: {
             tags: ["Admin"],
             consumes: ["multipart/form-data"],
@@ -637,13 +639,15 @@ const routes: RouteOptions[] = [
         url: "product/gallery/update",
         preHandler: CheckAuthAdmin({ rules: Rules.UPDATE_PRODUCT }),
         handler: ProductController.UpdateImageGallery,
-        preValidation: [upload.fields([
-            { name: "thumbnailImage", maxCount: 1 },
-            { name: "secondImage", maxCount: 1 },
-            { name: "thirdImage", maxCount: 1 },
-            { name: "fourthImage", maxCount: 1 },
-            { name: "fifthImage", maxCount: 1 },
-        ])],
+        preValidation: [
+            upload.fields([
+                { name: "thumbnailImage", maxCount: 1 },
+                { name: "secondImage", maxCount: 1 },
+                { name: "thirdImage", maxCount: 1 },
+                { name: "fourthImage", maxCount: 1 },
+                { name: "fifthImage", maxCount: 1 },
+            ]),
+        ],
         schema: {
             tags: ["Admin"],
             consumes: ["multipart/form-data"],
@@ -667,13 +671,15 @@ const routes: RouteOptions[] = [
         url: "product/gallery/add",
         preHandler: CheckAuthAdmin({ rules: Rules.UPDATE_PRODUCT }),
         handler: ProductController.AddImageGallery,
-        preValidation: [upload.fields([
-            { name: "thumbnailImage", maxCount: 1 },
-            { name: "secondImage", maxCount: 1 },
-            { name: "thirdImage", maxCount: 1 },
-            { name: "fourthImage", maxCount: 1 },
-            { name: "fifthImage", maxCount: 1 },
-        ])],
+        preValidation: [
+            upload.fields([
+                { name: "thumbnailImage", maxCount: 1 },
+                { name: "secondImage", maxCount: 1 },
+                { name: "thirdImage", maxCount: 1 },
+                { name: "fourthImage", maxCount: 1 },
+                { name: "fifthImage", maxCount: 1 },
+            ]),
+        ],
         schema: {
             tags: ["Admin"],
             consumes: ["multipart/form-data"],
