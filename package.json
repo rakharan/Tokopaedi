@@ -36,7 +36,7 @@
     "key-pagination-sql": "^1.0.2",
     "moment": "2.29.4",
     "moment-timezone": "^0.5.43",
-    "mysql2": "^3.4.5",
+    "mysql2": "^3.9.4",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.9",
     "pino-pretty": "^10.2.3",
