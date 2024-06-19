@@ -220,7 +220,7 @@ export default class TransactionAppService {
             //create delivery_status with pending status. 0 = pending, 1 = on delivery, 2 = delivered
             const deliveryStatus: TransactionParamsDto.CreateDeliveryStatusParams = {
                 transaction_id,
-                status: 0,
+                status: TransactionParamsDto.DeliveryStatus.Pending,
                 delivered_at: moment().unix(),
                 expedition_name,
                 is_delivered: 0,
@@ -412,7 +412,7 @@ export default class TransactionAppService {
         const transactionDetail = await TransactionDomainService.GetTransactionDetailDomain(transaction_id)
 
         const updateTransactionStatus: TransactionParamsDto.UpdateTransactionStatusParams = {
-            status: 1, //0 = pending (default), 1 = approved, 2 = rejected
+            status: TransactionParamsDto.TransactionStatus.Approved,
             transaction_id: transactionDetail.transaction_id,
             updated_at: moment().unix(),
         }
@@ -444,7 +444,7 @@ export default class TransactionAppService {
         await TransactionDomainService.CheckIsTransactionAliveDomain(transaction_id)
 
         const updateTransactionStatus: TransactionParamsDto.UpdateTransactionStatusParams = {
-            status: 2, //0 = pending (default), 1 = approved, 2 = rejected
+            status: TransactionParamsDto.TransactionStatus.Rejected,
             transaction_id,
             updated_at: moment().unix(),
         }
@@ -479,11 +479,11 @@ export default class TransactionAppService {
         //get transaction status if transaction hasn't been approved / rejected, can not update delivery status
         const transactionStatus = await TransactionDomainService.GetTransactionStatusDomain(transaction_id)
 
-        if (transactionStatus.status !== 1) {
+        if (transactionStatus.status !== TransactionParamsDto.TransactionStatus.Approved) {
             switch (transactionStatus.status) {
-                case 0:
+                case TransactionParamsDto.TransactionStatus.Pending:
                     throw new BadInputError("PLEASE_APPROVE_THE_TRANSACTION_FIRST")
-                case 2:
+                case TransactionParamsDto.TransactionStatus.Rejected:
                     throw new ApiError("THIS_TRANSACTION_IS_REJECTED")
                 default:
                     throw new ApiError("INVALID_TRANSACTION_STATUS")
@@ -493,7 +493,7 @@ export default class TransactionAppService {
         const updateDeliveryStatus: TransactionParamsDto.UpdateDeliveryStatusParams = {
             transaction_id,
             is_delivered, // 0 = pending, 1 = delivered
-            status, //0 = Pending, 1 = On Delivery, 2 = Delivered, 3 = Rejected
+            status,
             updated_at: moment().unix(),
         }
 
