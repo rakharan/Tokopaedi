@@ -4,6 +4,7 @@ import FastifyRouteAddon from "@application/boot/fastify/route"
 import FastifySwaggerAddon from "@application/boot/fastify/swagger"
 import Ajv from "ajv"
 import { AppDataSource } from "@infrastructure/mysql/connection"
+import cors from '@fastify/cors'
 
 //Ajv file plugin, so fastify could know what is isFile used in multer.
 function ajvFilePlugin(ajv: Ajv) {
@@ -24,13 +25,18 @@ function ajvFilePlugin(ajv: Ajv) {
 }
 
 function buildServer() {
-    const server = fastify({
-        logger: {
-            transport: {
-                target: "pino-pretty",
+        const server = fastify({
+            logger: {
+                transport: {
+                    target: "pino-pretty",
+                },
             },
-        },
-        ajv: { plugins: [ajvFilePlugin] },
+            ajv: { plugins: [ajvFilePlugin] },
+        })
+
+    server.register(cors, {
+        methods: ["PUT", "GET", "POST"],
+        allowedHeaders: ['Content-Type', 'Authorization']
     })
 
     AppDataSource.initialize()
