@@ -15,7 +15,7 @@ import { QueryRunner } from "typeorm"
 import { emailer } from "@infrastructure/mailer/mailer"
 import UserDomainService from "@domain/service/UserDomainService"
 import ShippingAddressDomainService from "@domain/service/ShippingAddressDomainService"
-import { CalculateShippingPrice, CalculateTotalPrice } from "@helpers/utils/transaction/transactionHelper"
+import { CalculateShippingPrice, CalculateTotalPrice, checkShippingServicePrice, findDestinationId } from "@helpers/utils/transaction/transactionHelper"
 import { ApiError, BadInputError } from "@domain/model/Error/Error"
 
 export default class TransactionAppService {
@@ -234,13 +234,22 @@ export default class TransactionAppService {
             update payment method: Cash | Credit Card | Debit Catd
             update paid_at & updated_at
             **/
-            const shipping_price = CalculateShippingPrice({ expedition_name, shipping_address_id })
+
+            //get user transaction detail
+            const transactionDetail = await TransactionDomainService.GetTransactionDetailDomain(transaction_id)
+            
+            const shipping_address = await ShippingAddressDomainService.GetShippingAddressDetailDomain(shipping_address_id)
+            const destinationId = await findDestinationId(shipping_address.province, shipping_address.city)
+
+            const shippingPriceService = await checkShippingServicePrice({ courier: expedition_name, destId: destinationId, orgId: destinationId, weight: Number(transactionDetail.product_bought_weight) })
+            
+            const shipping_price = CalculateShippingPrice({ shipping_cost_details: shippingPriceService, shipping_type: "CTC" })
             const payTransactionObject: TransactionParamsDto.PayTransactionRepositoryParams = {
                 is_paid: 1,
                 paid_at: now,
                 payment_method,
                 shipping_address_id,
-                shipping_price,
+                shipping_price: shipping_price.value,
                 updated_at: now,
                 user_id,
                 transaction_id,
@@ -257,8 +266,6 @@ export default class TransactionAppService {
             //get user info
             const { email, name } = await UserDomainService.GetUserDataByIdDomain(user_id)
 
-            //get user transaction detail
-            const transactionDetail = await TransactionDomainService.GetTransactionDetailDomain(transaction_id)
 
             //create a variable to hold product detail to email
             //extract product name & qty
@@ -285,7 +292,7 @@ export default class TransactionAppService {
             const { address, city, country, id, postal_code, province } = await ShippingAddressDomainService.GetShippingAddressDetailDomain(shipping_address_id)
 
             //calculate total amount/price
-            const totalAmount = CalculateTotalPrice({ items_price: transactionDetail.items_price, shipping_price })
+            const totalAmount = CalculateTotalPrice({ items_price: transactionDetail.items_price, shipping_price: shipping_price.value })
 
             //const initialize data to send using email.
             const dataToEmail = {
