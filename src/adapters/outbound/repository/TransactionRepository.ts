@@ -117,6 +117,7 @@ export default class TransactionRepository {
                 COALESCE(GROUP_CONCAT(p.id SEPARATOR ","), 'No Products') AS product_bought_id,
                 COALESCE(GROUP_CONCAT(p.name SEPARATOR ","), 'No Products') AS product_bought,
                 COALESCE(GROUP_CONCAT(o.qty SEPARATOR ","), 'No Products') AS qty,
+                SUM(p.weight) AS product_bought_weight,
                 CASE 
                     WHEN t.is_paid = 0
                         THEN 'Unpaid'

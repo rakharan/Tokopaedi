@@ -1,28 +1,57 @@
 import { HelperParamsDto } from "@domain/model/params"
+import { ShippingCostsDetails } from "@domain/model/params/HelperParams"
+import { RajaOngkirApi } from "@helpers/ApiConfig/axios"
 
 export function CalculateShippingPrice(params: HelperParamsDto.CalculateShippingPrice) {
-    const { expedition_name, shipping_address_id } = params
+    const { shipping_type = "JTR", shipping_cost_details } = params
 
-    const couriers = {
-        JNE: { packagingCost: 100, shippingCost: 200, administrationCost: 50 },
-        "J&T": { packagingCost: 150, shippingCost: 250, administrationCost: 60 },
-        Tiki: { packagingCost: 100, shippingCost: 210, administrationCost: 70 },
-        Wahana: { packagingCost: 70, shippingCost: 150, administrationCost: 80 },
-        Gojek: { packagingCost: 80, shippingCost: 280, administrationCost: 50 },
-        "Lion Parcel": { packagingCost: 90, shippingCost: 230, administrationCost: 50 },
-        "Ninja Express": { packagingCost: 200, shippingCost: 200, administrationCost: 100 },
-        "Shopee Express": { packagingCost: 300, shippingCost: 240, administrationCost: 20 },
-    }
-
-    const courier = couriers[expedition_name]
-
-    if (!courier) {
-        throw new Error(`Unknown courier: ${expedition_name}`)
-    }
-
-    return (courier.packagingCost + courier.shippingCost + courier.administrationCost) * shipping_address_id
+    const chosenService = shipping_cost_details.find((s) => s.service == shipping_type)
+    console.log({shipping_cost_details})
+    console.log({chosenService, shipping_type})
+    return chosenService.cost[0]
 }
 
 export function CalculateTotalPrice(params: HelperParamsDto.CalculateTotalPrice) {
-    return parseFloat(params.items_price + params.shipping_price).toFixed(2)
+    return (parseInt(params.items_price) + params.shipping_price).toFixed(2)
+}
+
+export async function findDestinationId(province: string, city: string) {
+
+    type ProvinceList = {
+        province_id: string;
+        province: string;
+    }
+
+    type CityList = {
+        city_id: string;
+        province_id: string;
+        province: string;
+        type: string;
+        city_name: string;
+        postal_code: string;
+    }
+
+    const provinceRequest = await RajaOngkirApi.get("/province")
+    const cityRequest = await RajaOngkirApi.get("/city")
+
+    const provinceList: ProvinceList[] = provinceRequest.data.rajaongkir.results
+    const matchedProvince = provinceList.find((p) => p.province == province)
+
+    const cityList: CityList[] = cityRequest.data.rajaongkir.results
+    const matchedList = cityList.find((c) => c.city_name == city && c.province_id === matchedProvince.province_id)
+    console.log({city, province, matchedList, matchedProvince})
+    return matchedList.city_id
+}
+
+export async function checkShippingServicePrice({ courier, destId, orgId, weight }: { destId: string; orgId: string; weight: number; courier: string; }) {
+    const shippingCosts = await RajaOngkirApi.post("/cost", {
+        origin: orgId,
+        destination: destId,
+        weight,
+        courier: courier.toLowerCase()
+    })
+
+    const results = shippingCosts.data.rajaongkir.results
+    console.log({results: results[0].costs})
+    return results[0].costs as ShippingCostsDetails[]
 }
