@@ -243,7 +243,7 @@ export default class TransactionAppService {
 
             const shippingPriceService = await checkShippingServicePrice({ courier: expedition_name, destId: destinationId, orgId: destinationId, weight: Number(transactionDetail.product_bought_weight) })
             
-            const shipping_price = CalculateShippingPrice({ shipping_cost_details: shippingPriceService, shipping_type: "CTC" })
+            const shipping_price = CalculateShippingPrice({ shipping_cost_details: shippingPriceService, shipping_type: "JTR" })
             const payTransactionObject: TransactionParamsDto.PayTransactionRepositoryParams = {
                 is_paid: 1,
                 paid_at: now,

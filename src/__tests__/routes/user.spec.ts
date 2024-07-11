@@ -32,7 +32,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
         };
         newShippingAddressData = {
             address: "Jl. In Aja",
-            city: "Jakarta",
+            city: "Jakarta Utara",
             province: "DKI Jakarta",
             postal_code: "45211",
             country: "Indonesia",
@@ -286,7 +286,7 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
 
             const newShippingAddressData = {
                 address: "Jl. In Aja",
-                city: "Jakarta",
+                city: "Jakarta Utara",
                 province: "DKI Jakarta",
                 postal_code: "45211",
                 country: "Indonesia",
@@ -367,10 +367,10 @@ describe.sequential('Lists of routes accessible to regular user (level 3)', () =
             const updateShippingAddressData = {
                 id: newlyCreatedShippingAddressId,
                 address: "Jl. Victory Gate",
-                city: "Frankfurt",
-                province: "West Europe",
+                city: "Indramayu",
+                province: "Jawa Barat",
                 postal_code: "45211",
-                country: "Germany Island"
+                country: "Germany"
             }
 
             const { body } = await supertest(app.server)

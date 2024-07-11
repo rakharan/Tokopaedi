@@ -3,10 +3,11 @@ import { ShippingCostsDetails } from "@domain/model/params/HelperParams"
 import { RajaOngkirApi } from "@helpers/ApiConfig/axios"
 
 export function CalculateShippingPrice(params: HelperParamsDto.CalculateShippingPrice) {
-    const { shipping_type = "CTC", shipping_cost_details } = params
+    const { shipping_type = "JTR", shipping_cost_details } = params
 
-    const chosenService = shipping_cost_details.find((s) => s.service === shipping_type)
-
+    const chosenService = shipping_cost_details.find((s) => s.service == shipping_type)
+    console.log({shipping_cost_details})
+    console.log({chosenService, shipping_type})
     return chosenService.cost[0]
 }
 
@@ -38,7 +39,7 @@ export async function findDestinationId(province: string, city: string) {
 
     const cityList: CityList[] = cityRequest.data.rajaongkir.results
     const matchedList = cityList.find((c) => c.city_name == city && c.province_id === matchedProvince.province_id)
-
+    console.log({city, province, matchedList, matchedProvince})
     return matchedList.city_id
 }
 
@@ -51,6 +52,6 @@ export async function checkShippingServicePrice({ courier, destId, orgId, weight
     })
 
     const results = shippingCosts.data.rajaongkir.results
-
+    console.log({results: results[0].costs})
     return results[0].costs as ShippingCostsDetails[]
 }
