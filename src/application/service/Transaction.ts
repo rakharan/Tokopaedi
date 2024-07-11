@@ -15,7 +15,7 @@ import { QueryRunner } from "typeorm"
 import { emailer } from "@infrastructure/mailer/mailer"
 import UserDomainService from "@domain/service/UserDomainService"
 import ShippingAddressDomainService from "@domain/service/ShippingAddressDomainService"
-import { CalculateShippingPrice, CalculateTotalPrice } from "@helpers/utils/transaction/transactionHelper"
+import { CalculateShippingPrice, CalculateTotalPrice, checkShippingServicePrice, findDestinationId } from "@helpers/utils/transaction/transactionHelper"
 import { ApiError, BadInputError } from "@domain/model/Error/Error"
 
 export default class TransactionAppService {
@@ -220,7 +220,7 @@ export default class TransactionAppService {
             //create delivery_status with pending status. 0 = pending, 1 = on delivery, 2 = delivered
             const deliveryStatus: TransactionParamsDto.CreateDeliveryStatusParams = {
                 transaction_id,
-                status: 0,
+                status: TransactionParamsDto.DeliveryStatus.Pending,
                 delivered_at: moment().unix(),
                 expedition_name,
                 is_delivered: 0,
@@ -234,13 +234,22 @@ export default class TransactionAppService {
             update payment method: Cash | Credit Card | Debit Catd
             update paid_at & updated_at
             **/
-            const shipping_price = CalculateShippingPrice({ expedition_name, shipping_address_id })
+
+            //get user transaction detail
+            const transactionDetail = await TransactionDomainService.GetTransactionDetailDomain(transaction_id)
+            
+            const shipping_address = await ShippingAddressDomainService.GetShippingAddressDetailDomain(shipping_address_id)
+            const destinationId = await findDestinationId(shipping_address.province, shipping_address.city)
+
+            const shippingPriceService = await checkShippingServicePrice({ courier: expedition_name, destId: destinationId, orgId: destinationId, weight: Number(transactionDetail.product_bought_weight) })
+            
+            const shipping_price = CalculateShippingPrice({ shipping_cost_details: shippingPriceService, shipping_type: "JTR" })
             const payTransactionObject: TransactionParamsDto.PayTransactionRepositoryParams = {
                 is_paid: 1,
                 paid_at: now,
                 payment_method,
                 shipping_address_id,
-                shipping_price,
+                shipping_price: shipping_price.value,
                 updated_at: now,
                 user_id,
                 transaction_id,
@@ -257,8 +266,6 @@ export default class TransactionAppService {
             //get user info
             const { email, name } = await UserDomainService.GetUserDataByIdDomain(user_id)
 
-            //get user transaction detail
-            const transactionDetail = await TransactionDomainService.GetTransactionDetailDomain(transaction_id)
 
             //create a variable to hold product detail to email
             //extract product name & qty
@@ -285,7 +292,7 @@ export default class TransactionAppService {
             const { address, city, country, id, postal_code, province } = await ShippingAddressDomainService.GetShippingAddressDetailDomain(shipping_address_id)
 
             //calculate total amount/price
-            const totalAmount = CalculateTotalPrice({ items_price: transactionDetail.items_price, shipping_price })
+            const totalAmount = CalculateTotalPrice({ items_price: transactionDetail.items_price, shipping_price: shipping_price.value })
 
             //const initialize data to send using email.
             const dataToEmail = {
@@ -412,7 +419,7 @@ export default class TransactionAppService {
         const transactionDetail = await TransactionDomainService.GetTransactionDetailDomain(transaction_id)
 
         const updateTransactionStatus: TransactionParamsDto.UpdateTransactionStatusParams = {
-            status: 1, //0 = pending (default), 1 = approved, 2 = rejected
+            status: TransactionParamsDto.TransactionStatus.Approved,
             transaction_id: transactionDetail.transaction_id,
             updated_at: moment().unix(),
         }
@@ -444,7 +451,7 @@ export default class TransactionAppService {
         await TransactionDomainService.CheckIsTransactionAliveDomain(transaction_id)
 
         const updateTransactionStatus: TransactionParamsDto.UpdateTransactionStatusParams = {
-            status: 2, //0 = pending (default), 1 = approved, 2 = rejected
+            status: TransactionParamsDto.TransactionStatus.Rejected,
             transaction_id,
             updated_at: moment().unix(),
         }
@@ -479,11 +486,11 @@ export default class TransactionAppService {
         //get transaction status if transaction hasn't been approved / rejected, can not update delivery status
         const transactionStatus = await TransactionDomainService.GetTransactionStatusDomain(transaction_id)
 
-        if (transactionStatus.status !== 1) {
+        if (transactionStatus.status !== TransactionParamsDto.TransactionStatus.Approved) {
             switch (transactionStatus.status) {
-                case 0:
+                case TransactionParamsDto.TransactionStatus.Pending:
                     throw new BadInputError("PLEASE_APPROVE_THE_TRANSACTION_FIRST")
-                case 2:
+                case TransactionParamsDto.TransactionStatus.Rejected:
                     throw new ApiError("THIS_TRANSACTION_IS_REJECTED")
                 default:
                     throw new ApiError("INVALID_TRANSACTION_STATUS")
@@ -493,7 +500,7 @@ export default class TransactionAppService {
         const updateDeliveryStatus: TransactionParamsDto.UpdateDeliveryStatusParams = {
             transaction_id,
             is_delivered, // 0 = pending, 1 = delivered
-            status, //0 = Pending, 1 = On Delivery, 2 = Delivered, 3 = Rejected
+            status,
             updated_at: moment().unix(),
         }
 

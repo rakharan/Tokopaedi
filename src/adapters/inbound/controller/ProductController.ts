@@ -58,27 +58,16 @@ export default class ProductController {
 
     static async UpdateProduct(request: FastifyRequest) {
         const jwt = request.user
-        const files = request.files
-        try {
-            const productUpdate = request.body as ProductRequestDto.UpdateProductRequest
-            const updateProduct = await ProductAppService.UpdateProduct(productUpdate, files, {
-                user_id: jwt.id,
-                action: `Update Product`,
-                ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
-                browser: request.headers["user-agent"],
-                time: moment().unix(),
-            })
-            return { message: updateProduct }
-        } catch (error) {
-            // Delete tmp files when error occured
-            for (const file in files) {
-                const imagePath = files[file][0].path
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath)
-                }
-            }
-            throw error
-        }
+        const productUpdate = request.body as ProductRequestDto.UpdateProductRequest
+
+        const updateProduct = await ProductAppService.UpdateProduct(productUpdate, {
+            user_id: jwt.id,
+            action: `Update Product`,
+            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+            browser: request.headers["user-agent"],
+            time: moment().unix(),
+        })
+        return { message: updateProduct }
     }
 
     static async ReviewList(request: FastifyRequest) {
@@ -94,13 +83,16 @@ export default class ProductController {
         const params = request.body as ProductRequestDto.CreateProductReviewRequest
 
         const now = moment().unix()
-        const createReview = await ProductAppService.CreateReview({ ...params, user_id: id, created_at: now }, {
-            user_id: id,
-            action: `Create Review #${params.product_id}`,
-            ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
-            browser: request.headers["user-agent"],
-            time: now,
-        })
+        const createReview = await ProductAppService.CreateReview(
+            { ...params, user_id: id, created_at: now },
+            {
+                user_id: id,
+                action: `Create Review #${params.product_id}`,
+                ip: (request.headers["x-forwarded-for"] as string) || (request.ip == "::1" ? "127.0.0.1" : request.ip),
+                browser: request.headers["user-agent"],
+                time: now,
+            }
+        )
 
         return { message: createReview }
     }
@@ -197,7 +189,7 @@ export default class ProductController {
     }
 
     static async UpdateWishlistCollectionName(request: FastifyRequest) {
-        const { name, collection_id } = request.body as { name: string, collection_id: number }
+        const { name, collection_id } = request.body as { name: string; collection_id: number }
 
         const updateCollection = await ProductAppService.UpdateWishlistCollection(name, collection_id)
         return { message: updateCollection }
@@ -211,16 +203,65 @@ export default class ProductController {
     }
 
     static async AddProductToWishlist(request: FastifyRequest) {
-        const { collection_id, product_id } = request.body as { collection_id: number, product_id: number }
+        const { collection_id, product_id } = request.body as { collection_id: number; product_id: number }
 
         const wishlistAProduct = await ProductAppService.AddProductToWishlist(collection_id, product_id)
         return { message: wishlistAProduct }
     }
 
     static async RemoveProductFromWishlist(request: FastifyRequest) {
-        const { collection_id, product_id } = request.body as { collection_id: number, product_id: number }
+        const { collection_id, product_id } = request.body as { collection_id: number; product_id: number }
 
         const removeProduct = await ProductAppService.RemoveProductFromWishlist(collection_id, product_id)
         return { message: removeProduct }
+    }
+
+    static async UpdateImageGallery(request: FastifyRequest) {
+        const files = request.files
+        const params = request.body as ProductRequestDto.UpdateProductImageGalleryRequest
+        try {
+            const updateImage = await ProductAppService.UpdateImageGallery(params, files)
+            return { message: updateImage }
+        } catch (error) {
+            // Delete tmp files when error occured
+            for (const file in files) {
+                const imagePath = files[file][0].path
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath)
+                }
+            }
+            throw error
+        }
+    }
+
+    static async AddImageGallery(request: FastifyRequest) {
+        const files = request.files
+        const params = request.body as ProductRequestDto.AddImageGalleryRequest
+        try {
+            const addImage = await ProductAppService.AddImageGallery(params, files)
+            return { message: addImage }
+        } catch (error) {
+            // Delete tmp files when error occured
+            for (const file in files) {
+                const imagePath = files[file][0].path
+                if (fs.existsSync(imagePath)) {
+                    fs.unlinkSync(imagePath)
+                }
+            }
+            throw error
+        }
+    }
+
+    static async DeleteImageGallery(request: FastifyRequest) {
+        const params = request.body as ProductRequestDto.DeleteImageGalleryRequest
+        const addImage = await ProductAppService.DeleteImageGallery(params)
+        return { message: addImage }
+    }
+
+    static async HardDeleteProduct(request: FastifyRequest) {
+        const { id } = request.body as { id: number }
+
+        const deleteProduct = await ProductAppService.HardDeleteProduct(id)
+        return { message: deleteProduct }
     }
 }

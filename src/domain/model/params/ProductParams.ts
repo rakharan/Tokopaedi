@@ -1,4 +1,4 @@
-import { CreateProductCategoryRequest, CreateProductReviewRequest, GetProductListRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
+import { AddImageGalleryRequest, CreateProductCategoryRequest, CreateProductReviewRequest, GetProductListRequest, UpdateProductCategoryRequest } from "../request/ProductRequest"
 
 export type CreateProductParams = {
     name: string
@@ -6,8 +6,6 @@ export type CreateProductParams = {
     price: number
     stock: number
     category: number
-    img_src: string
-    public_id: string
 }
 
 export type UpdateProductParams = {
@@ -16,8 +14,28 @@ export type UpdateProductParams = {
     description?: string
     price?: number
     stock?: number
-    img_src?: string
+}
+
+export type AddProductImageGalleryParams = {
+    product_id: number
+    thumbnail: number // 0 = false, 1 = true. Only one thumbnail per product is allowed.
+    display_order: number
+    img_src: string
+    public_id: string
+}
+
+export type DeleteProductImageGalleryParams = {
+    product_id: number
+    public_id: string
+}
+
+export type UpdateProductImageGalleryParams = {
+    id?: number
+    product_id?: number
     public_id?: string
+    img_src?: string
+    thumbnail?: number
+    display_order?: number
 }
 
 export type CreateProductReviewParams = CreateProductReviewRequest & {
@@ -34,3 +52,5 @@ export type UpdateProductCategoryParams = UpdateProductCategoryRequest & {
 }
 
 export type GetProductListParams = GetProductListRequest
+
+export type AddImageGalleryParams = AddImageGalleryRequest

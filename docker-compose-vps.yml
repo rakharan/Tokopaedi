@@ -18,7 +18,6 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - mysql_server
-      - redis
 
   mysql_server:
     container_name: tokopaedi-mysql
@@ -26,12 +25,6 @@ services:
     image: mysql:latest
     volumes:
       - db-data:/var/lib/mysql
-
-  redis:
-    container_name: tokopaedi-redis
-    image: redis:latest
-    ports:
-      - '6379:6379'
 
 volumes:
   db-data:

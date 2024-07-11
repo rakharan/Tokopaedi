@@ -41,7 +41,7 @@ export default class AdminAppService {
         await UserDomainService.GetEmailExistDomain(email)
 
         //if environtment TESTING is set to true, create a user with 10ms expiration time. this is made to ensure we can test the check expired account function.
-        const isTesting = process.env.TESTING === 'true';
+        const isTesting = process.env.TESTING === "true"
         const expiresIn = isTesting ? "10" : process.env.EXPIRES_IN
 
         //Create an email token used to verify email.

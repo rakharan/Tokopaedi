@@ -4,6 +4,8 @@ export type CreateProductRequest = {
     category: number
     price: number
     stock: number
+    thumbnail: number
+    display_order: number
 }
 
 export type UpdateProductRequest = {
@@ -13,6 +15,15 @@ export type UpdateProductRequest = {
     category?: number
     price?: number
     stock?: number
+}
+
+export type UpdateProductImageGalleryRequest = {
+    id: number
+    product_id: number
+    public_id: string
+    img_src?: string
+    thumbnail?: number
+    display_order?: number
 }
 
 export type CreateProductReviewRequest = {
@@ -38,4 +49,15 @@ export type GetProductListRequest = {
     ratingSort: string
     priceMin: number
     priceMax: number
+    lastPrice: number
+    lastRating: number
+}
+
+export type AddImageGalleryRequest = {
+    product_id: number
+}
+
+export type DeleteImageGalleryRequest = {
+    product_id: number
+    public_id: string
 }

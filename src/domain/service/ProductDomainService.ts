@@ -6,8 +6,8 @@ import { RepoPaginationParams } from "key-pagination-sql"
 import { QueryRunner } from "typeorm"
 
 export default class ProductDomainService {
-    static async GetProductListDomain(params: RepoPaginationParams) {
-        const productList = await ProductRepository.DBGetProductList(params)
+    static async GetProductListDomain(params: RepoPaginationParams, having?: string) {
+        const productList = await ProductRepository.DBGetProductList(params, having)
         if (productList.length < 1) {
             throw new ResultNotFoundError("PRODUCT_IS_EMPTY")
         }
@@ -42,6 +42,7 @@ export default class ProductDomainService {
         if (newProduct.affectedRows < 1) {
             throw new ApiError("FAILED_TO_CREATE_PRODUCT")
         }
+        return newProduct
     }
 
     static async UpdateProductDomain(product: ProductParamsDto.UpdateProductParams, query_runner?: QueryRunner) {
@@ -149,7 +150,14 @@ export default class ProductDomainService {
     }
 
     static async CreateProductCategoryDomain(params: ProductParamsDto.CreateProductCategoryParams, query_runner: QueryRunner) {
-        const category = await ProductRepository.CreateNewCategory(params, query_runner)
+        let category
+        // if parent_id is null/0, that means we creating new head category.
+        if (params.parent_id == 0 || params.parent_id == null) {
+            category = await ProductRepository.CreateNewHeadCategory(params, query_runner)
+        } else {
+            // if parent_id is a number ( > 0 ), that means we creating new sub category.
+            category = await ProductRepository.CreateNewSubCategory(params, query_runner)
+        }
         if (category.affectedRows < 1) {
             throw new ApiError("FAILED_TO_CREATE_CATEGORY")
         }
@@ -241,5 +249,46 @@ export default class ProductDomainService {
         if (removeFromWishlist.affectedRows < 1) {
             throw new ApiError("FAILED_TO_REMOVE_PRODUCT_FROM_WISHLIST")
         }
+    }
+
+    static async AddImageProductGalleryDomain(params: ProductParamsDto.AddProductImageGalleryParams, query_runner?: QueryRunner) {
+        if (!query_runner?.isTransactionActive) {
+            throw new ApiError("MUST_IN_TRANSACTION")
+        }
+        const addImageGallery = await ProductRepository.AddProductImageToGallery(params, query_runner)
+        if (addImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_ADD_IMAGE_TO_GALLERY")
+        }
+    }
+
+    static async FindProductImageDetailDomain(id: number, product_id: number) {
+        const updateImage = await ProductRepository.FindProductImageDetail(id, product_id)
+        if (updateImage.length < 1) {
+            throw new ResultNotFoundError("IMAGE_DETAIL_NOT_FOUND")
+        }
+        return updateImage[0]
+    }
+
+    static async DeleteImageProductGalleryDomain(params: ProductParamsDto.DeleteProductImageGalleryParams, query_runner?: QueryRunner) {
+        const deleteImageGallery = await ProductRepository.DeleteProductImageFromGallery(params, query_runner)
+        if (deleteImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_DELETE_IMAGE_GALLERY")
+        }
+    }
+
+    static async UpdateImageProductGalleryDomain(params: ProductParamsDto.UpdateProductImageGalleryParams, query_runner: QueryRunner) {
+        const updateImageGallery = await ProductRepository.UpdateProductImageGallery(params, query_runner)
+        if (updateImageGallery.affectedRows < 1) {
+            throw new ApiError("FAILED_TO_UPDATE_IMAGE_GALLERY")
+        }
+    }
+
+    static async GetProductImagePublicIdDomain(product_id: number) {
+        const publicIds = await ProductRepository.GetProductImagePublicId(product_id)
+        if (publicIds.length < 1) {
+            throw new ResultNotFoundError("PRODUCT_IMAGES_NOT_FOUND")
+        }
+
+        return publicIds
     }
 }

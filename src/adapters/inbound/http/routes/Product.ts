@@ -20,8 +20,7 @@ const routes: RouteOptions[] = [
                     ratingSort: { type: "string" },
                     priceMin: { type: "number" },
                     priceMax: { type: "number" },
-                    offset: { type: "number" }, 
-                }
+                },
             }),
             response: Schema.BasePaginationResultSchema,
         },
@@ -58,7 +57,9 @@ const routes: RouteOptions[] = [
         schema: {
             tags: ["Product"],
             body: Schema.BasePaginationRequestSchema({
-                pic: "Rakha", additional_body: { id: { type: "integer" } }, search: {}
+                pic: "Rakha",
+                additional_body: { id: { type: "integer" } },
+                search: {},
             }),
             response: Schema.BasePaginationResultSchema,
         },
@@ -80,7 +81,7 @@ const routes: RouteOptions[] = [
                     rating: { type: "integer" },
                     comment: { type: "string" },
                     created_at: { type: "integer" },
-                }
+                },
             }),
         },
     },
@@ -95,7 +96,7 @@ const routes: RouteOptions[] = [
                 search: {
                     name: "string",
                     parent_id: "string",
-                }
+                },
             }),
             response: Schema.BasePaginationResultSchema,
         },

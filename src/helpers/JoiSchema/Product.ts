@@ -52,6 +52,11 @@ const Name = Joi.string().messages({
     "string.base": "Name must be a string",
 })
 
+const PublicId = Joi.string().required().messages({
+    "string.base": "Public Id must be a string",
+    "any.required": "Public Id is required",
+})
+
 export const CreateProduct = Joi.object({
     name: Name.required().messages({
         "any.required": "Product name is required",
@@ -68,7 +73,9 @@ export const CreateProduct = Joi.object({
     stock: Stock.required().messages({
         "any.required": "Stock is required",
     }),
-}).options({ abortEarly: false }).unknown(true)
+})
+    .options({ abortEarly: false })
+    .unknown(true)
 
 export const UpdateProduct = Joi.object({
     id: ProductId,
@@ -90,7 +97,9 @@ export const CreateReview = Joi.object({
     comment: Joi.string().optional().messages({
         "string.base": "Comment must be a string",
     }),
-}).options({ abortEarly: false }).unknown(true)
+})
+    .options({ abortEarly: false })
+    .unknown(true)
 
 export const CreateCategory = Joi.object({
     name: Name,
@@ -101,35 +110,42 @@ export const UpdateCategory = Joi.object({
     id: CategoryId,
     name: Name,
     parent_id: CategoryId,
-    cat_path: Joi.string()
+    cat_path: Joi.string(),
 }).options({ abortEarly: false })
 
 export const ProductList = Joi.object({
-    sortFilter: Joi.string().valid('mostReviewed', 'highestRating', 'lowestRating', 'lowestPrice', 'highestPrice').optional(),
+    sortFilter: Joi.string().valid("mostReviewed", "highestRating", "lowestRating", "lowestPrice", "highestPrice").optional(),
     categoriesFilter: Joi.string().optional(),
-    ratingSort: Joi.string().valid('greaterThanOrEqualFour', 'greaterThanOrEqualThree', 'greaterThanOrEqualTwo').optional(),
+    ratingSort: Joi.string().valid("greaterThanOrEqualFour", "greaterThanOrEqualThree", "greaterThanOrEqualTwo").optional(),
     priceMin: Price,
     priceMax: Price,
-}).options({ abortEarly: false }).unknown(true);
+})
+    .options({ abortEarly: false })
+    .unknown(true)
 
 export const CreateCollection = Joi.object({
     name: Name.required(),
-    user_id: UserId
+    user_id: UserId,
 })
 
 export const UpdateCollection = Joi.object({
     name: Name.required(),
-    collection_id: CollectionId
+    collection_id: CollectionId,
 })
 
 export const WishlistCollection = UserId
 
 export const AddProductToWishlist = Joi.object({
     collection_id: CollectionId,
-    product_id: ProductId
+    product_id: ProductId,
 })
 
 export const RemoveProductFromWishlist = Joi.object({
     collection_id: CollectionId,
-    product_id: ProductId
+    product_id: ProductId,
+})
+
+export const DeleteImageGallery = Joi.object({
+    product_id: ProductId,
+    public_id: PublicId,
 })
