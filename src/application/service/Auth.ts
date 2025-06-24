@@ -35,7 +35,7 @@ export default class AuthAppService {
 
             await UserDomainService.GetEmailExistDomain(email)
 
-            const expiresIn = process.env.EXPIRES_IN || "1h"
+            const expiresIn = parseInt(process.env.EXPIRES_IN || "1h")
 
             //Create an email token used to verify email.
             const email_token: string = await signJWT({ email }, process.env.JWT_SECRET, { expiresIn })
@@ -105,7 +105,7 @@ export default class AuthAppService {
             level: user_data.level,
             authority: user_data.authority,
         }
-        const expiresIn = process.env.EXPIRES_IN || "1h"
+        const expiresIn = parseInt(process.env.EXPIRES_IN || "1h")
 
         const result = {
             token: await signJWT(user_claims, process.env.JWT_SECRET || "TOKOPAEDI", { expiresIn }),
