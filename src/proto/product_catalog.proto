@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package product_catalog;
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  int32 stock_quantity = 5;
+  string category = 6; // Mapping 'pc.name' from your SQL
+  double rating = 7;
+  int32 review_count = 8;
+  repeated string image_urls = 9; // GROUP_CONCAT(pg.img_src)
+  repeated string public_ids = 10; // GROUP_CONCAT(pg.public_id)
+  // Ensure these match your ProductResponseDto.ProductListResponse fields
+}
+
+message PaginationRequest {
+  int32 limit = 1;
+  string sort = 2; // "ASC" or "DESC"
+  int32 last_id = 3; // For primary key-based pagination
+  // Additional fields for cursor-based pagination if needed, e.g.:
+  double last_price = 4;
+  double last_rating = 5;
+}
+
+message ProductListSearchFilter {
+  string name = 1; // From your `search: { name: "string" }`
+  string single_category = 2; // From your `search: { single_category: "string" }`
+}
+
+enum SortFilterOption {
+  SORT_FILTER_UNSPECIFIED = 0; // Default or no specific sort filter
+  MOST_REVIEWED = 1;
+  HIGHEST_PRICE = 2;
+  LOWEST_PRICE = 3;
+  LOWEST_RATING = 4;
+  HIGHEST_RATING = 5;
+}
+
+enum RatingSortOption {
+  RATING_SORT_UNSPECIFIED = 0; // Default or no specific rating sort
+  GREATER_THAN_OR_EQUAL_FOUR = 1;
+  GREATER_THAN_OR_EQUAL_THREE = 2;
+  GREATER_THAN_OR_EQUAL_TWO = 3;
+}
+
+message GetProductListRequest {
+  // Common pagination parameters
+  PaginationRequest pagination = 1;
+
+  // Search filter
+  ProductListSearchFilter search_filter = 2;
+
+  // Additional body filters
+  SortFilterOption sort_filter = 3;
+  string categories_filter = 4; // From your `categoriesFilter: { type: "string" }`
+  RatingSortOption rating_sort = 5;
+  double price_min = 6;
+  double price_max = 7;
+}
+
+message GetProductListResponse {
+  repeated Product products = 1;
+  string next_page_token = 2; // Or derive from `last_id`, `last_price`, `last_rating`
+  bool has_more = 3; // From your Paginate utility
+  int32 total_count = 4; // If you want total count, might require a separate query
+}
+
+service ProductCatalogService {
+  rpc GetProductList (GetProductListRequest) returns (GetProductListResponse);
+  // Add other methods like GetProductById, CreateProduct, etc. as needed
+}

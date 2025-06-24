@@ -7,6 +7,7 @@ import { QueryRunner } from "typeorm"
 
 export default class ProductDomainService {
     static async GetProductListDomain(params: RepoPaginationParams, having?: string) {
+        console.log({params, having})
         const productList = await ProductRepository.DBGetProductList(params, having)
         if (productList.length < 1) {
             throw new ResultNotFoundError("PRODUCT_IS_EMPTY")

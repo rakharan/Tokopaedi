@@ -115,10 +115,10 @@ export const UpdateCategory = Joi.object({
 
 export const ProductList = Joi.object({
     sortFilter: Joi.string().valid("mostReviewed", "highestRating", "lowestRating", "lowestPrice", "highestPrice").optional(),
-    categoriesFilter: Joi.string().optional(),
+    categoriesFilter: Joi.string().optional().allow(''),
     ratingSort: Joi.string().valid("greaterThanOrEqualFour", "greaterThanOrEqualThree", "greaterThanOrEqualTwo").optional(),
-    priceMin: Price,
-    priceMax: Price,
+    priceMin: Price.optional().allow(null), // Make it optional and allow null
+    priceMax: Price.optional().allow(null), // Make it optional and allow null
 })
     .options({ abortEarly: false })
     .unknown(true)

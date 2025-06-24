@@ -6,7 +6,7 @@ const routes: RouteOptions[] = [
     {
         method: ["POST"],
         url: "list",
-        handler: ProductController.GetProductList,
+        handler: ProductController.GetProductListGRPC,
         schema: {
             tags: ["Product"],
             body: Schema.BasePaginationRequestSchema({

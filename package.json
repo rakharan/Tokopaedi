@@ -13,7 +13,8 @@
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json && ts-node copy-templates.ts",
     "test": "cross-env NODE_ENV=testing vitest",
     "test:ui": "cross-env NODE_ENV=testing vitest --ui",
-    "test:coverage": "cross-env NODE_ENV=testing vitest --coverage"
+    "test:coverage": "cross-env NODE_ENV=testing vitest --coverage",
+    "generate:proto": "grpc_tools_node_protoc --plugin=protoc-gen-ts=\"%CD%\\node_modules\\.bin\\protoc-gen-ts.cmd\" --ts_out=client_grpc1,server_grpc1:./src/generated_grpc --proto_path=./src/proto ./src/proto/*.proto"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
@@ -21,6 +22,12 @@
     "@fastify/helmet": "^11.0.0",
     "@fastify/swagger": "^8.7.0",
     "@fastify/swagger-ui": "^1.9.2",
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.7.15",
+    "@protobuf-ts/plugin": "^2.11.0",
+    "@protobuf-ts/runtime": "^2.11.0",
+    "@protobuf-ts/runtime-rpc": "^2.11.0",
+    "@types/google-protobuf": "^3.15.12",
     "ajv": "^8.12.0",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.0",
@@ -31,6 +38,8 @@
     "fastify-multer": "^2.0.3",
     "fastify-plugin": "4.5.1",
     "format-unicorn": "^1.1.1",
+    "google-protobuf": "^3.21.4",
+    "grpc-tools": "^1.13.0",
     "handlebars": "^4.7.8",
     "indonesian-profanity": "^1.0.1",
     "ioredis": "^5.3.2",
