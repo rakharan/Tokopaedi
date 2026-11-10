@@ -172,7 +172,7 @@ export default class ProductAppService {
         if (process.env.NODE_ENV === "testing") {
             const productDetail = await ProductDomainService.GetProductDetailDomain(id, user_id)
             if (productDetail) {
-                productDetail.is_wishlisted = Boolean(productDetail.is_wishlisted && productDetail.is_wishlisted !== "0")
+                productDetail.is_wishlisted = Boolean(Number(productDetail.is_wishlisted))
             }
             return productDetail
         }
