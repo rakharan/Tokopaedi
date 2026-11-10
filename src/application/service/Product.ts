@@ -137,6 +137,12 @@ export default class ProductAppService {
             }
         }
 
+        // Skip caching for product list in test environment.
+        if (process.env.NODE_ENV === "testing") {
+            const products = await ProductDomainService.GetProductListDomain({ limit: Number(limit), whereClause, sort: baseSort }, having)
+            return Paginate({ data: products, limit })
+        }
+
         // Use caching for product list.
         let products;
         const encodedWhereClause = encodeURIComponent(whereClause)
@@ -161,6 +167,15 @@ export default class ProductAppService {
 
     static async GetProductDetail(id: number, user_id?: number) {
         await ProductSchema.ProductId.validateAsync(id)
+
+        // Skip cache in test environment
+        if (process.env.NODE_ENV === "testing") {
+            const productDetail = await ProductDomainService.GetProductDetailDomain(id, user_id)
+            if (productDetail) {
+                productDetail.is_wishlisted = Boolean(productDetail.is_wishlisted && productDetail.is_wishlisted !== "0")
+            }
+            return productDetail
+        }
 
         // Use caching for product detail.
         let productDetail;

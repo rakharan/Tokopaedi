@@ -39,14 +39,16 @@ function buildServer() {
         allowedHeaders: ['Content-Type', 'Authorization']
     })
 
-    AppDataSource.initialize()
-        .then(() => {
-            console.log("Data Source has been initialized!")
-        })
-        .catch((err) => {
-            console.error("Error during Data Source initialization", err)
-            throw new Error("Failed to initialize database") // Throw an error if initialization fails
-        })
+    if (!AppDataSource.isInitialized) {
+        AppDataSource.initialize()
+            .then(() => {
+                console.log("Data Source has been initialized!")
+            })
+            .catch((err) => {
+                console.error("Error during Data Source initialization", err)
+                throw new Error("Failed to initialize database")
+            })
+    }
 
     server.register(FastifyBaseAddon)
     server.register(FastifySwaggerAddon)

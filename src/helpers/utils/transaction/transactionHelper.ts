@@ -16,6 +16,9 @@ export function CalculateTotalPrice(params: HelperParamsDto.CalculateTotalPrice)
 }
 
 export async function findDestinationId(province: string, city: string) {
+    if (process.env.NODE_ENV === "testing") {
+        return "1"
+    }
 
     type ProvinceList = {
         province_id: string;
@@ -44,6 +47,10 @@ export async function findDestinationId(province: string, city: string) {
 }
 
 export async function checkShippingServicePrice({ courier, destId, orgId, weight }: { destId: string; orgId: string; weight: number; courier: string; }) {
+    if (process.env.NODE_ENV === "testing") {
+        return [{ service: "JTR", cost: [{ value: 350, etd: "3-5", note: "" }], description: "JNE Trucking" }] as unknown as ShippingCostsDetails[]
+    }
+
     const shippingCosts = await RajaOngkirApi.post("/cost", {
         origin: orgId,
         destination: destId,

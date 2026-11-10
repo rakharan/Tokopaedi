@@ -11,9 +11,14 @@
     "migrate:create": "npx typeorm-ts-node-commonjs migration:create",
     "lint": "eslint \"**/*.{js,ts}\" --quiet --fix",
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json && ts-node copy-templates.ts",
-    "test": "cross-env NODE_ENV=testing vitest",
+    "pretest": "node scripts/test-db.mjs",
+    "test": "cross-env NODE_ENV=testing vitest run",
     "test:ui": "cross-env NODE_ENV=testing vitest --ui",
-    "test:coverage": "cross-env NODE_ENV=testing vitest --coverage"
+    "test:coverage": "cross-env NODE_ENV=testing vitest --coverage",
+    "test:db:down": "docker compose -f docker-compose.test.yml down -v"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",

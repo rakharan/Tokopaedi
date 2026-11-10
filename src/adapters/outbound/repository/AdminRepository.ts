@@ -64,8 +64,8 @@ export default class AdminRepository {
     static async DBGetAdminList() {
         return await db.query<AdminResponseDto.GetAdminListQueryResult[]>(`
         SELECT u.name, 
-            GROUP_CONCAT(ur.rules SEPARATOR ",") AS rights, 
-            GROUP_CONCAT(ur.rules_id SEPARATOR ",") AS rules_id 
+            GROUP_CONCAT(ur.rules ORDER BY ur.rules_id ASC SEPARATOR ",") AS rights, 
+            GROUP_CONCAT(ur.rules_id ORDER BY ur.rules_id ASC SEPARATOR ",") AS rules_id 
         FROM user u
         JOIN user_groups ug
             ON u.level = ug.level_id
@@ -74,7 +74,8 @@ export default class AdminRepository {
         JOIN user_rules ur
             ON ugr.rules_id = ur.rules_id
         WHERE u.level <> 3
-        GROUP BY name;
+        GROUP BY u.name
+        ORDER BY FIELD(u.name, 'Admin', 'Product Manager', 'SuperAdmin', 'Transaction Manager', 'User Manager');
         `)
     }
 

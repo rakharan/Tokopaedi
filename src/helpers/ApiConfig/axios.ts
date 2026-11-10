@@ -7,7 +7,7 @@ DotenvFlow.config({
 })
 
 export const RajaOngkirApi = axios.create({
-    baseURL: process.env.RAJA_ONGKIR_URL,
+    baseURL: process.env.RAJA_ONGKIR_URL || "https://api.rajaongkir.com/starter",
     headers: {
         key: process.env.RAJA_ONGKIR_API_KEY
     }

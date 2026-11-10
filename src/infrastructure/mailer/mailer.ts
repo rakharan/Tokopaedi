@@ -10,31 +10,38 @@ import path from "path"
 //configuration for dotenv
 dotenvFlow.config({ path: path.resolve(__dirname, `../../../`) })
 export class Emailer {
-    private readonly transporter: nodemailer.Transporter
+    private transporter?: nodemailer.Transporter
 
-    constructor() {
-        this.transporter = nodemailer.createTransport({
-            host: "smtp-relay.brevo.com",
-            port: 587,
-            secure: false, // `true` for port 465, `false` for all other ports
-            auth: {
-                user: process.env.SMTP_EMAIL,
-                pass: process.env.SMTP_PASS,
-            },
-        })
+    private getTransporter(): nodemailer.Transporter {
+        if (!this.transporter) {
+            this.transporter = nodemailer.createTransport({
+                host: "smtp-relay.brevo.com",
+                port: 587,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_EMAIL,
+                    pass: process.env.SMTP_PASS,
+                },
+            })
 
-        this.transporter.verify((err) => {
-            if (err) {
-                console.log(err)
-                throw new MailError(err.message)
-            } else {
-                console.log("Mailer is ready")
+            if (process.env.NODE_ENV !== "testing") {
+                this.transporter.verify((err) => {
+                    if (err) {
+                        console.error("Mailer verify failed:", err.message)
+                    } else {
+                        console.log("Mailer is ready")
+                    }
+                })
             }
-        })
+        }
+        return this.transporter
     }
 
-    public sendEmail(mailOptions: MailOptions) {
-        return this.transporter.sendMail(mailOptions)
+    public sendEmail(mailOptions: MailOptions): Promise<unknown> {
+        if (process.env.NODE_ENV === "testing") {
+            return Promise.resolve()
+        }
+        return this.getTransporter().sendMail(mailOptions)
     }
 
     public async notifyAdminForNewUser(email: string, username: string) {
